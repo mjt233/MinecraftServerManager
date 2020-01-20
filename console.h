@@ -20,6 +20,7 @@ void console_command()
             show_list();
         }else if ( !strcmp( input, "exit" ) ){
             cout << "Server closing..." << endl;
+            shutdown( SER_SOCKET, SHUT_RDWR );
             exit(EXIT_SUCCESS);
         }else
         {
@@ -32,15 +33,25 @@ void console_command()
 
 void show_list()
 {
-    pthread_mutex_lock(&SerMutex);
+    if ( pthread_mutex_trylock(&SerMutex) !=0 )
+    {
+        cout << "Lock SER Error " << endl;
+        return;
+
+    }
     cout << "=========Server List==========" << endl;
     for( map<int,Server*>::iterator i = SerList.begin() ; i != SerList.end() ; i++ )
     {
         cout << "SerID: " << i->second->SerID << "  UsrID: " <<  i->second->UsrID << endl;
-        pthread_mutex_lock(&i->second->ctlMutex);
-        for ( list<Controller>::iterator j = i->second->CTLList.begin()  ; j != i->second->CTLList.end() ; j++)
+        if ( pthread_mutex_trylock(&i->second->ctlMutex) != 0)
         {
-            cout << "   CTL:" << endl;
+            cout << "Lock CTL Error " << endl;
+            break;
+        }
+        int count=0;
+        for ( list<Controller*>::iterator j = i->second->CTLList.begin()  ; j != i->second->CTLList.end() ; j++)
+        {
+            cout << "   CTL:" << count++ << " socket: " << (*j)->socket << endl;
         }
         pthread_mutex_unlock(&i->second->ctlMutex);
     }

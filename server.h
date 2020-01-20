@@ -55,16 +55,9 @@ void server_join(baseInfo &IDInfo)
 {
 
     Server *ser = new Server(IDInfo.SerID, IDInfo.UsrID, IDInfo.socket);
-    // 创建Server对象
-
-    // 将该Server对象加到服务器列表
-    pthread_mutex_lock(&SerMutex);
-    SerList.insert( make_pair(IDInfo.SerID, ser ) );
-    pthread_mutex_unlock(&SerMutex);
-
+    write( ser->socket, "OK", 2 );
     // 阻塞 等待服务器读取线程结束
     pthread_join( ser->thid, NULL );
-
     // 释放内存
     delete( ser );
 
@@ -72,19 +65,20 @@ void server_join(baseInfo &IDInfo)
 
 void controller_join(baseInfo &IDInfo)
 {
-
-    Controller *ctl = new Controller(IDInfo.SerID, IDInfo.SerID, IDInfo.socket);
+    Controller *ctl = new Controller(IDInfo.SerID, IDInfo.UsrID, IDInfo.socket);
+    cout << "Controller Socket: " << IDInfo.socket << endl;
     pthread_join(ctl->thid, NULL);
+    pthread_join(ctl->thid2, NULL);
+    delete( ctl );
 }
 
 
 
 void * entrance(void * arg)
 {
-    int socket;
     
     // 监听端口
-    InitServer(&socket,( char * )"127.0.0.1",6636);
+    InitServer(&SER_SOCKET,( char * )"127.0.0.1",6636);
     cout << "\r端口开始监听" << endl << "$ ";
     fflush(stdout);
     // 初始化锁
@@ -99,7 +93,7 @@ void * entrance(void * arg)
         int *client_socket;
         pthread_t thid;
         client_socket =  new int;
-        if ( ( *client_socket = accept( socket, (struct sockaddr*)&cli_addr, &socklen ) ) ==-1 )
+        if ( ( *client_socket = accept( SER_SOCKET, (struct sockaddr*)&cli_addr, &socklen ) ) ==-1 )
         {
             cout<< "\r connect accept Error! " << endl << "$ ";
             break;
@@ -112,6 +106,7 @@ void * entrance(void * arg)
 
 void * process_connect(void * arg)
 {
+
     int sock_fd = *(int *)arg;
     char buffer[DEFAULT_CHAR_BUFFER_SIZE];
     baseInfo IDInfo;
@@ -158,18 +153,19 @@ void * process_connect(void * arg)
 void * server_read(void * arg)
 {
     Server *ser = (Server*)arg;
-    while ( read( ser->socket, ser->buffer, 1024 ) > 0 )
+    char buffer[DEFAULT_CHAR_BUFFER_SIZE];
+    while ( read( ser->socket, buffer, 1024 ) > 0 )
     {
         // 向该Server的缓冲字符串追加写入数据
         pthread_mutex_lock(&ser->sbMutex);
-        buffer_append(&ser->sb, ser->buffer);
+        buffer_append(&ser->sb, buffer);
         pthread_mutex_unlock(&ser->sbMutex);
 
         // 广播到连接到该服务器的所有控制器
-        cout << "\rBroadcast count: " << ser->Broadcast() << endl << "$ ";
-        fflush(stdout);
+        ser->Broadcast(buffer, strlen(buffer));
+        memset(buffer, 0,sizeof(buffer));
     }
-    
+    return nullptr;
 }
 
 void * server_write(void * arg)
@@ -199,9 +195,33 @@ void * server_write_ctl_pipe(void * arg)
 void * controller_read_pipe(void * Controller_arg)
 {
     Controller *ctl = (Controller*)Controller_arg;
-    while (read( ctl->pipe_fd[0], ctl->buffer, 1024 ) > 0)
+    char buffer[DEFAULT_CHAR_BUFFER_SIZE];
+    while ( read( ctl->pipe_fd[0], buffer, 1024 ) > 0)
     {
-        write( ctl->socket, ctl->buffer, strlen(ctl->buffer) );
+        if( ctl->isClose )
+        {
+            break;
+        }
+        write( ctl->socket, buffer, strlen(buffer) );
+        memset(buffer, 0, sizeof(buffer));
+    }
+}
+
+void * controller_read_socket(void * Controller_arg)
+{
+    Controller *ctl = (Controller*)Controller_arg;
+    char buffer[DEFAULT_CHAR_BUFFER_SIZE];
+    while ( read(ctl->socket, buffer, 1024) > 0 )
+    {
+        if( ctl->isClose )
+        {
+            break;
+        }
+        write( ctl->ser->socket, buffer, strlen(buffer) );
+    }
+    if( !ctl->isClose )
+    {
+        ctl->stop();
     }
     
 }
