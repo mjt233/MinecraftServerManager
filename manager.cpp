@@ -2,6 +2,7 @@
 #include<cstdlib>
 #include<pthread.h>
 #include<string>
+#include<string.h>
 #include<list>
 #include<map>
 #include"h/socketTool.h"
@@ -10,6 +11,7 @@
 using namespace std;
 /* 全局变量定义 */
 #include "typedefine.h"
+#include "http.h"
 #include "classFunDef.h"
 #include "console.h"
 #include "server.h"

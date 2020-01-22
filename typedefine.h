@@ -2,6 +2,7 @@
 #define SERVER 0                                    // 服务器TAG
 #define CONTROLLER 1                                // 控制器TAG
 #define COMMAND 2                                   // 快捷命令TAG
+#define HTTP_GET 3                                  // HTTP请求
 #define UNKNOW_TYPE -1                              // 未知TAG
 #define SERID_FORMAT_INCOREET -2                    // 服务器ID格式错误
 #define USRID_FORMAT_INCOREET -3                    // 用户ID格式错误

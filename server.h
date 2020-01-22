@@ -21,7 +21,9 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
     }else if( !strcmp( buffer, "CMD" ) )
     {
         tag = COMMAND;
-    }else{
+    }else if( !strcmp( buffer, "GET" ) ){
+            return HTTP_GET;
+    }else {
         return -1;
     }
 
@@ -126,6 +128,9 @@ void * process_connect(void * arg)
             fflush(stdout);
             break;
         case COMMAND:
+            break;
+        case HTTP_GET:
+            http_GET(IDInfo);
             break;
         case SERID_EXIST:
             write(sock_fd, "SERID_EXIST",12);
