@@ -97,7 +97,6 @@ void * entrance(void * arg)
         int *client_socket;
         pthread_t thid;
         client_socket =  new int;
-        cout << "connect: " <<++count << endl;
         if ( ( *client_socket = accept( SER_SOCKET, (struct sockaddr*)&cli_addr, &socklen ) ) ==-1 )
         {
             cout<< "\r connect accept Error! " << endl << "$ ";

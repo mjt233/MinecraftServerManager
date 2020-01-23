@@ -17,7 +17,7 @@ using namespace std;
 #include "server.h"
 int main()
 {
-    mime_type_init();
+    HTTP_attr_init();
     pthread_t thid;
     pthread_create( &thid, NULL, entrance, NULL );
     
