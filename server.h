@@ -135,6 +135,7 @@ void * process_connect(void * arg)
         case HTTP_GET:
             http_GET(IDInfo);
             while ( read( sock_fd, buffer, 1024 ) > 0 );
+            cout << "http client exit " << endl;
             close(sock_fd);
         case SERID_EXIST:
             write(sock_fd, "SERID_EXIST",12);

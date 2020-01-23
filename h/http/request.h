@@ -1,4 +1,5 @@
-
+#define _RANGE_FIRST 0
+#define _RANGE_LAST 1
 class HTTPRequestInfo : public HTTPInfo{
     public:
         string url = "/";
@@ -20,11 +21,38 @@ class HTTPRequestInfo : public HTTPInfo{
         int getRequestFilePath(string &path);
 
         // 解析Range
-        int getRangeFirst();
-        int getRangeLast();
+        int getRange(int part);
 };
 
+/** 获取请求头中的Range信息 
+ *  缺省返回-1
+ *  错误返回-2
+ * 
+ *  @param part _RANGE_FIRST or _RANGE_LAST
+ */
+int HTTPRequestInfo::getRange(int part)
+{
+    string range = header["Range"];
+    string substr;
+    if( range == "" )
+    {
+        return -2;
+    }
+    int pos1,pos2;
+    pos1 = range.find( part == _RANGE_FIRST ? '=' : '-' );
+    pos2 = part == _RANGE_FIRST ? range.find('-') : range.length();
 
+    if( pos1 == -1 || pos2 == -1 || pos1 == pos2 || pos1 > pos2)
+    {
+        return -2;
+    }
+
+    size_t len = range.length();
+    substr = range.substr( pos1 + 1, pos2 - pos1 -1 ).c_str();
+    return atoi(substr.c_str());
+    
+    
+}
 
 int HTTPRequestInfo::AnalysisRequest(char * request)
 {

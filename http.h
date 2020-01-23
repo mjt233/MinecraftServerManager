@@ -1,5 +1,4 @@
 #include "h/httpModule.h"
-
 void http_GET(baseInfo &IDInfo);
 void http_GET(baseInfo &IDInfo)
 {
@@ -9,6 +8,7 @@ void http_GET(baseInfo &IDInfo)
 
     HTTPRespone.header["Server"] = "Minecraft Server Manager Web Service";
 
+    // 因协议识别,前3个字符被read掉了 看看什么时候有空改掉协议识别的方式
     // 消耗掉GET后面的空格
     read(IDInfo.socket, buffer ,1);
     buffer[0] = 0;
@@ -35,7 +35,14 @@ void http_GET(baseInfo &IDInfo)
     switch (code)
     {
         case 200:
-            HTTPRespone.outputFile(IDInfo.socket, filePath);
+            if ( HTTPRequest.header["Range"] != "" )
+            {
+                HTTPRespone.outputFile(IDInfo.socket, filePath, HTTPRequest.getRange(_RANGE_FIRST), HTTPRequest.getRange(_RANGE_LAST));
+            }else
+            {
+                HTTPRespone.outputFile(IDInfo.socket, filePath);
+            }
+            
             break;
         
         default:

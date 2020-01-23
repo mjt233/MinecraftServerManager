@@ -3,6 +3,7 @@ map<string,string> MIME_TYPE;
 list<string> INDEX;
 #include <dirent.h>
 #include "urlescape.h"
+#include <sys/stat.h>
 
 #define HTTP_REQUEST_READ_SUCCESS 2
 #define HTTP_REQUEST_HEADEREND 1
@@ -16,19 +17,27 @@ class HTTPInfo{
         map<string,string> header;
 };
 
-
-#include "http/request.h"
-#include "http/respone.h"
-
 // 获取GMT时间
 string getGMTTime();
-
+string toGMTTime(time_t t);
 // 获取文件拓展名
 string getFileExtension(string name);
 bool is_dir(string path);
 
 // 对全局变量MIME_TYPE进行初始化
 int HTTP_attr_init();
+
+string getLastModified(string filePath)
+{
+    struct stat buf;
+    if( stat(filePath.c_str(), &buf) !=0 )
+    {
+        return "";
+    }
+    return toGMTTime(buf.st_mtim.tv_sec);
+}
+#include "http/request.h"
+#include "http/respone.h"
 
 
 
@@ -57,11 +66,23 @@ string getFileExtension(string name)
     
 }
 
+string toGMTTime(time_t t)
+{
+    struct tm* timeInfo;
+    char tmp[64]={0};
+    string res;
+    timeInfo = gmtime(&t);
+    strftime(tmp,sizeof(tmp),"%a, %d %b %Y %H:%M:%S GMT",timeInfo);
+    res = tmp;
+    
+    return res;
+}
+
 string getGMTTime()
 {
     time_t rawTime;
     struct tm* timeInfo;
-    char tmp[30]={0};
+    char tmp[64]={0};
     string res;
     time(&rawTime);
     timeInfo = gmtime(&rawTime);
@@ -97,7 +118,7 @@ int HTTP_attr_init()
 
     // media
     MIME_TYPE["mp4"] = "video/mpeg4";
-    MIME_TYPE["mp3"] = "audio/mp3";
+    MIME_TYPE["mp3"] = "audio/mpeg";
     MIME_TYPE["wav"] = "audio/wav";
 
     // application
