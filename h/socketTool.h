@@ -61,6 +61,15 @@ int InitServer(int *sock,char * addr,unsigned short port)
     sockAddr.sin_family=AF_INET;
     sockAddr.sin_port=htons(port);
     sockAddr.sin_addr.s_addr=inet_addr(addr);
+
+    int reuse = 1;
+
+    struct linger lg;
+    lg.l_linger = 5;
+    lg.l_onoff = 0;
+
+    setsockopt(*sock, SOL_SOCKET, SO_REUSEADDR, (const void *)&reuse, sizeof(int));
+    setsockopt(*sock, SOL_SOCKET, SO_LINGER, (void*)&lg, sizeof(lg));
     bind(*sock,(struct sockaddr*)&sockAddr,sizeof(sockAddr));
     return listen(*sock,20);
     

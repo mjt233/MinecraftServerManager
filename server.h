@@ -90,14 +90,18 @@ void * entrance(void * arg)
     int client_socket;
     struct sockaddr_in cli_addr;
     socklen_t socklen = sizeof( cli_addr );
+
+    int count = 0;
     while (1)
     {
         int *client_socket;
         pthread_t thid;
         client_socket =  new int;
+        cout << "connect: " <<++count << endl;
         if ( ( *client_socket = accept( SER_SOCKET, (struct sockaddr*)&cli_addr, &socklen ) ) ==-1 )
         {
             cout<< "\r connect accept Error! " << endl << "$ ";
+            cout << strerror(errno) << endl; 
             break;
         }
         // 开启线程取处理
@@ -131,7 +135,8 @@ void * process_connect(void * arg)
             break;
         case HTTP_GET:
             http_GET(IDInfo);
-            break;
+            while ( read( sock_fd, buffer, 1024 ) > 0 );
+            close(sock_fd);
         case SERID_EXIST:
             write(sock_fd, "SERID_EXIST",12);
             close(sock_fd);
@@ -151,7 +156,7 @@ void * process_connect(void * arg)
         default:
             break;
     }
-    close(sock_fd);
+    shutdown( sock_fd, SHUT_RDWR );
     free(arg);
 }
 
@@ -223,6 +228,7 @@ void * controller_read_socket(void * Controller_arg)
             break;
         }
         write( ctl->ser->socket, buffer, strlen(buffer) );
+        memset(buffer, 0, sizeof(buffer));
     }
     if( !ctl->isClose )
     {

@@ -116,5 +116,6 @@ class Server : public Client{
 
 /* 全局变量 */
 map<int,Server *> SerList;        // 服务器列表
+map<string,string> MIME_TYPE;
 pthread_mutex_t SerMutex;       // 服务器多线程列表读写锁
 int SER_SOCKET;

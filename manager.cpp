@@ -17,8 +17,10 @@ using namespace std;
 #include "server.h"
 int main()
 {
+    mime_type_init();
     pthread_t thid;
     pthread_create( &thid, NULL, entrance, NULL );
+    
     console_command();
     // 等待连接处理
     pthread_join(thid,NULL );

@@ -6,4 +6,4 @@ clean :
 run :
 	@./manager
 check-net:
-	@netstat -anlp | grep 6636
+	@netstat -anlp | grep tcp | grep 6636
