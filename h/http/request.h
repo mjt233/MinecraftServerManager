@@ -1,10 +1,15 @@
 #define _RANGE_FIRST 0
 #define _RANGE_LAST 1
 class HTTPRequestInfo : public HTTPInfo{
+    protected:
+        // 分析GET参数
+        int AnalysisGETArgs();
     public:
         string url = "/";
         string type = "GET";
-        
+        string args;
+        map<string,string> GET;
+        map<string,string> POST;
         int range_first = -1,range_last = -1;
 
 
@@ -13,6 +18,7 @@ class HTTPRequestInfo : public HTTPInfo{
          * 失败返回 HTTP_REQUEST_ERROR
          */
         int AnalysisRequest(char * request);
+
 
         // 根据对象当前属性创建HTTP请求报文
         const char * getRequest();
@@ -60,11 +66,11 @@ int HTTPRequestInfo::AnalysisRequest(char * request)
     int tag = 0,
         count = 0,
         line = 0;
-    char key[512] = {0},
-        value[512] = {0},
+    char key[1024] = {0},
+        value[1024] = {0},
         *p = key;
     bool firstSpace = true;
-    for (size_t i = 0; i < len && count < 512; i++)
+    for (size_t i = 0; i < len && count < 1024; i++)
     {
         switch ( request[i] )
         {
@@ -86,6 +92,14 @@ int HTTPRequestInfo::AnalysisRequest(char * request)
                             url = deescapeURL(url);
                             if( *url.begin() != '/' )
                                 url = "/" + url;
+                            int pos = url.find('?');
+                            if( pos > 0)
+                            {
+                                args = url.substr( pos + 1 , url.length() - pos +1 );
+                                url = url.substr( 0, pos - 1 );
+                                AnalysisGETArgs();
+                            }
+
                             break;
                         }
                     }
@@ -131,6 +145,41 @@ int HTTPRequestInfo::AnalysisRequest(char * request)
         return HTTP_REQUEST_READ_SUCCESS;
     }
 }
+
+int HTTPRequestInfo::AnalysisGETArgs()
+{
+    size_t len = args.length();
+    char key[1024];
+    char value[1024];
+    char *p;
+    size_t count = 0;
+    p = key;
+    for (size_t i = 0 ; i < len; i++)
+    {
+        switch (args[i])
+        {
+            case '=':
+                p[count] = 0;
+                p = value;
+                count = 0;
+                break;
+            case '&':
+                p[count] = 0;
+                GET[key] = value;
+                p = key;
+                count = 0;
+                break;
+            default:
+                p[count++] = args[i];
+                break;
+        }
+    }
+    GET[key] = value;
+    return 1;
+
+    
+}
+
 
 const char * HTTPRequestInfo::getRequest()
 {

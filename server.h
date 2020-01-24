@@ -99,8 +99,7 @@ void * entrance(void * arg)
         client_socket =  new int;
         if ( ( *client_socket = accept( SER_SOCKET, (struct sockaddr*)&cli_addr, &socklen ) ) ==-1 )
         {
-            cout<< "\r connect accept Error! " << endl << "$ ";
-            cout << strerror(errno) << endl; 
+            cout<< "\rServer Exit.... " << endl << "$ ";
             break;
         }
         // 开启线程取处理
@@ -135,7 +134,6 @@ void * process_connect(void * arg)
         case HTTP_GET:
             http_GET(IDInfo);
             while ( read( sock_fd, buffer, 1024 ) > 0 );
-            cout << "http client exit " << endl;
             close(sock_fd);
         case SERID_EXIST:
             write(sock_fd, "SERID_EXIST",12);

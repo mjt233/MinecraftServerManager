@@ -32,6 +32,13 @@ void http_GET(baseInfo &IDInfo)
     int code = HTTPRequest.getRequestFilePath(filePath);
     int count = 0;
     HTTPRespone.header["Connection"] = "close";
+
+    map<string,string>::iterator i = HTTPRequest.GET.begin();
+    for(; i != HTTPRequest.GET.end() ; i++)
+    {
+        cout << "key: " << i->first << " value: " << i->second << endl;
+    }
+
     switch (code)
     {
         case 200:

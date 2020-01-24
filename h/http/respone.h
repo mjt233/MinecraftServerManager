@@ -101,6 +101,9 @@ int HTTPResponeInfo::outputFile(int fd, string filePath, int range_first, int ra
         range_first = 0;
     }
     
+    // 指针定位到文件末尾以计算文件长度
+    fseek( fp, 0, SEEK_END );
+
     if( range_last > 0 )
     {
         // 计算从起始到结束需要读取多少字节
@@ -108,7 +111,6 @@ int HTTPResponeInfo::outputFile(int fd, string filePath, int range_first, int ra
     }else
     {
         // 失败或缺省当做到文件结尾结束
-        fseek( fp, 0, SEEK_END );
         content_length = ftell(fp) - range_first;
     }
     
@@ -120,14 +122,14 @@ int HTTPResponeInfo::outputFile(int fd, string filePath, int range_first, int ra
 
     header["Content-Length"] = to_string( content_length );
 
-    // 文件流指针定位到Range起始位置
-    fseek( fp, range_first, SEEK_SET );
     
     header["Content-Range"] = " bytes " + \
                 to_string(range_first) +"-"+ \
                 to_string( range_last <= 0 ? ( content_length -1 ): range_last ) + "/" + \
-                to_string(content_length);
+                to_string( ftell(fp) );
     header["Last-Modified"] = getLastModified(filePath);
+    code = 206;
+    info = "Partial Content";
     if (sendHeader(fd) <= 0)
     {
         return -1;
@@ -135,13 +137,17 @@ int HTTPResponeInfo::outputFile(int fd, string filePath, int range_first, int ra
     size_t count = 0;
     char buffer[1024];
     int success = 1;
+
+    // 文件流指针定位到Range起始位置
+    fseek( fp, range_first, SEEK_SET );
     while ( !feof(fp) )
     {
-        // 这里的content_length将作为 剩余需要读取的字节数
-        content_length -= count;
 
         // 每次最多读1024
         count = fread( buffer, 1, content_length > 1024 ? 1024 : content_length, fp );
+
+        // 这里的content_length将作为 剩余需要读取的字节数
+        content_length -= count;
 
         // 文件读取或socket发送出错时
         if( count <= 0 || write( fd, buffer, count ) <= 0 )
