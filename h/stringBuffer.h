@@ -2,8 +2,8 @@
 * File name: stringBuffer.h
 * Description:  C语言缓冲字符串的实现
 * Author: mjt233@qq.com
-* Version: 1.0
-* Date: 2019.1.16
+* Version: 2.0
+* Date: 2019.1.27
 * History: none
 *********************************************************************************************************/
 #include<stdlib.h>
@@ -30,6 +30,7 @@ struct buffer_node * buffer_node_create( size_t node_data_size );               
 char * buffer_get_string( struct stringBuffer * buffer);                                // 获取字符缓冲串的字符，返回的指针需要free()释放内存
 void buffer_append (stringBuffer * buffer, char * str);                                 // 向字符缓冲串中追加内容
 void buffer_stat(stringBuffer * buffer);                                                // 显示字符缓冲串的信息 调试用
+size_t buffer_strlen(stringBuffer buffer);                                              // 获取缓冲字符串中的字符个数
 int buffer_reconstruct(stringBuffer * buffer, size_t max_len, size_t node_max_size);    // 重建一个字符缓冲串
 
 /** 
@@ -132,14 +133,19 @@ char * buffer_get_string( struct stringBuffer * buffer)
         return NULL;
     }
     char *res;
-    res = ( char * )malloc( buffer->cur_len * buffer->max_len +1 );
-    memset( res, 0,sizeof(res) );
-
-    int count;
+    size_t len = ( buffer->cur_len - 1 ) * buffer->node_max_size + buffer->tail->cur_len + 1 ;
+    res = ( char * )malloc( len );
+    if ( !res )
+    {
+        return NULL;
+    }
+    memset( res, 0, len );
+    size_t count = 0;
     while (p)
     {
         strncat( res, p->data, p->cur_len );
-        p = p->next;
+        count += p->cur_len;
+        p = p -> next;
     }
     return res;
 }
@@ -148,22 +154,25 @@ char * buffer_get_string( struct stringBuffer * buffer)
  * 输出到控制台显示字符缓冲串的信息 调试用
  * @param stringBuffer buffer 目标缓冲buffer
  */
-void buffer_stat(stringBuffer * buffer)
+void buffer_stat(stringBuffer * buffer,int showData)
 {
 
     buffer_node *bn = buffer->head;
     puts("-------------BufferInfo-------------");
-    printf("data:");
-    while (bn)
+    if ( showData )
     {
-        printf("%s ",bn->data);
-        bn = bn->next;
-        if(bn)
+        printf("data:");
+        while (bn)
         {
-            printf("| ");
+            printf("%s %ld ",bn->data,bn->cur_len);
+            bn = bn->next;
+            if(bn)
+            {
+                printf("| ");
+            }
         }
     }
-    printf("\nlength:%ld\n",buffer->cur_len);
+    printf("\n已生成节点数:%ld 每个节点的大小:%ld\n",buffer->cur_len,buffer->max_len);
     puts("------------------------------------");
 }
 
