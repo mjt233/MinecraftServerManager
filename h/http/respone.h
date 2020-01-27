@@ -27,6 +27,7 @@ class HTTPResponeInfo : public HTTPInfo{
 
 
 
+
 // 生成HTTP响应报文header
 const char * HTTPResponeInfo::getRespone()
 {

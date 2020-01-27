@@ -16,6 +16,7 @@ using namespace std;
 #include "classFunDef.h"
 #include "console.h"
 #include "server.h"
+
 int main()
 {
     // 忽略处理断开的socket或管道,防止程序退出

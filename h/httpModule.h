@@ -10,6 +10,7 @@ list<string> INDEX;
 #define HTTP_REQUEST_ERROR 0
 
 
+
 class HTTPInfo{
     protected :
         string HTTPMsg;

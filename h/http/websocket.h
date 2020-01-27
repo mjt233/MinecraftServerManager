@@ -204,7 +204,6 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
 
 
 
-
 int WebSocket::wsHandShake()
 {
     if ( HTTPRequest.header["Connection"].find("Upgrade") == -1 || HTTPRequest.header["Upgrade"] != "websocket" || HTTPRequest.header["Sec-WebSocket-Key"] == "")
