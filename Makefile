@@ -1,5 +1,5 @@
 compile : manager.cpp
-	g++ manager.cpp -o manager -lpthread
+	g++ manager.cpp -o manager -lpthread -lssl -lcrypto
 	@echo "compile complete"
 clean :
 	@rm manager

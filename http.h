@@ -14,6 +14,7 @@ void http_GET(baseInfo &IDInfo)
     buffer[0] = 0;
 
     // 读取后续的完整HTTP报文
+    // 因为是GET请求,不考虑请求体的内容了
     read(IDInfo.socket, buffer , 1024);
 
     // 解析HTTP请求头信息
@@ -31,8 +32,6 @@ void http_GET(baseInfo &IDInfo)
     FILE *fp = NULL;
     int code = HTTPRequest.getRequestFilePath(filePath);
     int count = 0;
-    HTTPRespone.header["Connection"] = "close";
-
     map<string,string>::iterator i = HTTPRequest.GET.begin();
     for(; i != HTTPRequest.GET.end() ; i++)
     {
@@ -42,18 +41,22 @@ void http_GET(baseInfo &IDInfo)
     switch (code)
     {
         case 200:
-            if ( HTTPRequest.header["Range"] != "" )
-            {
-                HTTPRespone.outputFile(IDInfo.socket, filePath, HTTPRequest.getRange(_RANGE_FIRST), HTTPRequest.getRange(_RANGE_LAST));
-            }else
-            {
-                HTTPRespone.outputFile(IDInfo.socket, filePath);
-            }
-            
+            HTTPRespone.outputFile(IDInfo.socket, filePath);
             break;
-        
+        case 206:
+            HTTPRespone.outputFile(IDInfo.socket, filePath, HTTPRequest.getRange(_RANGE_FIRST), HTTPRequest.getRange(_RANGE_LAST));
+            break;
         default:
-            HTTPRespone.sendErrPage(IDInfo.socket, code, filePath);
+
+            if ( HTTPRequest.url.substr(0,3) != "/ws" )
+            {
+                HTTPRespone.sendErrPage(IDInfo.socket, code, filePath);
+            }
+            else
+            {
+                cout << "创建WebSocket对象" << endl;
+                WebSocket ws(HTTPRequest, IDInfo.socket);
+            }
             break;
     }
 }

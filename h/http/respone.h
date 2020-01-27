@@ -5,10 +5,15 @@ class HTTPResponeInfo : public HTTPInfo{
 
         // 根据当前属性生成HTTP响应报文
         const char * getRespone();
+        const char * getRespone(int autoAddContentType);
         HTTPResponeInfo()
         {
             header["Cache-Control"] = "no-cache";
             header["Accept-Ranges"] = "bytes";
+            header["Connection"] = "close";
+            header["ZhiFuBaoHongBao"] = "科技部新年快乐哈";
+            header["ZhiFuBaoHongBao~"] = "ke ji bu xing nian kuai le ha";
+            header["ZhiFuBaoHongBaoEnglishTranslate"] = "ke ji bu Happy new year ha";
         }
         // Return the number written, or -1
         int sendHeader(int fd);
@@ -30,6 +35,19 @@ const char * HTTPResponeInfo::getRespone()
     HTTPMsg = "HTTP/1.1 "+ to_string(code) +" "+ info + "\r\n";
     map<string,string>::iterator i = header.begin();
     header["Content-Type"] = header["Content-Type"] == "" ? "text/html" : header["Content-Type"] ;
+    for(; i != header.end() ; i++)
+    {
+        HTTPMsg += i->first + ": " + i->second + "\r\n";
+    }
+    HTTPMsg += "\r\n";
+    return HTTPMsg.c_str();
+}
+
+// 生成HTTP响应报文header
+const char * HTTPResponeInfo::getRespone( int autoAddContentType )
+{
+    HTTPMsg = "HTTP/1.1 "+ to_string(code) +" "+ info + "\r\n";
+    map<string,string>::iterator i = header.begin();
     for(; i != header.end() ; i++)
     {
         HTTPMsg += i->first + ": " + i->second + "\r\n";
@@ -164,7 +182,8 @@ int HTTPResponeInfo::sendErrPage(int fd, int code, string info)
 {
     this->code = code;
     this->info = info;
-    header["Content-Type"] = "text/html";
+    header["Content-Type"] = "text/html;charset=UTF-8";
+    header["Connection"] = "close";
     string msg = to_string(code) + " " + info;
     string data = "<html>"
     "<head><title>ERROR</title></head>"

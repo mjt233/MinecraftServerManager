@@ -202,7 +202,9 @@ int HTTPRequestInfo::getRequestFilePath(string &path)
     tmp = site_root;
     tmp += url;
     FILE * fp;
+    int range = 0;
 
+    range = ( header["Range"] != "" );
     // 首先判断是否为文件夹
     if ( is_dir( tmp ) )
     {
@@ -214,7 +216,12 @@ int HTTPRequestInfo::getRequestFilePath(string &path)
             {
                 fclose(fp);
                 path = tmp + "/" + *i;
-                return 200;
+                if( range )
+                {
+                    return 206;
+                }else{
+                    return 200;
+                }
             }
         }
 
@@ -227,7 +234,12 @@ int HTTPRequestInfo::getRequestFilePath(string &path)
         {
             fclose(fp);
             path = tmp;
-            return 200;
+            if( range )
+            {
+                return 206;
+            }else{
+                return 200;
+            }
         }else{
             path = "NOT FOUND";
             return 404;
