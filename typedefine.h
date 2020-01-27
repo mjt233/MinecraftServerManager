@@ -108,6 +108,25 @@ class Server : public Client{
             pthread_mutex_lock(&ctlMutex);
             CTLList.push_back(ctl);
             pthread_mutex_unlock(&ctlMutex);
+            pthread_mutex_lock(&sbMutex);
+            char * strbuf = buffer_get_string(&sb);
+            pthread_mutex_unlock(&sbMutex);
+            if ( !strbuf )
+            {
+                cout << "malloc error" << endl;
+            }
+            size_t count = 0 , len = strlen(strbuf),t;
+            while ( count < len )
+            {
+                t = write( ctl->socket, strbuf+count, len - count );
+                if( t<=0 )
+                {
+                    break;
+                }
+                count += t;
+            }
+            free(strbuf);
+            
         }
         void removeController(Controller *ctl);
         int Broadcast(char *buf,size_t len);

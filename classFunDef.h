@@ -14,8 +14,8 @@ Server::Server( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID,
     pthread_mutex_init(&sbMutex, NULL);             // 缓存字符串锁
     pthread_mutex_init(&ctlMutex, NULL);            // 控制器列表锁
 
-    // 创建一个8K大小的缓冲字符串 16个结点 每个结点512字节的容量
-    sb = buffer_create(16,512);
+    // 创建一个4k大小的缓冲字符串 8个结点 每个结点512字节的容量
+    sb = buffer_create(8,512);
 
     // 将自己添加到服务器列表
     pthread_mutex_lock(&SerMutex);
@@ -61,12 +61,10 @@ void Server::removeController(Controller *ctl)
 {
     pthread_mutex_lock(&ctlMutex);
     list<Controller*>::iterator i = CTLList.begin();
-    cout << "Target: " << ctl->socket << endl;
     for( ; i != CTLList.end() ;)
     {
         if ( *i == ctl )
         {
-            cout << "fount:" << (*i)->socket << endl;
             CTLList.erase(i++);
             break;
         }else
@@ -111,16 +109,15 @@ Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID
     // 判断服务器是否为同一用户创建
     if( ser->UsrID != UsrID )
     {
-        cout << "Controller ID: "<< UsrID << " RequestID: " << ser->UsrID << endl << "$ ";
         fflush(stdout);
         pthread_mutex_unlock(&SerMutex);
         write( socket, "FORBIDDEN", 10 );
         stop();
     }else
     {
-        ser->addController(this);
         write( socket, "OK", 2 );
         pthread_create( &thid, NULL, controller_read_pipe, this );
+        ser->addController(this);
         pthread_create( &thid2, NULL, controller_read_socket, this );
         pthread_mutex_unlock(&SerMutex);
     }
@@ -132,7 +129,6 @@ void Controller::stop()
     close(pipe_fd[1]);
     close(pipe_fd[0]);
     shutdown( socket, SHUT_RDWR );
-    SerList[SerID]->removeController(this);
 }
 
 Controller::~Controller()
