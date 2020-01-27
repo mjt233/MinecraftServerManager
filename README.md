@@ -2,7 +2,7 @@
 ---  
 ### 目录
 * [简介](#explain)
-* [功能](#function)
+* [特点](#feature)
 * [编译](#compile)
 * [其他平台](#otheros)
 * [安全性](#security)
@@ -14,15 +14,16 @@
 
 ### 简介 <span id="explain"></span>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;顾名思义，这个是为了方便Minecraft腐竹管理服务器而开发的程序，通过Web服务来同时管理多个服务器。
-### 功能 <span id="function"></span>
+### 特点 <span id="feature"></span>
 * 支持多控制端同时接入
+* 支持HTTP，WebSocket协议
 * 具有Web控制台（待完善）
 * 兼容所有具有控制台的服务器
-* 轻量级-只有一个可执行文件，集成大量功能
-
+* 轻量级-只有一个可执行文件
+* 分布服务器集中管理（暂未开发）
 
 ### 编译 <span id="compile"></span>
-######&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在64位 Linux平台下使用命令行(目前仅支持Linux)
+###### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在64位 Linux平台下使用命令行(目前仅支持Linux)
 ```shell
 $ make  
 ```
