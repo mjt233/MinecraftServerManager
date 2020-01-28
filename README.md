@@ -17,11 +17,13 @@
 ### 特点 <span id="feature"></span>
 * 支持多控制端同时接入
 * 支持HTTP，WebSocket协议
-* 具有Web控制台（待完善）
 * 兼容所有具有控制台的服务器
 * 轻量级-只有一个可执行文件
 * 分布服务器集中管理（暂未开发）
-
+* 内置端口映射（暂未开发）
+* Web控制台（暂未开发）
+* 同时支持外部服务器接入与本机创建服务器（暂未开发）
+* 文件在线编辑（暂未开发）
 ### 编译 <span id="compile"></span>
 ###### &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在64位 Linux平台下使用命令行(目前仅支持Linux)
 ```shell

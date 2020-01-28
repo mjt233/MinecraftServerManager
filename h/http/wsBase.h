@@ -17,7 +17,7 @@
 string base64Encode(string is, bool newLine);
 string base64Encode_char(char * is, bool newLine);
 string toSHA1(string inputString);
-
+void invert(char * buf, size_t len);
 string base64Encode(string is, bool newLine)
 {
     BIO *bmem = NULL;
