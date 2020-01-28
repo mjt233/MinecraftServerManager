@@ -6,15 +6,14 @@
 #include<list>
 #include<map>
 #include<signal.h>
-#include"h/socketTool.h"
-#include"h/stringBuffer.h"
-
 using namespace std;
-/* 全局变量定义 */
-#include "typedefine.h"
-#include "http.h"
-#include "classFunDef.h"
-#include "console.h"
+
+#include"h/base/socketTool.h"
+#include"h/base/stringBuffer.h"
+#include "h/base/typedefine.h"
+#include "h/protocols/http.h"
+#include "h/class/classFunDef.h"
+#include "h/base/console.h"
 #include "server.h"
 
 int main()
@@ -27,7 +26,7 @@ int main()
     pthread_t thid;
 
     // 创建连接入口处理线程
-    pthread_create( &thid, NULL, entrance, NULL );
+    pthread_create( &thid, NULL, manager_server_start, NULL );
     
     // 控制台命令
     console_command();

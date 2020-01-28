@@ -4,7 +4,8 @@
 * Author: mjt233@qq.com
 * Version: 2.0
 * Date: 2019.1.27
-* History: none
+* History: 
+*     [v:2.0 d:2019.1.27] -修复了1.0版本的buffer_get_string功能的内存分配错误导致的越界访问
 *********************************************************************************************************/
 #include<stdlib.h>
 #include<string.h>

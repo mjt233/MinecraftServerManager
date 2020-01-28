@@ -1,3 +1,16 @@
+/********************************************************************************************************
+* File name: urlscape.h
+* Description:  URL编码转换
+* Author: Mike江
+* Link: https://blog.csdn.net/tennysonsky/article/details/54176877
+*********************************************************************************************************/
+
+
+
+#ifndef URL_SCAPE
+
+#endif // !URL_SCAPE
+
 char dec2hexChar(short int n)
 {
     if (0 <= n && n <= 9)

@@ -1,6 +1,62 @@
-#include"wsBase.h"
+/********************************************************************************************************
+* File name: websocket.h
+* Description:  C++ WebSocket协议基本功能的实现
+* Author: mjt233@qq.com
+* Version: 1.0
+* Date: 2019.1.28
+* History: none
+* Reference0 : https://blog.csdn.net/p312011150/article/details/79758068
+* Reference1 : https://blog.csdn.net/lell3538/article/details/60470558
+*********************************************************************************************************/
 
-// 参考文章链接 https://blog.csdn.net/p312011150/article/details/79758068
+
+
+
+// WebSocket数据帧定义
+
+/*           
+ 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
++-+-+-+-+-------+-+-------------+-------------------------------+
+|F|R|R|R| opcode|M| Payload len |    Extended payload length    |
+|I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
+|N|V|V|V|       |S|             |   (if payload len==126/127)   |
+| |1|2|3|       |K|             |                               |
++-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
+|     Extended payload length continued, if payload len == 127  |
++ - - - - - - - - - - - - - - - +-------------------------------+
+|                               |Masking-key, if MASK set to 1  |
++-------------------------------+-------------------------------+
+| Masking-key (continued)       |          Payload Data         |
++-------------------------------- - - - - - - - - - - - - - - - +
+:                     Payload Data continued ...                :
++ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
+|                     Payload Data continued ...                |
++---------------------------------------------------------------+
+
+[FIN(1) + RSV*3(3) + opcode(4)]
+[MAS(1) + Payload-len(7)]
+    or add 
+        2*[PayLoad len]
+    or add
+        8*[PayLoad len]
+4*[Masking-key]
+
+6/8/14 Byte
+
+[Data....]
+
+*/
+
+
+
+
+
+
+#ifndef HTTP_WEB_SOCKET
+
+#endif // !HTTP_WEB_SOCKET
+
+#include"wsBase.h"
 
 typedef struct wsHeadFrame{
     char opcode;

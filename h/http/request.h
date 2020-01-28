@@ -1,3 +1,18 @@
+/********************************************************************************************************
+* File name: respone.h
+* Description:  HTTP模块的请求体解析
+* Author: mjt233@qq.com
+* Version: 1.0
+* Date: 2019.1.28
+* History: none
+*********************************************************************************************************/
+
+
+
+#ifndef HTTP_REQUEST
+
+#endif // !HTTP_REQUEST
+
 #define _RANGE_FIRST 0
 #define _RANGE_LAST 1
 class HTTPRequestInfo : public HTTPInfo{
@@ -75,9 +90,9 @@ int HTTPRequestInfo::AnalysisRequest(char * request)
         switch ( request[i] )
         {
         case '\r':
+            break;
         case '\n':
-            // 连续遇到两次\r和\n表示一行结束
-            if ( ++tag == 2 && count != 0)
+            if (count != 0)
             {
                 // 首行判断
                 if( line == 0 )
@@ -89,6 +104,8 @@ int HTTPRequestInfo::AnalysisRequest(char * request)
                             // 通过HTTP报文首行获取请求URL
                             key[i] = 0;
                             url = key;
+
+                            // 解决URL编码问题
                             url = deescapeURL(url);
                             if( *url.begin() != '/' )
                                 url = "/" + url;

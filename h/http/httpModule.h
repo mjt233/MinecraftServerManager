@@ -1,6 +1,23 @@
+/********************************************************************************************************
+* File name: httpModule.h
+* Description:  HTTP功能支持模块
+* Author: mjt233@qq.com
+* Version: 1.0
+* Date: 2019.1.28
+* History: none
+*********************************************************************************************************/
 
+
+#ifndef HTTP_MODLUE
+
+#endif // !HTTP_MODLUE
+
+// MIME_TYPE表
 map<string,string> MIME_TYPE;
+
+// 默认index索引
 list<string> INDEX;
+
 #include <dirent.h>
 #include "urlescape.h"
 #include <sys/stat.h>
@@ -38,9 +55,9 @@ string getLastModified(string filePath)
     return toGMTTime(buf.st_mtim.tv_sec);
 }
 
-#include "http/request.h"
-#include "http/respone.h"
-#include "http/websocket.h"
+#include "request.h"
+#include "respone.h"
+#include "websocket.h"
 
 
 

@@ -1,35 +1,14 @@
-/*           
- 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7 
-+-+-+-+-+-------+-+-------------+-------------------------------+
-|F|R|R|R| opcode|M| Payload len |    Extended payload length    |
-|I|S|S|S|  (4)  |A|     (7)     |             (16/64)           |
-|N|V|V|V|       |S|             |   (if payload len==126/127)   |
-| |1|2|3|       |K|             |                               |
-+-+-+-+-+-------+-+-------------+ - - - - - - - - - - - - - - - +
-|     Extended payload length continued, if payload len == 127  |
-+ - - - - - - - - - - - - - - - +-------------------------------+
-|                               |Masking-key, if MASK set to 1  |
-+-------------------------------+-------------------------------+
-| Masking-key (continued)       |          Payload Data         |
-+-------------------------------- - - - - - - - - - - - - - - - +
-:                     Payload Data continued ...                :
-+ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - +
-|                     Payload Data continued ...                |
-+---------------------------------------------------------------+
+/********************************************************************************************************
+* File name: websocket.h
+* Description:  使用OpenSSL库计算SHA1与BASE64编码
+* Author: SDU-Leon
+* Link : https://blog.csdn.net/lell3538/article/details/60470558
+*********************************************************************************************************/
 
-[FIN(1) + RSV*3(3) + opcode(4)]
-[MAS(1) + Payload-len(7)]
-    or add 
-        2*[PayLoad len]
-    or add
-        8*[PayLoad len]
-4*[Masking-key]
 
-6/8/14 Byte
-data
+#ifndef HTTP_WS_BASE
 
-*/
-
+#endif // !HTTP_WS_BASE
 
 #include<openssl/sha.h>
 #include<openssl/bio.h>
@@ -94,7 +73,7 @@ string toSHA1(string inputString)
 }
 
 
-// 输入二进制
+// 输入二进制字符
 string base64Encode_char(char * is, bool newLine)
 {
     BIO *bmem = NULL;

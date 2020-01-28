@@ -1,3 +1,17 @@
+/********************************************************************************************************
+* File name: respone.h
+* Description:  HTTP模块的响应体功能实现
+* Author: mjt233@qq.com
+* Version: 1.0
+* Date: 2019.1.28
+* History: none
+*********************************************************************************************************/
+
+
+
+#ifndef HTTP_RESPONE
+
+#endif // !HTTP_RESPONE
 class HTTPResponeInfo : public HTTPInfo{
     public :
         int code = 200;
