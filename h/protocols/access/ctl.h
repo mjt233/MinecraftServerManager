@@ -6,6 +6,11 @@
 * Date: 2019.1.28
 * History: none
 *********************************************************************************************************/
+
+void * controller_read_pipe(void * Controller_arg);                 // 从Controller中的pipe读取数据并发送到socket
+void * controller_read_socket(void * Controller_arg);               // 从Controller中的socket读取数据并发送到所接入的Server的socket
+void controller_join(baseInfo &IDInfo);                             // 控制器接入
+
 void controller_join(baseInfo &IDInfo)
 {
     Controller *ctl = new Controller(IDInfo.SerID, IDInfo.UsrID, IDInfo.socket);

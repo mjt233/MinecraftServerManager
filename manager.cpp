@@ -11,11 +11,9 @@ using namespace std;
 #include"h/base/socketTool.h"
 #include"h/base/stringBuffer.h"
 #include "h/base/typedefine.h"
-#include "h/protocols/http.h"
 #include "h/class/classFunDef.h"
 #include "h/base/console.h"
-#include "server.h"
-
+#include "h/server.h"
 int main()
 {
     // 忽略处理断开的socket或管道,防止程序退出

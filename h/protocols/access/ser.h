@@ -10,6 +10,9 @@
 void * server_read(void * arg);                                     // 从Server的socket读取数据并处理
 void * server_write(void * arg);                                    // 往Server的socket写入数据
 void * server_write_ctl_pipe(void * arg);                           // 往Server的Controller的pipe_fd[1]写入数据
+void server_join(baseInfo &IDInfo);                                 // 服务器接入
+
+
 void server_join(baseInfo &IDInfo)
 {
 
