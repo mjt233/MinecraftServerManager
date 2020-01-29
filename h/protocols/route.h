@@ -48,9 +48,9 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
     }
 
     // 判断服务器ID是否冲突
-    pthread_mutex_lock(&SerMutex);
+    SerMutex.lock();
     isServerExist = SerList.count( IDInfo.SerID );
-    pthread_mutex_unlock(&SerMutex);
+    SerMutex.unlock();
     if ( tag == SERVER && isServerExist )
     {
         return SERID_EXIST;

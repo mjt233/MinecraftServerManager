@@ -42,17 +42,16 @@ void console_command()
 
 void show_list()
 {
-    if ( pthread_mutex_trylock(&SerMutex) !=0 )
+    if ( !SerMutex.try_lock() )
     {
         cout << "Lock SER Error " << endl;
         return;
-
     }
     cout << "=========Server List==========" << endl;
     for( map<int,Server*>::iterator i = SerList.begin() ; i != SerList.end() ; i++ )
     {
         cout << "SerID: " << i->second->SerID << "  UsrID: " <<  i->second->UsrID << endl;
-        if ( pthread_mutex_trylock(&i->second->ctlMutex) != 0)
+        if ( !i->second->ctlMutex.try_lock() )
         {
             cout << "Lock CTL Error " << endl;
             break;
@@ -62,8 +61,8 @@ void show_list()
         {
             cout << "   CTL:" << count++ << " socket: " << (*j)->socket << endl;
         }
-        pthread_mutex_unlock(&i->second->ctlMutex);
+        i->second->ctlMutex.unlock();
     }
     cout << "=========    END    ==========" << endl;
-    pthread_mutex_unlock(&SerMutex);
+    SerMutex.unlock();
 }

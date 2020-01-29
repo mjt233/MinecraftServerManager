@@ -16,21 +16,16 @@
 // 初始化锁和线程
 Server::Server( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID, socket)
 {
-
-    // 初始化锁
-    pthread_mutex_init(&sbMutex, NULL);             // 缓存字符串锁
-    pthread_mutex_init(&ctlMutex, NULL);            // 控制器列表锁
-
     // 创建一个4k大小的缓冲字符串 8个结点 每个结点512字节的容量
     sb = buffer_create(8,512);
 
     // 将自己添加到服务器列表
-    pthread_mutex_lock(&SerMutex);
+    SerMutex.lock();
     SerList.insert( make_pair(SerID, this ) );
-    pthread_mutex_unlock(&SerMutex);
+    SerMutex.unlock();
 
     // 接受socket数据线程
-    pthread_create( &thid, NULL, server_read, this );       
+    th1 = new thread(&Server::server_read,this);
 }
 
 // 将数据广播给所有接入的Controller
@@ -40,33 +35,25 @@ int Server::Broadcast(char * buf, size_t len)
     list<Controller*>::iterator itor,itorend;
     int count = 0;
 
-    // 即将发送给控制器的信息,多线程参数结构体
-    CTLMessage *CTLM;
-
-    pthread_mutex_lock(&ctlMutex);
+    ctlMutex.lock();
 
     itor = CTLList.begin();
     itorend = CTLList.end();
+    string msg = buf;
     for (;itor != itorend; itor++)
     {
-        CTLM = new CTLMessage;
-        memset(CTLM->buffer, 0,sizeof(CTLM->buffer));
-        strncpy( CTLM->buffer, buf, len );
-
-        CTLM->ctl = *itor;
         ++count;
         // 防止管道写满导致的阻塞
-        pthread_create( &CTLM->thid, NULL, server_write_ctl_pipe, (void *)CTLM );
+        thread *th = new thread(&Server::server_write_ctl_pipe, this, *itor, msg);
     }
-
-    pthread_mutex_unlock(&ctlMutex);
+    ctlMutex.unlock();
     return count;
 }
 
 // 从控制器列表中移除一个控制器
 void Server::removeController(Controller *ctl)
 {
-    pthread_mutex_lock(&ctlMutex);
+    ctlMutex.lock();
     list<Controller*>::iterator i = CTLList.begin();
     for( ; i != CTLList.end() ;)
     {
@@ -79,12 +66,15 @@ void Server::removeController(Controller *ctl)
             i++;
         }
     }
-    pthread_mutex_unlock(&ctlMutex);
+    ctlMutex.unlock();
 }
 
 
 Server::~Server()
 {    
+    // 释放线程对象
+    delete(th1);
+
     // 将自身设置为不可用
     disable = true;
 
@@ -110,23 +100,23 @@ Server::~Server()
 /**************************Controller类**************************/
 Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID, socket )
 {
-    pthread_mutex_lock(&SerMutex);
+    SerMutex.lock();
     ser = SerList[SerID];
 
     // 判断服务器是否为同一用户创建
     if( ser->UsrID != UsrID )
     {
         fflush(stdout);
-        pthread_mutex_unlock(&SerMutex);
+        SerMutex.unlock();
         write( socket, "FORBIDDEN", 10 );
         stop();
     }else
     {
         write( socket, "OK", 2 );
-        pthread_create( &thid, NULL, controller_read_pipe, this );
+        th1 = new thread(&Controller::controller_read_pipe, this);
         ser->addController(this);
-        pthread_create( &thid2, NULL, controller_read_socket, this );
-        pthread_mutex_unlock(&SerMutex);
+        th2 = new thread(&Controller::controller_read_socket, this);
+        SerMutex.unlock();
     }
 }
 
@@ -141,6 +131,8 @@ void Controller::stop()
 Controller::~Controller()
 {
     ser->removeController(this);
+    delete(th1);
+    delete(th2);
 }
 
 

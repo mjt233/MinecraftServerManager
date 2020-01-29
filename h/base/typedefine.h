@@ -45,7 +45,7 @@ void controller_join(baseInfo &IDInfo);                             // 控制器
 
 
 /* 业务处理 */
-void * manager_server_start(void * arg);                                        // 连接入口函数
+void * manager_server_start(void * arg);                            // 连接入口函数
 void * server_read(void * arg);                                     // 从Server的socket读取数据并处理
 void * server_write(void * arg);                                    // 往Server的socket写入数据
 void * server_write_ctl_pipe(void * arg);                           // 往Server的Controller的pipe_fd[1]写入数据
@@ -93,48 +93,30 @@ class Client{
 
 class Controller : public Client{
     public :
-        pthread_t thid,thid2;
+        thread *th1,*th2;
         Server *ser;
         Controller( int SerID, int UsrID, int socket );
         ~Controller();
+        void controller_read_pipe();                 // 从Controller中的pipe读取数据并发送到socket
+        void controller_read_socket();               // 从Controller中的socket读取数据并发送到所接入的Server的socket
+
         void stop();
 };
 
 
 class Server : public Client{
     public :
+        thread *th1;
+        mutex sbMutex,ctlMutex;
         list<Controller*> CTLList;
-        pthread_mutex_t sbMutex;
-        pthread_mutex_t ctlMutex;
         pthread_t thid,thid2;
         stringBuffer sb;
         Server( int SerID, int UsrID, int socket );
         ~Server();
-        void addController(Controller *ctl)
-        {
-            pthread_mutex_lock(&ctlMutex);
-            CTLList.push_back(ctl);
-            pthread_mutex_unlock(&ctlMutex);
-            pthread_mutex_lock(&sbMutex);
-            char * strbuf = buffer_get_string(&sb);
-            pthread_mutex_unlock(&sbMutex);
-            if ( !strbuf )
-            {
-                cout << "malloc error" << endl;
-            }
-            size_t count = 0 , len = strlen(strbuf),t;
-            while ( count < len )
-            {
-                t = write( ctl->socket, strbuf+count, len - count );
-                if( t<=0 )
-                {
-                    break;
-                }
-                count += t;
-            }
-            free(strbuf);
-            
-        }
+        void server_read();                                     // 从Server的socket读取数据并处理
+        void server_write();                                    // 往Server的socket写入数据
+        void server_write_ctl_pipe(Controller *ctl, string msg);
+        void addController(Controller *ctl);
         void removeController(Controller *ctl);
         int Broadcast(char *buf,size_t len);
 };
@@ -142,5 +124,5 @@ class Server : public Client{
 
 /* 全局变量 */
 map<int,Server *> SerList;        // 服务器列表
-pthread_mutex_t SerMutex;       // 服务器多线程列表读写锁
+mutex SerMutex;       // 服务器多线程列表读写锁
 int SER_SOCKET;

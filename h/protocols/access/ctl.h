@@ -7,30 +7,27 @@
 * History: none
 *********************************************************************************************************/
 void invert(char * buf, size_t len);
-void * controller_read_pipe(void * Controller_arg);                 // 从Controller中的pipe读取数据并发送到socket
-void * controller_read_socket(void * Controller_arg);               // 从Controller中的socket读取数据并发送到所接入的Server的socket
-void controller_join(baseInfo &IDInfo);                             // 控制器接入
+void controller_join(baseInfo &IDInfo);
 
 void controller_join(baseInfo &IDInfo)
 {
     Controller *ctl = new Controller(IDInfo.SerID, IDInfo.UsrID, IDInfo.socket);
-    pthread_join(ctl->thid, NULL);
-    pthread_join(ctl->thid2, NULL);
+    ctl->th1->join();
+    ctl->th2->join();
     delete( ctl );
 }
 
 
-void * controller_read_pipe(void * Controller_arg)
+void Controller::controller_read_pipe()
 {
-    Controller *ctl = (Controller*)Controller_arg;
     char buffer[DEFAULT_CHAR_BUFFER_SIZE];
-    while ( read( ctl->pipe_fd[0], buffer, 1024 ) > 0)
+    while ( read( this->pipe_fd[0], buffer, 1024 ) > 0)
     {
-        if( ctl->isClose )
+        if( this->isClose )
         {
             break;
         }
-        write( ctl->socket, buffer, strlen(buffer) );
+        write( this->socket, buffer, strlen(buffer) );
         memset(buffer, 0, sizeof(buffer));
     }
 }
@@ -48,9 +45,9 @@ void * controller_read_pipe(void * Controller_arg)
 
 
 */
-void * controller_read_socket(void * Controller_arg)
+void Controller::controller_read_socket()
 {
-    Controller *ctl = (Controller*)Controller_arg;
+    Controller *ctl = this;
     char buffer[DEFAULT_CHAR_BUFFER_SIZE];
     char sigl[5];
     unsigned char opcode;
@@ -84,7 +81,6 @@ void * controller_read_socket(void * Controller_arg)
                 cout << endl;
                 break;
             default:
-                cout << "unknow opcode: " << (unsigned int)opcode << endl;
                 ctl->stop();
                 break;
         }

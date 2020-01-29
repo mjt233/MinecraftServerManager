@@ -19,7 +19,6 @@ void * manager_server_start(void * arg)
     fflush(stdout);
     // 初始化锁
     memset(&SerMutex, 0, sizeof(SerMutex));
-    pthread_mutex_init(&SerMutex, NULL);
 
     int client_socket;
     struct sockaddr_in cli_addr;
