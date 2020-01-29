@@ -34,17 +34,20 @@ int Server::Broadcast(char * buf, size_t len)
     // 向每个Controller的管道中写入数据
     list<Controller*>::iterator itor,itorend;
     int count = 0;
-
     ctlMutex.lock();
-
+    CTLMessage *msg;
     itor = CTLList.begin();
     itorend = CTLList.end();
-    string msg = buf;
     for (;itor != itorend; itor++)
     {
         ++count;
+        msg = (CTLMessage*)malloc(sizeof(CTLMessage));
+        msg->ctl = *itor;
+        msg->msg = buf;
+
         // 防止管道写满导致的阻塞
-        thread *th = new thread(&Server::server_write_ctl_pipe, this, *itor, msg);
+        pthread_create(&msg->thid, NULL, server_write_ctl_pipe, msg);
+        
     }
     ctlMutex.unlock();
     return count;

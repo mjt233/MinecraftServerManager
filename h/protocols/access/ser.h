@@ -6,8 +6,9 @@
 * Date: 2019.1.28
 * History: none
 *********************************************************************************************************/
-
+void * server_write_ctl_pipe(void * arg);
 void server_join(baseInfo &IDInfo);                                 // 服务器接入
+
 void server_join(baseInfo &IDInfo)
 {
 
@@ -50,9 +51,11 @@ void Server::server_write()
 
 }
 
-void Server::server_write_ctl_pipe(Controller *ctl, string msg)
+void * server_write_ctl_pipe(void * arg)
 {
-    write( ctl->pipe_fd[1], msg.c_str(), msg.length() );
+    CTLMessage *a = (CTLMessage*)arg;
+    write( a->ctl->socket, a->msg.c_str(), a->msg.length() );
+    free(arg);
 }
 
 void Server::addController(Controller *ctl)

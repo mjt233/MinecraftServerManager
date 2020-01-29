@@ -33,7 +33,7 @@ typedef struct baseInfo{
 typedef struct CTLMessage{
     pthread_t thid;
     Controller *ctl;
-    char buffer[DEFAULT_CHAR_BUFFER_SIZE];
+    string msg;
 }CTLMessage;
 
 
@@ -115,7 +115,6 @@ class Server : public Client{
         ~Server();
         void server_read();                                     // 从Server的socket读取数据并处理
         void server_write();                                    // 往Server的socket写入数据
-        void server_write_ctl_pipe(Controller *ctl, string msg);
         void addController(Controller *ctl);
         void removeController(Controller *ctl);
         int Broadcast(char *buf,size_t len);

@@ -42,7 +42,9 @@ void Controller::controller_read_pipe()
 |                            other Data                                         |
 |                                                                               |
 +-+-------------+---------------------------------------------------------------+
-
+opcode操作码定义
+0x0: 服务器控制台纯文本传输
+0x1: 
 
 */
 void Controller::controller_read_socket()
