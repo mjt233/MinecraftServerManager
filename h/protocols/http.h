@@ -50,9 +50,13 @@ void http_GET(baseInfo &IDInfo)
     int code = HTTPRequest.getRequestFilePath(filePath);
     int count = 0;
     map<string,string>::iterator i = HTTPRequest.GET.begin();
-    for(; i != HTTPRequest.GET.end() ; i++)
+    if(DEBUG_MODE)
     {
-        cout << "key: " << i->first << " value: " << i->second << endl;
+        for(; i != HTTPRequest.GET.end() ; i++)
+        {
+            cout << "key: " << i->first << " value: " << i->second << endl;
+        }
+        cout << "URL:" << HTTPRequest.url << " code :  " << code << endl;
     }
 
     switch (code)
@@ -70,8 +74,12 @@ void http_GET(baseInfo &IDInfo)
             }
             else
             {
-                cout << "创建WebSocket对象" << endl;
+                if(DEBUG_MODE)
+                {
+                    cout << "创建WebSocket对象" << endl;
+                }
                 WebSocket ws(HTTPRequest, IDInfo.socket);
+                ws.wsHandShake();
             }
             break;
     }

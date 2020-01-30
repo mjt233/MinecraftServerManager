@@ -10,6 +10,69 @@
 
 /*  各类的方法定义     */
 
+/**************************Client类**************************/
+Client::Client( int SerID, int UsrID, int socket )
+{
+    // 初始化资源状态锁定
+    this->SerID = SerID;
+    this->UsrID = UsrID;
+    this->socket = socket;
+    pipe(pipe_fd);
+}
+
+void Client::setDisable()
+{
+    statMutex.lock();
+    disable = true;
+    statMutex.unlock();
+}
+
+
+void Client::setClose()
+{
+    statMutex.lock();
+    isClose = true;
+    statMutex.unlock();
+}
+int Client::writePipeData(frame_builder frame,const char * buf)
+{
+    size_t count = 0,total = 0;
+    pipeIOMutex.lock();
+    send(pipe_fd[1], frame.build(), 5, MSG_WAITALL);
+    while ( total < frame.length )
+    {
+        count = write(pipe_fd[1], buf, frame.length);
+        if ( count <=0 || count > frame.length )
+        {
+            break;
+        }
+        total += count;
+    }
+    pipeIOMutex.unlock();
+    return total;
+}
+
+// 向对象的socket描述符写数据
+int Client::writeSocketData(unsigned char opcode, const char * buf, unsigned int len)
+{
+    size_t count = 0,total = 0;
+    netIOMutex.lock();
+    frame_builder frame;
+    frame.opcode = opcode;
+    frame.length = len;
+    send(this->socket, frame.build(), 5, MSG_WAITALL);
+    while ( total < frame.length )
+    {
+        count = write(this->socket, buf, frame.length);
+        if ( count <=0 || count > frame.length )
+        {
+            break;
+        }
+        total += count;
+    }
+    netIOMutex.unlock();
+    return total;
+}
 
 /**************************Server类**************************/
 
@@ -46,7 +109,7 @@ int Server::Broadcast(char * buf, size_t len)
         msg->msg = buf;
 
         // 防止管道写满导致的阻塞
-        pthread_create(&msg->thid, NULL, server_write_ctl_pipe, msg);
+        pthread_create(&msg->thid, NULL, server_write_ctl_socket, msg);
         
     }
     ctlMutex.unlock();
@@ -94,6 +157,9 @@ Server::~Server()
         sleep(1);
     }
 
+    // 清空缓冲字符串
+    buffer_reconstruct(&sb,3,3);
+
     // 将该Server从服务器列表中移除
     SerList.erase(SerID);
 }
@@ -116,7 +182,6 @@ Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID
     }else
     {
         write( socket, "OK", 2 );
-        th1 = new thread(&Controller::controller_read_pipe, this);
         ser->addController(this);
         th2 = new thread(&Controller::controller_read_socket, this);
         SerMutex.unlock();

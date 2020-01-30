@@ -33,7 +33,6 @@ void buffer_append (stringBuffer * buffer, char * str);                         
 void buffer_stat(stringBuffer * buffer);                                                // 显示字符缓冲串的信息 调试用
 size_t buffer_strlen(stringBuffer buffer);                                              // 获取缓冲字符串中的字符个数
 int buffer_reconstruct(stringBuffer * buffer, size_t max_len, size_t node_max_size);    // 重建一个字符缓冲串
-
 /** 
  * 创建并初始化一个buffer
  * @param size_t max_len 数据缓冲最大结点数

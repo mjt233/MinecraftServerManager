@@ -35,7 +35,7 @@ void console_command()
         {
             cout << "< Unknow command.Try use \"help\" or \"?\" to get help" << endl;
         }
-        cout << endl << "$ ";
+        cout << endl;
         fflush(stdout);
     }
 }

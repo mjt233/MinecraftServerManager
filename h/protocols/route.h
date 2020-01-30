@@ -80,13 +80,9 @@ void * protocols_route(void * arg)
     {
         case SERVER:
             server_join(IDInfo);
-            cout << "\r服务器退出" << endl << "$ ";
-            fflush(stdout);
             break;
         case CONTROLLER:
             controller_join(IDInfo);
-            cout << "\r控制器退出" << endl << "$ ";
-            fflush(stdout);
             break;
         case COMMAND:
             break;
@@ -95,18 +91,22 @@ void * protocols_route(void * arg)
             while ( read( sock_fd, buffer, 1024 ) > 0 );
             close(sock_fd);
         case SERID_EXIST:
+            DEBUG_OUT("服务器接入请求被拒绝,服务器ID已存在");
             write(sock_fd, "SERID_EXIST",12);
             close(sock_fd);
             break;
         case SERID_UNEXIST:
+            DEBUG_OUT("控制器接入请求被拒绝,服务器ID不存在");
             write(sock_fd, "SERID_UNEXIST",14);
             close(sock_fd);
             break;
         case SERID_FORMAT_INCOREET:
+            DEBUG_OUT("请求被拒绝,服务器ID格式不正确");
             write(sock_fd, "SERID_FORMAT_INCOREET",22);
             close(sock_fd);
             break;
         case USRID_FORMAT_INCOREET:
+            DEBUG_OUT("请求被拒绝,用户ID不存在");
             write(sock_fd, "USRID_FORMAT_INCOREET",22);
             close(sock_fd);
             break;

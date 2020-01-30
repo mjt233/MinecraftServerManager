@@ -8,6 +8,8 @@
 #include<signal.h>
 #include<thread>
 #include<mutex>
+bool DEBUG_MODE = false;
+#define DEBUG_OUT(msg) if(DEBUG_MODE){ cout << msg << endl; }
 using namespace std;
 
 #include "h/base/socketTool.h"
@@ -16,8 +18,13 @@ using namespace std;
 #include "h/base/classFunDef.h"
 #include "h/base/console.h"
 #include "h/server.h"
-int main()
+
+int main(int argc, char *argv[])
 {
+    if( argc == 2 )
+    {
+        DEBUG_MODE = true;
+    }
     // 忽略处理断开的socket或管道,防止程序退出
     signal(SIGPIPE, SIG_IGN);
 

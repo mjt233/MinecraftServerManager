@@ -18,11 +18,11 @@
 #define USRID_FORMAT_INCOREET -3                    // 用户ID格式错误
 #define SERID_UNEXIST -4                            // 服务器ID不存在
 #define SERID_EXIST -5                              // 服务器ID已存在
-#define MEMORY_OVERFLOW -10                         // 内存不足 无法申请内存
+typedef unsigned char frame_head_data[5];
 class Client;
 class Controller;
 class Server;
-
+class frame_builder;
 /* 结构体定义  */
 typedef struct baseInfo{
     int UsrID;
@@ -48,13 +48,13 @@ void controller_join(baseInfo &IDInfo);                             // 控制器
 void * manager_server_start(void * arg);                            // 连接入口函数
 void * server_read(void * arg);                                     // 从Server的socket读取数据并处理
 void * server_write(void * arg);                                    // 往Server的socket写入数据
-void * server_write_ctl_pipe(void * arg);                           // 往Server的Controller的pipe_fd[1]写入数据
+void * server_write_ctl_socket(void * arg);                         // 往Server的Controller的socket写入数据
 void * controller_read_pipe(void * Controller_arg);                 // 从Controller中的pipe读取数据并发送到socket
 void * controller_read_socket(void * Controller_arg);               // 从Controller中的socket读取数据并发送到所接入的Server的socket
 
+void invert(char * buf, size_t len);
 
-
-
+#include "frame_builder.h"
 
 
 
@@ -67,39 +67,24 @@ class Client{
             pipe_fd[2];         // 数据缓冲管道
         bool isClose = false,   // 管道与socket流是否已被关闭
              disable = false;   // 是否不可用
-        pthread_mutex_t statMutex;  // 资源状态锁
-        Client( int SerID, int UsrID, int socket )
-        {
-            // 初始化资源状态锁定
-            pthread_mutex_init(&statMutex,NULL);
-            this->SerID = SerID;
-            this->UsrID = UsrID;
-            this->socket = socket;
-            pipe(pipe_fd);
-        }
-        void setDisable()
-        {
-            pthread_mutex_lock(&statMutex);
-            disable = true;
-            pthread_mutex_unlock(&statMutex);
-        }
-        void setClose()
-        {
-            pthread_mutex_lock(&statMutex);
-            isClose = true;
-            pthread_mutex_unlock(&statMutex);
-        }
+        mutex statMutex;        // 资源状态锁
+        mutex netIOMutex;       // socket读写锁
+        mutex pipeIOMutex;      // 管道读写锁
+        Client( int SerID, int UsrID, int socket );
+        void setDisable();
+        void setClose();
+        int writePipeData(frame_builder frame,const char * buf);
+        int writeSocketData(unsigned char opcode, const char * buf, unsigned int len);
 };
 
 class Controller : public Client{
     public :
         thread *th1,*th2;
         Server *ser;
+        mutex msgMutex;
         Controller( int SerID, int UsrID, int socket );
         ~Controller();
-        void controller_read_pipe();                 // 从Controller中的pipe读取数据并发送到socket
         void controller_read_socket();               // 从Controller中的socket读取数据并发送到所接入的Server的socket
-
         void stop();
 };
 
@@ -114,7 +99,6 @@ class Server : public Client{
         Server( int SerID, int UsrID, int socket );
         ~Server();
         void server_read();                                     // 从Server的socket读取数据并处理
-        void server_write();                                    // 往Server的socket写入数据
         void addController(Controller *ctl);
         void removeController(Controller *ctl);
         int Broadcast(char *buf,size_t len);

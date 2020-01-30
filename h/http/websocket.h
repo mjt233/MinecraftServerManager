@@ -264,8 +264,12 @@ int WebSocket::wsHandShake()
 {
     if ( HTTPRequest.header["Connection"].find("Upgrade") == -1 || HTTPRequest.header["Upgrade"] != "websocket" || HTTPRequest.header["Sec-WebSocket-Key"] == "")
     {
+        if(DEBUG_MODE)
+        {
+            cout << "400 Bad Request" << endl;
+            cout << HTTPRequest.getRequest() << endl;
+        }
         HTTPRespone.sendErrPage(fd, 400, "Bad Request");
-        cout << HTTPRequest.getRequest() << endl;
         return 0;
     }
     HTTPRespone.header.clear();
