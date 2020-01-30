@@ -58,12 +58,22 @@ int Client::writeSocketData(unsigned char opcode, const char * buf, unsigned int
     size_t count = 0,total = 0;
     netIOMutex.lock();
     frame_builder frame;
-    frame.opcode = opcode;
-    frame.length = len;
-    send(this->socket, frame.build(), 5, MSG_WAITALL);
+    frame.build(opcode, len);
+    if (DEBUG_MODE)
+    {
+        printf("FIN:%d opcode:%d length:%d\n",frame.FIN,frame.opcode,frame.length);
+        for (size_t i = 0; i < 5; i++)
+        {
+            printf("%02x ", frame.f_data[i]);
+        }
+    }
+    
+    cout << endl;
+    
+    send(this->socket, frame.f_data, 5, MSG_WAITALL);
     while ( total < frame.length )
     {
-        count = write(this->socket, buf, frame.length);
+        count = write(this->socket, buf + total, frame.length);
         if ( count <=0 || count > frame.length )
         {
             break;
@@ -199,7 +209,6 @@ void Controller::stop()
 Controller::~Controller()
 {
     ser->removeController(this);
-    delete(th1);
     delete(th2);
 }
 

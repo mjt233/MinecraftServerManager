@@ -103,7 +103,6 @@ void Controller::controller_read_socket()
         switch (f_builder.opcode)
         {
             case 0:
-                write( ctl->ser->pipe_fd[1], f_builder.build(), 5 );
                 while ( total < f_builder.length )
                 {
                     count = read( ctl->socket, buffer, f_builder.length );
@@ -111,9 +110,13 @@ void Controller::controller_read_socket()
                     {
                         break;
                     }
+                    if (DEBUG_MODE)
+                    {
+                        cout << "[From:CTL]count->" << count << endl;
+                    }
+                    
                     cout << count << endl;
                     ctl->ser->writeSocketData(0x0, buffer, count);
-                    write( ctl->ser->socket, buffer, count);
                     total += count;
                 }
                 cout << endl;

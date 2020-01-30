@@ -4,10 +4,6 @@ class frame_builder{
         unsigned char opcode,FIN;
         unsigned int length;
         frame_builder(){};
-        frame_builder(unsigned char opcode,unsigned int lenth)
-        {
-            build(opcode, length);
-        }
         unsigned char * build()
         {
             build(opcode,length);
@@ -15,9 +11,12 @@ class frame_builder{
         }
         unsigned char * build(unsigned char opcode,unsigned int lenth)
         {
+            int len = lenth;
+            this->length = len;
+            FIN = 1;
             f_data[0] = 0x80;
             f_data[0] += opcode & 0x7F;
-            memcpy(f_data+1, &length, 4);
+            memcpy(f_data+1, &len, 4);
             invert((char*)f_data+1,4);
             return f_data;
         }
