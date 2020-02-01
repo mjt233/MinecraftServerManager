@@ -5,9 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>WebSocket测试</title>
-    <script src="ws.js"></script>
+    <style>
+    #output{
+        margin: 0 10%;
+        width: 80%;
+        height: 600px;
+        padding: 0;
+    }
+    #input{
+        padding: 0;
+        margin: 0 0 0 10%;
+        width: 60%;
+    }
+    </style>
 </head>
 <body>
-    <h1>WebSocket测试</h1>
+    <textarea type="text" id="output" cols="30" rows="10"></textarea>
+    <input type="text" id="input">
+    <button type="button" onclick="send()">发送</button>
 </body>
+<script src="ws.js"></script>
 </html>

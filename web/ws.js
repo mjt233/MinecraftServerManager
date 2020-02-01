@@ -1,35 +1,30 @@
-function test(msg){
-    var ws = new WebSocket("ws://127.0.0.1:6636/ws?SerID=1&UsrID=12345");
+var input = document.getElementById("input")
+var output = document.getElementById("output")
+ws = null;
+function Connect(){
+    ws = new WebSocket("ws://" + location.host + "/ws?SerID=1&UsrID=12345");
     ws.onopen = function(e){
-        ws.send("list\n")
+        appendText("连接成功\n")
     }
-
     ws.onclose = function(e){
-        console.log("onclose",e)
+        appendText("连接断开\n")
     }
-
-    ws.onmessage = function(e){
-        console.log(e.data);
-    }
-}
-
-function testBig(){
-    var ws = new WebSocket("ws://127.0.0.1:6636/ws");
-    ws.onopen = function(e){
-        console.log("连上了!");
-        var data = "233333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333123456789"
-        ws.send(data);
-    }
-
-    ws.onclose = function(e){
-        console.log("onclose",e)
-    }
-
-    ws.onmessage = function(e){
-        console.log("message",e.data);
-    }
-
     ws.onerror = function(e){
-        console.log("error",e);
+        appendText("连接出错\n")
+    }
+    ws.onmessage = function(e){
+        appendText(e.data);
     }
 }
+
+function send(){
+    var data = input.value + "\n";
+    ws.send(data)
+}
+
+function appendText(str){
+    output.value += str
+    output.scrollTop = output.scrollHeight;
+}
+
+Connect();
