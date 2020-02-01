@@ -110,18 +110,14 @@ void Controller::controller_read_socket()
                     {
                         break;
                     }
-                    if (DEBUG_MODE)
-                    {
-                        cout << "[From:CTL]count->" << count << endl;
-                    }
                     
-                    cout << count << endl;
                     ctl->ser->writeSocketData(0x0, buffer, count);
                     total += count;
                 }
                 cout << endl;
                 break;
             default:
+                DEBUG_OUT("控制器:无效操作码");
                 ctl->stop();
                 break;
         }

@@ -59,18 +59,12 @@ int Client::writeSocketData(unsigned char opcode, const char * buf, unsigned int
     netIOMutex.lock();
     frame_builder frame;
     frame.build(opcode, len);
-    if (DEBUG_MODE)
+    
+    if ( send(this->socket, frame.f_data, 5, MSG_WAITALL) != 5)
     {
-        printf("FIN:%d opcode:%d length:%d\n",frame.FIN,frame.opcode,frame.length);
-        for (size_t i = 0; i < 5; i++)
-        {
-            printf("%02x ", frame.f_data[i]);
-        }
+        cout << "控制发送帧时发生错误!" << endl;
+        return 0;
     }
-    
-    cout << endl;
-    
-    send(this->socket, frame.f_data, 5, MSG_WAITALL);
     while ( total < frame.length )
     {
         count = write(this->socket, buf + total, frame.length);
@@ -115,9 +109,16 @@ int Server::Broadcast(char * buf, size_t len)
     {
         ++count;
         msg = (CTLMessage*)malloc(sizeof(CTLMessage));
+        msg->msg = (char*)malloc(len);
+        msg->len = len;
+        if ( !msg || !msg->msg)
+        {
+            cout << "广播失败" << endl;
+            return 0;
+        }
+        
         msg->ctl = *itor;
-        msg->msg = buf;
-
+        strncpy(msg->msg, buf, len);
         // 防止管道写满导致的阻塞
         pthread_create(&msg->thid, NULL, server_write_ctl_socket, msg);
         
@@ -148,24 +149,26 @@ void Server::removeController(Controller *ctl)
 
 Server::~Server()
 {    
-    // 释放线程对象
-    delete(th1);
 
     // 将自身设置为不可用
-    disable = true;
+    setDisable();
 
     // 断开所有的控制器socket连接,使其触发stop()
+    ctlMutex.lock();
     list<Controller*>::iterator i = CTLList.begin();
     for (  ; i != CTLList.end(); i++)
     {
         shutdown( (*i)->socket, SHUT_RDWR );
     }
-
+    ctlMutex.unlock();
     // 等待全部控制器断开
     while( !CTLList.empty() )
     {
         sleep(1);
     }
+
+    // 释放线程对象
+    delete(th1);
 
     // 清空缓冲字符串
     buffer_reconstruct(&sb,3,3);

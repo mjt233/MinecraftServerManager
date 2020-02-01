@@ -64,8 +64,6 @@ void Server::server_read()
                     if ( count <= 0 || count > f_builder.length ) return;
 
                     buffer[count] = 0;
-                    cout << buffer << endl;
-
                     // 写入到缓冲字符串
                     this->sbMutex.lock();
                     buffer_append(&this->sb, buffer);
@@ -102,7 +100,8 @@ void Server::server_read()
 void * server_write_ctl_socket(void * arg)
 {
     CTLMessage *a = (CTLMessage*)arg;
-    a->ctl->writeSocketData(0x0, a->msg.c_str(), a->msg.length());
+    a->ctl->writeSocketData(0x0, a->msg, a->len);
+    free(a->msg);
     free(arg);
 }
 

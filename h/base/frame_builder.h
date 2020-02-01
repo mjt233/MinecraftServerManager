@@ -1,3 +1,4 @@
+typedef unsigned char frame_head_data[5];
 class frame_builder{
     public:
         frame_head_data f_data;

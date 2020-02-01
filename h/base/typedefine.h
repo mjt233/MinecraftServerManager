@@ -32,8 +32,9 @@ typedef struct baseInfo{
 
 typedef struct CTLMessage{
     pthread_t thid;
-    Controller *ctl;
-    string msg;
+    Controller *ctl = NULL;
+    size_t len;
+    char * msg = NULL;
 }CTLMessage;
 
 

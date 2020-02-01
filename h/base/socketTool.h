@@ -16,13 +16,13 @@
 #include<netdb.h>
 #include<netinet/in.h>
 
-int isDomainName(char * addr);
-int DNtoIP(char *DN,char *ip);
+int isDomainName(const char * addr);
+int DNtoIP(const char *DN,char *ip);
 
-int InitConnect(int *sock,char * addr,unsigned short port);
+int InitConnect(int *sock,const char * addr,unsigned short port);
 int InitServer(int *sock,char * addr,unsigned short port);
 
-int DNtoIP(char *DN,char *ip)
+int DNtoIP(const char *DN,char *ip)
 {
     struct hostent *host=gethostbyname(DN);
     if(!host)
@@ -34,7 +34,7 @@ int DNtoIP(char *DN,char *ip)
     }
 }
 
-int isDomainName(char * address)
+int isDomainName(const char * address)
 {
     int i;
     for(i=0;i<strlen(address);i++)
@@ -43,7 +43,7 @@ int isDomainName(char * address)
     return 0;
 }
 // Return 0 on success, -1 for errors. QWQ
-int InitConnect(int *sock,char * addr,unsigned short port)
+int InitConnect(int *sock,const char * addr,unsigned short port)
 {
     char ip[20];
     *sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
