@@ -11,7 +11,6 @@
 bool DEBUG_MODE = false;
 #define DEBUG_OUT(msg) if(DEBUG_MODE){ cout << msg << endl; }
 using namespace std;
-
 #include "h/base/socketTool.h"
 #include "h/base/stringBuffer.h"
 #include "h/base/typedefine.h"

@@ -5,9 +5,13 @@
 * Version: 2.0
 * Date: 2019.2.1
 * History: 
-    * 支持Windows
+    * 增加Windows支持
 *********************************************************************************************************/
-
+#ifndef WIN32
+    #ifndef linux
+    #define linux
+    #endif // !linux
+#endif // !WIN32
 
 #include<string.h>
 #include<unistd.h>

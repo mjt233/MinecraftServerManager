@@ -7,6 +7,8 @@
 * History: none
 *********************************************************************************************************/
 
+// 提前声明
+void * writeWebSocket(void * arg);
 
 /*  各类的方法定义     */
 
@@ -99,16 +101,14 @@ Server::Server( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID,
 int Server::Broadcast(char * buf, size_t len)
 {
     // 向每个Controller的管道中写入数据
-    list<Controller*>::iterator itor,itorend;
+    ;
     int count = 0;
-    ctlMutex.lock();
-    CTLMessage *msg;
-    itor = CTLList.begin();
-    itorend = CTLList.end();
-    for (;itor != itorend; itor++)
+    cliMutex.lock();
+    ThParam *msg;
+    for (list<Controller*>::iterator i = CTLList.begin() ;i != CTLList.end(); i++)
     {
         ++count;
-        msg = (CTLMessage*)malloc(sizeof(CTLMessage));
+        msg = (ThParam*)malloc(sizeof(ThParam));
         msg->msg = (char*)malloc(len);
         msg->len = len;
         if ( !msg || !msg->msg)
@@ -117,20 +117,37 @@ int Server::Broadcast(char * buf, size_t len)
             return 0;
         }
         
-        msg->ctl = *itor;
+        msg->ctl = *i;
         strncpy(msg->msg, buf, len);
         // 防止管道写满导致的阻塞
         pthread_create(&msg->thid, NULL, server_write_ctl_socket, msg);
-        
     }
-    ctlMutex.unlock();
+
+    for (list<WebSocket*>::iterator i = WSList.begin() ;i != WSList.end(); i++)
+    {
+        ++count;
+        msg = (ThParam*)malloc(sizeof(ThParam));
+        msg->msg = (char*)malloc(len);
+        msg->len = len;
+        if ( !msg || !msg->msg)
+        {
+            cout << "广播失败" << endl;
+            return 0;
+        }
+        
+        msg->ws = *i;
+        strncpy(msg->msg, buf, len);
+        // 防止管道写满导致的阻塞
+        pthread_create(&msg->thid, NULL, writeWebSocket, msg);
+    }
+    cliMutex.unlock();
     return count;
 }
 
 // 从控制器列表中移除一个控制器
-void Server::removeController(Controller *ctl)
+int Server::remove(Controller *ctl)
 {
-    ctlMutex.lock();
+    cliMutex.lock();
     list<Controller*>::iterator i = CTLList.begin();
     for( ; i != CTLList.end() ;)
     {
@@ -143,9 +160,10 @@ void Server::removeController(Controller *ctl)
             i++;
         }
     }
-    ctlMutex.unlock();
+    cliMutex.unlock();
+    return 1;
 }
-
+int closeWebSocket(WebSocket *ws);
 
 Server::~Server()
 {    
@@ -154,15 +172,19 @@ Server::~Server()
     setDisable();
 
     // 断开所有的控制器socket连接,使其触发stop()
-    ctlMutex.lock();
-    list<Controller*>::iterator i = CTLList.begin();
-    for (  ; i != CTLList.end(); i++)
+    cliMutex.lock();
+    
+    for ( list<Controller*>::iterator i = CTLList.begin() ; i != CTLList.end(); i++)
     {
         shutdown( (*i)->socket, SHUT_RDWR );
     }
-    ctlMutex.unlock();
+    for ( list<WebSocket*>::iterator i = WSList.begin() ; i != WSList.end(); i++)
+    {
+        closeWebSocket(*i);
+    }
+    cliMutex.unlock();
     // 等待全部控制器断开
-    while( !CTLList.empty() )
+    while( !CTLList.empty() && !WSList.empty() )
     {
         sleep(1);
     }
@@ -180,6 +202,7 @@ Server::~Server()
 
 
 /**************************Controller类**************************/
+
 Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID, socket )
 {
     SerMutex.lock();
@@ -195,7 +218,7 @@ Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID
     }else
     {
         write( socket, "OK", 2 );
-        ser->addController(this);
+        ser->add(this);
         th2 = new thread(&Controller::controller_read_socket, this);
         SerMutex.unlock();
     }
@@ -211,7 +234,7 @@ void Controller::stop()
 
 Controller::~Controller()
 {
-    ser->removeController(this);
+    ser->remove(this);
     delete(th2);
 }
 

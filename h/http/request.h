@@ -113,7 +113,7 @@ int HTTPRequestInfo::AnalysisRequest(char * request)
                             if( pos > 0)
                             {
                                 args = url.substr( pos + 1 , url.length() - pos +1 );
-                                url = url.substr( 0, pos - 1 );
+                                url = url.substr( 0, pos );
                                 AnalysisGETArgs();
                             }
 
@@ -200,7 +200,7 @@ int HTTPRequestInfo::AnalysisGETArgs()
 
 const char * HTTPRequestInfo::getRequest()
 {
-    HTTPMsg = "GET " + url + " HTTP/1.0\r\n";
+    HTTPMsg = "GET " + url + " HTTP/1.1\r\n";
     map<string,string>::iterator i = header.begin();
     for(; i != header.end() ; i++)
     {

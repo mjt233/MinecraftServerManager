@@ -57,7 +57,7 @@
 #endif // !HTTP_WEB_SOCKET
 
 #include"wsBase.h"
-
+class WebSocket;
 typedef struct wsHeadFrame{
     char opcode;
     bool FIN;
@@ -68,9 +68,11 @@ typedef struct wsHeadFrame{
 }wsHeadFrame;
 
 class WebSocket{
-    protected:
+    private:
         int fd;
     public :
+        int isClose = false;
+        mutex writeMutex;
         HTTPRequestInfo HTTPRequest;
         HTTPResponeInfo HTTPRespone;
         WebSocket(){};
@@ -80,8 +82,16 @@ class WebSocket{
         int readHeadFrame(wsHeadFrame &wsFrame);
         int readData(wsHeadFrame &wsFrame, char * buf, size_t len);
         int writeData(char * buf, size_t len);
+        int close();
+
 };
 
+// Returns 0 on success, -1 for errors.
+int WebSocket::close()
+{
+    isClose = true;
+    return shutdown(fd, SHUT_RDWR);
+}
 
 WebSocket::WebSocket(HTTPRequestInfo HTTPRequest ,int fd)
 {
@@ -96,6 +106,7 @@ WebSocket::WebSocket(HTTPRequestInfo HTTPRequest ,int fd)
 
 int WebSocket::writeData(char * buf, size_t len)
 {
+    writeMutex.lock();
     unsigned char *head_frame;
     int frame_length, masking_pos;
     char payload_len;
@@ -166,6 +177,7 @@ int WebSocket::writeData(char * buf, size_t len)
         count += i;
     }
     free(head_frame);
+    writeMutex.unlock();
     return count;
     
 }
@@ -254,6 +266,12 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
             return 0;
         }
     }
+
+    if( opcode != 0x1 && opcode !=0x0)
+    {
+        return 0;
+    }
+
     return 1;
 
 }
@@ -288,4 +306,61 @@ string WebSocket::getAcceptKey(string sec_key)
     unsigned char obuf[SHA_DIGEST_LENGTH + 1] = {0};
     SHA1( (unsigned char *)sec_key.c_str(), sec_key.length(), obuf );
     return base64Encode_char( (char*)obuf, false);
+}
+
+
+int Server::add(WebSocket *ws)
+{
+    if( isClose )
+    {
+        return 0;
+    }
+    cliMutex.lock();
+    WSList.push_back(ws);
+    cliMutex.unlock();
+    sbMutex.lock();
+    char * strbuf = buffer_get_string(&sb);
+    if( !strbuf )
+    {
+        sbMutex.unlock();
+        return 1;
+    }
+    sbMutex.unlock();
+    if ( !strbuf )
+    {
+        cout << "malloc error" << endl;
+    }
+    ws->writeData(strbuf,strlen(strbuf));
+    free(strbuf);
+    return 1;
+}
+
+// 从控制器列表中移除一个控制器
+int Server::remove(WebSocket *ws)
+{
+    cliMutex.lock();
+    list<WebSocket*>::iterator i = WSList.begin();
+    for( ; i != WSList.end() ;)
+    {
+        if ( *i == ws )
+        {
+            WSList.erase(i++);
+            break;
+        }else
+        {
+            i++;
+        }
+    }
+    cliMutex.unlock();
+}
+
+int closeWebSocket(WebSocket *ws)
+{
+    return ws->close();
+}
+
+void * writeWebSocket(void * arg)
+{
+    ThParam *tp = (ThParam*)arg;
+    tp->ws->writeData(tp->msg, tp->len);
 }

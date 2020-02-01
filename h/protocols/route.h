@@ -90,6 +90,7 @@ void * protocols_route(void * arg)
             http_GET(IDInfo);
             while ( read( sock_fd, buffer, 1024 ) > 0 );
             close(sock_fd);
+            break;
         case SERID_EXIST:
             DEBUG_OUT("服务器接入请求被拒绝,服务器ID已存在");
             write(sock_fd, "SERID_EXIST",12);

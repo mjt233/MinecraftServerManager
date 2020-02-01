@@ -51,7 +51,7 @@ void show_list()
     for( map<int,Server*>::iterator i = SerList.begin() ; i != SerList.end() ; i++ )
     {
         cout << "SerID: " << i->second->SerID << "  UsrID: " <<  i->second->UsrID << endl;
-        if ( !i->second->ctlMutex.try_lock() )
+        if ( !i->second->cliMutex.try_lock() )
         {
             cout << "Lock CTL Error " << endl;
             break;
@@ -61,7 +61,7 @@ void show_list()
         {
             cout << "   CTL:" << count++ << " socket: " << (*j)->socket << endl;
         }
-        i->second->ctlMutex.unlock();
+        i->second->cliMutex.unlock();
     }
     cout << "=========    END    ==========" << endl;
     SerMutex.unlock();

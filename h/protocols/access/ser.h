@@ -6,9 +6,9 @@
 * Date: 2019.1.28
 * History: none
 *********************************************************************************************************/
+class WebSocket;
 void * server_write_ctl_socket(void * arg);
 void server_join(baseInfo &IDInfo);                                 // 服务器接入
-
 void server_join(baseInfo &IDInfo)
 {
     DEBUG_OUT("服务器接入");
@@ -99,23 +99,23 @@ void Server::server_read()
 
 void * server_write_ctl_socket(void * arg)
 {
-    CTLMessage *a = (CTLMessage*)arg;
+    ThParam *a = (ThParam*)arg;
     a->ctl->writeSocketData(0x0, a->msg, a->len);
     free(a->msg);
     free(arg);
 }
 
-void Server::addController(Controller *ctl)
+int Server::add(Controller *ctl)
 {
-    ctlMutex.lock();
+    cliMutex.lock();
     CTLList.push_back(ctl);
-    ctlMutex.unlock();
+    cliMutex.unlock();
     sbMutex.lock();
     char * strbuf = buffer_get_string(&sb);
     if( !strbuf )
     {
         sbMutex.unlock();
-        return;
+        return 1;
     }
     sbMutex.unlock();
     if ( !strbuf )
@@ -124,5 +124,5 @@ void Server::addController(Controller *ctl)
     }
     ctl->writeSocketData(0x0, strbuf, strlen(strbuf));
     free(strbuf);
-    
+    return 1;
 }

@@ -23,6 +23,7 @@ class Client;
 class Controller;
 class Server;
 class frame_builder;
+class WebSocket;
 /* 结构体定义  */
 typedef struct baseInfo{
     int UsrID;
@@ -30,12 +31,13 @@ typedef struct baseInfo{
     int socket;
 }baseInfo;
 
-typedef struct CTLMessage{
+typedef struct ThParam{
     pthread_t thid;
     Controller *ctl = NULL;
+    WebSocket *ws = NULL;
     size_t len;
     char * msg = NULL;
-}CTLMessage;
+}ThParam;
 
 
 /* 连接路由 */
@@ -93,15 +95,18 @@ class Controller : public Client{
 class Server : public Client{
     public :
         thread *th1;
-        mutex sbMutex,ctlMutex;
+        mutex sbMutex,cliMutex;
         list<Controller*> CTLList;
+        list<WebSocket*> WSList;
         pthread_t thid,thid2;
         stringBuffer sb;
         Server( int SerID, int UsrID, int socket );
         ~Server();
         void server_read();                                     // 从Server的socket读取数据并处理
-        void addController(Controller *ctl);
-        void removeController(Controller *ctl);
+        int add(Controller *ctl);
+        int add(WebSocket *ws);
+        int remove(Controller *ctl);
+        int remove(WebSocket *ws);
         int Broadcast(char *buf,size_t len);
 };
 

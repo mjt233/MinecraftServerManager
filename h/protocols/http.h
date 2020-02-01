@@ -12,7 +12,28 @@
 
 // 处理GET请求
 void http_GET(baseInfo &IDInfo);
+void wsRead(WebSocket *ws,Server *ser)
+{
+    wsHeadFrame wsFrame;
+    char buffer[2048];
+    int count,total,t;
+    while ( ws->readHeadFrame(wsFrame) )
+    {
+        count = total = 0;
+        while ( total < wsFrame.payload_length )
+        {
+            t = wsFrame.payload_length - total;
+            count = ws->readData(wsFrame, buffer, t > 2048 ? 2048 : t);
+            if ( count <= 0 )
+            {
+                return;
+            }
+            ser->writeSocketData(0x0, buffer, count);
+            total += count;
+        }
 
+    }
+}
 
 
 
@@ -79,7 +100,55 @@ void http_GET(baseInfo &IDInfo)
                     cout << "创建WebSocket对象" << endl;
                 }
                 WebSocket ws(HTTPRequest, IDInfo.socket);
-                ws.wsHandShake();
+                if ( !ws.wsHandShake() )
+                {
+                    DEBUG_OUT("WebSocket握手失败");
+                    return;
+                }
+                int SerID = atoi( ws.HTTPRequest.GET["SerID"].c_str() );
+                int UsrID = atoi( ws.HTTPRequest.GET["UsrID"].c_str() );
+                if ( SerID == 0 || UsrID == 0 )
+                {
+                    char msg[] = "Unidentified SerID or UsrID";
+                    cout << "无效wsID" << endl;
+                    ws.writeData(msg,strlen(msg));
+                    return;
+                }
+                SerMutex.lock();
+                if( !SerList.count(SerID) )
+                {
+                    SerMutex.unlock();
+                    char msg[] = "Unexist Server";
+                    ws.writeData(msg,strlen(msg));
+                    return;
+                }
+                Server *ser = SerList[SerID];
+                if ( ser->UsrID != UsrID )
+                {
+                    SerMutex.unlock();
+                    char msg[] = "Authentication failed";
+                    ws.writeData(msg,strlen(msg));
+                    return;
+                }
+                if( !ser->add(&ws) )
+                {
+                    SerMutex.unlock();
+                    char msg[] = "join server failed";
+                    ws.writeData(msg,strlen(msg));
+                    return;
+                }
+                SerMutex.unlock();
+                thread wsReadTh(wsRead,&ws,ser);
+                wsReadTh.join();
+                if( !ws.isClose )
+                {
+                    ser->remove(&ws);
+                    ws.close();
+                    cout << "WebSocket主动退出" << endl;
+                }else{
+                    cout << "WebSocket被动退出" << endl;
+                    ws.close();
+                }
             }
             break;
     }
