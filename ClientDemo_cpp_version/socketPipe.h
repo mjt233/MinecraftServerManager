@@ -9,25 +9,35 @@
 
 #include<string.h>
 #include<unistd.h>
+#ifdef WIN32
+#include<winsock2.h>
+#include<windows.h>
+#pragma comment (lib, "ws2_32.lib")
+#define SOCKET_T SOCKET
+#endif // WIN32
+
+#ifdef linux
 #include<sys/socket.h>
 #include<arpa/inet.h>
 #include<netdb.h>
 #include<netinet/in.h>
+#define SOCKET_T int
+#endif // linux
 #include<cstdlib>
 #include<ctime>
 #include<thread>
 class socketPipe{
     private:
-        int SerSocket;
-        int AcceptSocket;
+        SOCKET_T SerSocket;
+        SOCKET_T AcceptSocket;
         unsigned short port;
-        int Connect(int *sock,unsigned short port);
-        int Listen(int *sock,unsigned short port);
+        int Connect(SOCKET_T *sock,unsigned short port);
+        int Listen(SOCKET_T *sock,unsigned short port);
         void DataRedirect();
         void Accept();
         std::thread *redTh;
     public:
-        int psocket;
+        SOCKET_T psocket;
         void write(const char * buf, size_t t);
         socketPipe()
         {
@@ -91,7 +101,7 @@ void socketPipe::Accept()
 }
 
 
-int socketPipe::Connect(int *sock,unsigned short port)
+int socketPipe::Connect(SOCKET_T *sock,unsigned short port)
 {
     *sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
     struct sockaddr_in sockAddr;
@@ -102,7 +112,7 @@ int socketPipe::Connect(int *sock,unsigned short port)
     return connect(*sock,(struct sockaddr*)&sockAddr,sizeof(sockAddr));
 }
 
-int socketPipe::Listen(int *sock,unsigned short port)
+int socketPipe::Listen(SOCKET_T *sock,unsigned short port)
 {
     struct sockaddr_in sockAddr;
     *sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
