@@ -26,11 +26,18 @@ int main(int argc, char const *argv[])
     char buffer[1024] ={0};
     fb.build(0,5);
     int sock;
-    if ( InitConnect(&sock,(char*)"www.xiaotao233.top",6636) !=0 )
+
+    if( argc != 3 )
+    {
+        cout << "usage:./client [addr] [access command]"<<endl;
+        return 1;
+    }
+
+    if ( InitConnect(&sock,argv[1],6636) !=0 )
     {
         cout << "connect error" << endl;
     }
-    write(sock,(char*)"CTL02333E12345E",15);
+    write(sock,argv[2],15);
     recv(sock, buffer, 2, MSG_WAITALL);
     if(strcmp(buffer,"OK"))
     {
@@ -44,10 +51,9 @@ int main(int argc, char const *argv[])
     while ( 1 )
     {
         cin >> input;
-        
+        input += "\n";
         send(sock, fb.build(0,input.length()), 5, MSG_WAITALL);
         send(sock, input.c_str(), input.length(), MSG_WAITALL);
-        
     }
     
     return 0;
@@ -61,42 +67,28 @@ void recvinfo(int sock)
     frame_builder fb;
     frame_head_data frame;
     int count,total,need_read;
-    while ( ( count = read(sock, buffer, 1024) ) > 0 )
+    while ( recv(sock, frame, 5, MSG_WAITALL) == 5 )
     {
-        for (size_t i = 0; i < count; i++)
+        total = 0;
+        fb.analyze(frame);
+        switch (fb.opcode)
         {
-            printf("%02x ",(unsigned char)buffer[i]);
+        case 0x0:
+                while ( total < fb.length )
+                {
+                    count = recv(sock, buffer, 1023, 0);
+                    buffer[count] = 0;
+                    total += count;
+                    cout << buffer;
+                }
+            break;
+        
+        default:
+            cout << "无效帧" << endl;
+            break;
         }
+        
         cout << endl;
     }
-    // char buffer[1024] ={0};
-    // frame_builder fb;
-    // frame_head_data frame;
-    // int count,total;
-    // while ( recv(sock, frame, 5, MSG_WAITALL) == 5 )
-    // {
-    //     count = 0;total = 0;
-    //     fb.analyze(frame);
-    //     if ( fb.FIN != 1 )
-    //     {
-    //         cout << "帧错误" << endl;
-    //         exit(1);
-    //     }
-    //     printf("opcode:%d length:%d\n",fb.opcode,fb.length);
-    //     while ( total < fb.length )
-    //     {
-    //         count = read(sock, buffer, (fb.length - total) > 1024? 1024:(fb.length - total) );
-    //         if(count <=0 || count > fb.length - total)
-    //         {
-    //             cout << "read错误" << endl;
-    //             exit(1);
-    //         }
-    //         buffer[count] = 0;
-    //         total += count;
-    //         cout << buffer << endl;
-    //         memset(buffer,0,1024);
-    //         printf("read count:%d\n",count);
-    //     }
-        
-    // }
+    exit(EXIT_SUCCESS);
 }
