@@ -19,6 +19,7 @@ void wsRead(WebSocket *ws,Server *ser)
     int count,total,t;
     while ( ws->readHeadFrame(wsFrame) )
     {
+        wsFrame.cur_read = 0;
         count = total = 0;
         while ( total < wsFrame.payload_length )
         {
@@ -31,7 +32,6 @@ void wsRead(WebSocket *ws,Server *ser)
             ser->writeSocketData(0x0, buffer, count);
             total += count;
         }
-
     }
 }
 
@@ -103,6 +103,7 @@ void http_GET(baseInfo &IDInfo)
                 if ( !ws.wsHandShake() )
                 {
                     DEBUG_OUT("WebSocket握手失败");
+                    ws.close();
                     return;
                 }
                 int SerID = atoi( ws.HTTPRequest.GET["SerID"].c_str() );
@@ -112,6 +113,7 @@ void http_GET(baseInfo &IDInfo)
                     char msg[] = "Unidentified SerID or UsrID";
                     cout << "无效wsID" << endl;
                     ws.writeData(msg,strlen(msg));
+                    ws.close();
                     return;
                 }
                 SerMutex.lock();
@@ -120,6 +122,7 @@ void http_GET(baseInfo &IDInfo)
                     SerMutex.unlock();
                     char msg[] = "Unexist Server";
                     ws.writeData(msg,strlen(msg));
+                    ws.close();
                     return;
                 }
                 Server *ser = SerList[SerID];
@@ -128,6 +131,7 @@ void http_GET(baseInfo &IDInfo)
                     SerMutex.unlock();
                     char msg[] = "Authentication failed";
                     ws.writeData(msg,strlen(msg));
+                    ws.close();
                     return;
                 }
                 if( !ser->add(&ws) )
@@ -135,6 +139,7 @@ void http_GET(baseInfo &IDInfo)
                     SerMutex.unlock();
                     char msg[] = "join server failed";
                     ws.writeData(msg,strlen(msg));
+                    ws.close();
                     return;
                 }
                 SerMutex.unlock();

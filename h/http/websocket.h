@@ -113,15 +113,15 @@ int WebSocket::writeData(char * buf, size_t len)
 
     if( len < 126)
     {
-        frame_length = 6;
+        frame_length = 2;
         masking_pos = 2;
         payload_len = len;
     }else if(len < 65535){
-        frame_length = 8;
+        frame_length = 4;
         masking_pos = 4;
         payload_len = 126;
     }else{
-        frame_length = 14;
+        frame_length = 10;
         masking_pos = 10;
         payload_len = 127;
     }
@@ -132,33 +132,33 @@ int WebSocket::writeData(char * buf, size_t len)
     head_frame[0] = 0x81;
 
     // 设置MASK
-    head_frame[1] = 0x80;
+    head_frame[1] = 0x00;
 
     // 设置Payload len
     head_frame[1] += ( payload_len );
-    if ( frame_length == 8 )
+    if ( frame_length == 4 )
     {
         memcpy( head_frame + 2, &len, 2 );
         invert( (char*)head_frame + 2, 2 );
-    }else if ( frame_length == 14 )
+    }else if ( frame_length == 10 )
     {
         memcpy( head_frame + 2, &len, 8 );
         invert( (char*)head_frame + 2, 8 );
     }
 
-    // 设置masking-key
-    time_t t;
-    srand(time(&t));
-    head_frame[masking_pos] = (unsigned char)rand();
-    head_frame[masking_pos+1] = (unsigned char)rand();
-    head_frame[masking_pos+2] = (unsigned char)rand();
-    head_frame[masking_pos+3] = (unsigned char)rand();
+    // // 设置masking-key
+    // time_t t;
+    // srand(time(&t));
+    // head_frame[masking_pos] = (unsigned char)rand();
+    // head_frame[masking_pos+1] = (unsigned char)rand();
+    // head_frame[masking_pos+2] = (unsigned char)rand();
+    // head_frame[masking_pos+3] = (unsigned char)rand();
 
-    // 对数据进行掩码处理
-    for (size_t i = 0; i < len; i++)
-    {
-        buf[i] = buf[i] ^ head_frame[ masking_pos + i%4 ];
-    }
+    // // 对数据进行掩码处理
+    // for (size_t i = 0; i < len; i++)
+    // {
+    //     buf[i] = buf[i] ^ head_frame[ masking_pos + i%4 ];
+    // }
     if ( write( fd, head_frame, frame_length ) < frame_length)
     {
         free(head_frame);

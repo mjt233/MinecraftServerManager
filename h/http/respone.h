@@ -25,9 +25,6 @@ class HTTPResponeInfo : public HTTPInfo{
             header["Cache-Control"] = "no-cache";
             header["Accept-Ranges"] = "bytes";
             header["Connection"] = "close";
-            header["ZhiFuBaoHongBao"] = "科技部新年快乐哈";
-            header["ZhiFuBaoHongBao~"] = "ke ji bu xing nian kuai le ha";
-            header["ZhiFuBaoHongBaoEnglishTranslate"] = "ke ji bu Happy new year ha";
         }
         // Return the number written, or -1
         int sendHeader(int fd);
