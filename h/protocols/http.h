@@ -112,7 +112,7 @@ void http_GET(baseInfo &IDInfo)
                 {
                     char msg[] = "Unidentified SerID or UsrID";
                     cout << "无效wsID" << endl;
-                    ws.writeData(msg,strlen(msg));
+                    ws.writeData(0x1, msg,strlen(msg));
                     ws.close();
                     return;
                 }
@@ -121,7 +121,7 @@ void http_GET(baseInfo &IDInfo)
                 {
                     SerMutex.unlock();
                     char msg[] = "Unexist Server";
-                    ws.writeData(msg,strlen(msg));
+                    ws.writeData(0x1, msg,strlen(msg));
                     ws.close();
                     return;
                 }
@@ -130,7 +130,7 @@ void http_GET(baseInfo &IDInfo)
                 {
                     SerMutex.unlock();
                     char msg[] = "Authentication failed";
-                    ws.writeData(msg,strlen(msg));
+                    ws.writeData(0x1, msg,strlen(msg));
                     ws.close();
                     return;
                 }
@@ -138,7 +138,7 @@ void http_GET(baseInfo &IDInfo)
                 {
                     SerMutex.unlock();
                     char msg[] = "join server failed";
-                    ws.writeData(msg,strlen(msg));
+                    ws.writeData(0x1, msg,strlen(msg));
                     ws.close();
                     return;
                 }

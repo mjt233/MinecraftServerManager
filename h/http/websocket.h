@@ -82,7 +82,7 @@ class WebSocket{
         string getAcceptKey(string sec_key);
         int readHeadFrame(wsHeadFrame &wsFrame);
         int readData(wsHeadFrame &wsFrame, char * buf, size_t len);
-        int writeData(char * buf, size_t len);
+        int writeData(unsigned char opcode, char * buf, size_t len);
         int close();
 
 };
@@ -105,7 +105,7 @@ WebSocket::WebSocket(HTTPRequestInfo HTTPRequest ,int fd)
     
 }
 
-int WebSocket::writeData(char * buf, size_t len)
+int WebSocket::writeData(unsigned char opcode, char * buf, size_t len)
 {
     writeMutex.lock();
     unsigned char *head_frame;
@@ -130,7 +130,8 @@ int WebSocket::writeData(char * buf, size_t len)
     head_frame = (unsigned char*)malloc(frame_length);
 
     // 设置FIN,RSV*3和opcode
-    head_frame[0] = 0x81;
+    head_frame[0] = 0x80;
+    head_frame[0] += opcode;
 
     // 设置MASK
     head_frame[1] = 0x00;
@@ -331,7 +332,7 @@ int Server::add(WebSocket *ws)
     {
         cout << "malloc error" << endl;
     }
-    ws->writeData(strbuf,strlen(strbuf));
+    ws->writeData(0x1, strbuf, strlen(strbuf));
     free(strbuf);
     return 1;
 }
@@ -363,5 +364,5 @@ int closeWebSocket(WebSocket *ws)
 void * writeWebSocket(void * arg)
 {
     ThParam *tp = (ThParam*)arg;
-    tp->ws->writeData(tp->msg, tp->len);
+    tp->ws->writeData(0x1, tp->msg, tp->len);
 }
