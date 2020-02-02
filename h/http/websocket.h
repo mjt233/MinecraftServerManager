@@ -2,9 +2,10 @@
 * File name: websocket.h
 * Description:  C++ WebSocket协议基本功能的实现
 * Author: mjt233@qq.com
-* Version: 1.0
-* Date: 2019.1.28
-* History: none
+* Version: 1.1
+* Date: 2019.2.2
+* History: 
+*   修正readHeadFrame对操作码的错误判断
 * Reference0 : https://blog.csdn.net/p312011150/article/details/79758068
 * Reference1 : https://blog.csdn.net/lell3538/article/details/60470558
 *********************************************************************************************************/
@@ -267,7 +268,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
         }
     }
 
-    if( opcode != 0x1 && opcode !=0x0)
+    if( wsFrame.opcode != 0x1 && wsFrame.opcode !=0x0)
     {
         return 0;
     }
