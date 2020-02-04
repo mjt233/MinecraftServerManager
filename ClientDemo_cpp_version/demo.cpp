@@ -23,9 +23,8 @@ void invert(char * buf, size_t len)
 #include "remote.h"
 #include "socketPipe.h"
 void ReadData();
-void ReadRemoteData();
+void ReadRemoteData(char const *argv[]);
 void stop(int sign);
-
 // 服务器socket as pipe IO
 socketPipe outputPipe,inputPipe;
 
@@ -60,7 +59,7 @@ int main(int argc, char const *argv[])
         exit(EXIT_SUCCESS);
     }else{
         thread readTh(ReadData);            // 读取子进程的数据
-        thread readRmTh(ReadRemoteData);    // 读取服务器的数据
+        thread readRmTh(ReadRemoteData,argv);    // 读取服务器的数据
         string input;
         while ( 1 )
         {
@@ -94,27 +93,31 @@ void ReadData()
         buffer[count] = 0;
         cout << buffer;
         fb.build(0x0,count);
-        if ( send(remote_socket, fb.f_data, 5, MSG_WAITALL) != 5)
+        if ( !Connected || send(remote_socket, fb.f_data, 5, MSG_WAITALL) != 5)
         {
             cout << "远程服务器错误" << endl;
+            Connected = 0;
         }
-        if (send(remote_socket, buffer, count, MSG_WAITALL) <= 0 )
+
+        if ( !Connected || send(remote_socket, buffer, count, MSG_WAITALL) <= 0 )
         {
             cout << "远程服务器错误" << endl;
+            Connected = 0;
         }
 
         // 不加延迟会崩溃....好神奇
-        usleep(100000);
+        usleep(50000);
     }
     
 }
 
-void ReadRemoteData()
+void ReadRemoteData(char const *argv[])
 {
     char buffer[2048];
     int count = 0,total = 0;
     frame_head_data frame;
     frame_builder fb;
+    START :
     while ( recv( remote_socket, frame, 5, MSG_WAITALL ) == 5)
     {
         fb.analyze(frame);
@@ -147,8 +150,22 @@ void ReadRemoteData()
         
         default:
             cout << "无效控制码" << endl;
+            shutdown(remote_socket, SHUT_RDWR);
+            goto END;
             break;
         }
     }
+    END:
+    Connected = 0;
+    close(remote_socket);
+    int i = 0;
+    do
+    {
+        cout << "连接已断开..准备重连(第" << ++i << "次)" << endl;
+        sleep(5);
+    } while ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4]))  );
+    Connected = 1;
+    std::cout << "重连成功" << std::endl;
     
+    goto START;
 }
