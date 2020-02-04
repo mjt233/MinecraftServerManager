@@ -3,9 +3,10 @@
 * Description:  简单的socket库封装
 * Author: mjt233@qq.com
 * Version: 2.0
-* Date: 2019.2.1
+* Date: 2019.2.4
 * History: 
-    * 增加Windows支持
+    * 2019-2-1 增加Windows支持
+    * 2019-2-4 增加可设置超时的connect
 *********************************************************************************************************/
 #ifndef WIN32
     #ifndef linux
@@ -28,6 +29,7 @@ int PASCAL FAR setsockopt( SOCKET s, int level, int optname,const void FAR *optv
 #include<arpa/inet.h>
 #include<netdb.h>
 #include<netinet/in.h>
+#include <fcntl.h>
 #define SOCKET_T int
 #endif // linux
 
@@ -37,6 +39,7 @@ int DNtoIP(const char *DN,char *ip);
 
 int InitConnect(SOCKET_T *sock,const char * addr,unsigned short port);
 int InitServer(SOCKET_T *sock,char * addr,unsigned short port);
+int ConnectTimeOut(SOCKET_T *sock,const char * addr, unsigned short port, int timeout);
 void InitSocket()
 {
     #ifdef WIN32
@@ -44,6 +47,73 @@ void InitSocket()
     WSAStartup( MAKEWORD(2,2), &wsaData );
     #endif // WIN32
 }
+
+// Return 1 on success, -1 or -2 for errors. QWQ
+int ConnectTimeOut(SOCKET_T *sock,const char * addr, unsigned short port, int timeout)
+{
+    char ip[20];
+    *sock = 0;
+    *sock=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+    struct sockaddr_in sockAddr;
+    memset(&sockAddr,0,sizeof(sockAddr));
+    if(isDomainName(addr))
+    {
+        if(!DNtoIP(addr,ip))
+            return -1;
+    }else
+    {
+        strcpy(ip,addr);
+    }
+    
+    sockAddr.sin_family=AF_INET;
+    sockAddr.sin_port=htons(port);
+    sockAddr.sin_addr.s_addr=inet_addr(ip);
+    #ifdef linux
+    fcntl(*sock, F_SETFL, fcntl(*sock, F_GETFL, 0) | O_NONBLOCK);
+    #endif // linux
+    int ret = connect(*sock,(struct sockaddr*)&sockAddr,sizeof(sockAddr));
+    if( ret != 0 )
+    {
+        if(errno != EINPROGRESS)
+        {
+            return -1;
+        }else
+        {
+            struct timeval tm = {timeout,0};
+            fd_set wset,rset;
+            FD_ZERO(&wset);
+            FD_ZERO(&rset);
+            FD_SET(*sock, &wset);
+            FD_SET(*sock, &rset);
+            int res = select(*sock + 1, &rset, &wset, NULL, &tm);
+            if( res < 0 )
+            {
+                return -1;
+            }else if( res == 0 )
+            {
+                return -2;
+            }else if( res == 1 )
+            {
+                if( FD_ISSET(*sock, &wset) )
+                {
+                    fcntl(*sock, F_SETFL, fcntl(*sock, F_GETFL, 0) & ~O_NONBLOCK);
+                    return 1;
+                }else
+                {
+                    return 0;
+                }
+            }else
+            {
+                return 0;
+            }
+        }
+    }else
+    {
+        return 0;
+    }
+    
+}
+
 
 int DNtoIP(const char *DN,char *ip)
 {
