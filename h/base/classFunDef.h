@@ -85,8 +85,8 @@ int Client::writeSocketData(unsigned char opcode, const char * buf, unsigned int
 // 初始化锁和线程
 Server::Server( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID, socket)
 {
-    // 创建一个4k大小的缓冲字符串 8个结点 每个结点512字节的容量
-    sb = buffer_create(8,512);
+    // 创建一个16k大小的缓冲字符串 8个结点 每个结点512字节的容量
+    sb = buffer_create(32,512);
 
     // 将自己添加到服务器列表
     SerMutex.lock();

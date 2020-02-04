@@ -332,7 +332,7 @@ int Server::add(WebSocket *ws)
     {
         cout << "malloc error" << endl;
     }
-    ws->writeData(0x1, strbuf, strlen(strbuf));
+    ws->writeData(0x2, strbuf, strlen(strbuf));
     free(strbuf);
     return 1;
 }
@@ -364,5 +364,5 @@ int closeWebSocket(WebSocket *ws)
 void * writeWebSocket(void * arg)
 {
     ThParam *tp = (ThParam*)arg;
-    tp->ws->writeData(0x1, tp->msg, tp->len);
+    tp->ws->writeData(0x2, tp->msg, tp->len);
 }
