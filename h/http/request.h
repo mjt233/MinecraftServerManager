@@ -2,9 +2,11 @@
 * File name: respone.h
 * Description:  HTTP模块的请求体解析
 * Author: mjt233@qq.com
-* Version: 1.0
-* Date: 2019.1.28
-* History: none
+* Version: 1.2
+* Date: 2019.2.6
+* History: 
+*   2019.2.6    增加POST简单解析
+*   2019.1.28   创建
 *********************************************************************************************************/
 
 
@@ -32,8 +34,8 @@ class HTTPRequestInfo : public HTTPInfo{
          * 成功返回 HTTP_REQUEST_READ_SUCCESS
          * 失败返回 HTTP_REQUEST_ERROR
          */
-        int AnalysisRequest(char * request);
-
+        int AnalysisRequest(char * request, size_t len);
+        int AnalysisPostBody(int sock_fd,  char * firstData, size_t firstDataLen);
 
         // 根据对象当前属性创建HTTP请求报文
         const char * getRequest();
@@ -44,6 +46,36 @@ class HTTPRequestInfo : public HTTPInfo{
         // 解析Range
         int getRange(int part);
 };
+
+
+int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * firstData, size_t firstDataLen)
+{
+    if( header["Content-Type"].find("application/x-www-form-urlencoded") != -1 ){
+        char *l, *p = firstData, *splitPos;
+        int pos = 0,cnt = 0;
+        size_t ll, lll;
+        list<string> dataList;
+        while ( pos < firstDataLen )
+        {
+            l = strtok(firstData + pos, "&");
+            ll = strnlen(l, 8192);
+            if( ll >= 8192){
+                return HTTP_REQUEST_ERROR;
+            }
+            splitPos = strtok(l,"=");
+            lll = strnlen(splitPos,8192);
+            POST[splitPos] = lll >= 8192 ? "" : (splitPos + lll + 1 );
+
+            pos += ll + 1;
+            return 1;
+        }
+    }else{
+        return 0;
+    }
+    
+    
+    
+}
 
 /** 获取请求头中的Range信息 
  *  缺省返回-1
@@ -71,13 +103,10 @@ int HTTPRequestInfo::getRange(int part)
     size_t len = range.length();
     substr = range.substr( pos1 + 1, pos2 - pos1 -1 ).c_str();
     return atoi(substr.c_str());
-    
-    
 }
 
-int HTTPRequestInfo::AnalysisRequest(char * request)
+int HTTPRequestInfo::AnalysisRequest(char * request, size_t len)
 {
-    size_t len = strlen(request);
     int tag = 0,
         count = 0,
         line = 0;
@@ -200,7 +229,7 @@ int HTTPRequestInfo::AnalysisGETArgs()
 
 const char * HTTPRequestInfo::getRequest()
 {
-    HTTPMsg = "GET " + url + " HTTP/1.1\r\n";
+    HTTPMsg = type + " " + url + " HTTP/1.1\r\n";
     map<string,string>::iterator i = header.begin();
     for(; i != header.end() ; i++)
     {

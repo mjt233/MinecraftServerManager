@@ -2,9 +2,11 @@
 * File name: route.h
 * Description:  对接入的客户端进行请求协议识别
 * Author: mjt233@qq.com
-* Version: 1.0
-* Date: 2019.1.28
-* History: none
+* Version: 1.1
+* Date: 2019.2.6
+* History: 
+*   2019.2.6    增加HTTP POST识别支持
+*   2019.1.28   创建
 *********************************************************************************************************/
 
 
@@ -37,7 +39,9 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
         tag = COMMAND;
     }else if( !strcmp( buffer, "GET" ) ){
             return HTTP_GET;
-    }else {
+    }else if( !strcmp( buffer, "POS") ) {
+        return HTTP_POST;
+    }else{
         return -1;
     }
 
@@ -90,6 +94,9 @@ void * protocols_route(void * arg)
             http_GET(IDInfo);
             while ( read( sock_fd, buffer, 1024 ) > 0 );
             close(sock_fd);
+            break;
+        case HTTP_POST:
+            http_post(IDInfo);
             break;
         case SERID_EXIST:
             DEBUG_OUT("服务器接入请求被拒绝,服务器ID已存在");

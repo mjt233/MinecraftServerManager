@@ -2,38 +2,80 @@
 * File name: http.h
 * Description:  对HTTP请求数据进行具体的逻辑处理
 * Author: mjt233@qq.com
-* Version: 1.0
-* Date: 2019.1.28
-* History: none
+* Version: 2.0
+* Date: 2019.2.6
+* History: 
+        *   增加简单POST支持(待完善)
+        *   路由模块分离
 *********************************************************************************************************/
 
 // 引入http功能支持模块
 #include "../http/httpModule.h"
-
+#include "httpRoute/http_route.h"
 // 处理GET请求
 void http_GET(baseInfo &IDInfo);
-void wsRead(WebSocket *ws,Server *ser)
+
+// 处理POST请求
+void http_post(baseInfo &IDInfo);
+
+
+void http_post(baseInfo &IDInfo)
 {
-    wsHeadFrame wsFrame;
-    char buffer[2048];
-    int count,total,t;
-    while ( ws->readHeadFrame(wsFrame) )
-    {
-        wsFrame.cur_read = 0;
-        count = total = 0;
-        while ( total < wsFrame.payload_length )
-        {
-            t = wsFrame.payload_length - total;
-            count = ws->readData(wsFrame, buffer, t > 2048 ? 2048 : t);
-            if ( count <= 0 )
-            {
-                return;
-            }
-            ser->writeSocketData(0x0, buffer, count);
-            total += count;
-        }
+    HTTPRequestInfo HTTPRequest;
+    HTTPResponeInfo HTTPRespone;
+    char buffer[1024];
+    char bodyBuffer[8192] = {0};
+
+    int pos,        // header的长度,+4为请求体的起始位置,-1为获取失败
+        cnt,        // 记录recv读取的字节数
+        total,      // POST Body数据长度
+        a;          // 剩余读取量
+    recv(IDInfo.socket, buffer, 2, MSG_WAITALL);
+    if( buffer[0] != 'T' && buffer[1] != ' ' ){
+        HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
+        close(IDInfo.socket);
+        return;
     }
+    HTTPRequest.type = "POST";
+
+    HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
+    return;
+    /**
+     * 
+     * 未完善,暂时不处理POST请求
+     * 
+     * 
+     * 
+     */
+
+
+    // 读取header以及部分请求体
+    cnt = recv(IDInfo.socket, buffer, 1023, 0);
+    buffer[cnt] = 0;
+
+    char *p = strstr(buffer,"\r\n\r\n");
+    pos = p == NULL ? -1 : (int)(p - buffer);
+
+    // header格式不正确
+    if( pos == -1 ){
+        HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
+        close(IDInfo.socket);
+        return;
+    }
+    // 分析请求头
+    HTTPRequest.AnalysisRequest(buffer,pos);
+    
+    // 将第一次读取header时多读的POST Body数据存入到另一个buffer
+    strncpy(bodyBuffer, buffer + pos + 4 , cnt - pos);
+
+    if ( HTTPRequest.AnalysisPostBody(IDInfo.socket, bodyBuffer, cnt) == 0){
+        HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
+    }
+    
+    httpRoute(IDInfo.socket, HTTPRequest);
+    return;
 }
+
 
 
 
@@ -42,7 +84,7 @@ void http_GET(baseInfo &IDInfo)
     HTTPRequestInfo HTTPRequest;
     HTTPResponeInfo HTTPRespone;
     char buffer[1024];
-
+    size_t cnt;
     HTTPRespone.header["Server"] = "Minecraft Server Manager Web Service";
 
     // 因协议识别,前3个字符被read掉了 看看什么时候有空改掉协议识别的方式
@@ -52,109 +94,14 @@ void http_GET(baseInfo &IDInfo)
     
     // 读取后续的完整HTTP报文
     // 因为是GET请求,就不考虑请求体的内容了
-    read(IDInfo.socket, buffer , 1024);
+    cnt = read(IDInfo.socket, buffer , 1024);
 
     // 解析HTTP请求头信息
-    if ( HTTPRequest.AnalysisRequest(buffer) == HTTP_REQUEST_ERROR )
+    if ( HTTPRequest.AnalysisRequest(buffer,cnt) == HTTP_REQUEST_ERROR )
     {
         HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
         return ;
     }
 
-
-    // 存放文件完整路径
-    string filePath;
-
-    // Content-Type
-    string content_type;
-    FILE *fp = NULL;
-    int code = HTTPRequest.getRequestFilePath(filePath);
-    int count = 0;
-    map<string,string>::iterator i = HTTPRequest.GET.begin();
-    if(DEBUG_MODE)
-    {
-        for(; i != HTTPRequest.GET.end() ; i++)
-        {
-            cout << "key: " << i->first << " value: " << i->second << endl;
-        }
-        cout << "URL:" << HTTPRequest.url << " code :  " << code << endl;
-    }
-
-    switch (code)
-    {
-        case 200:
-            HTTPRespone.outputFile(IDInfo.socket, filePath);
-            break;
-        case 206:
-            HTTPRespone.outputFile(IDInfo.socket, filePath, HTTPRequest.getRange(_RANGE_FIRST), HTTPRequest.getRange(_RANGE_LAST));
-            break;
-        default:
-            if ( HTTPRequest.url.substr(0,3) != "/ws" )
-            {
-                HTTPRespone.sendErrPage(IDInfo.socket, code, filePath);
-            }
-            else
-            {
-                if(DEBUG_MODE)
-                {
-                    cout << "创建WebSocket对象" << endl;
-                }
-                WebSocket ws(HTTPRequest, IDInfo.socket);
-                if ( !ws.wsHandShake() )
-                {
-                    DEBUG_OUT("WebSocket握手失败");
-                    ws.close();
-                    return;
-                }
-                int SerID = atoi( ws.HTTPRequest.GET["SerID"].c_str() );
-                int UsrID = atoi( ws.HTTPRequest.GET["UsrID"].c_str() );
-                if ( SerID == 0 || UsrID == 0 )
-                {
-                    char msg[] = "Unidentified SerID or UsrID";
-                    cout << "无效wsID" << endl;
-                    ws.writeData(0x2, msg,strlen(msg));
-                    ws.close();
-                    return;
-                }
-                SerMutex.lock();
-                if( !SerList.count(SerID) )
-                {
-                    SerMutex.unlock();
-                    char msg[] = "Unexist Server";
-                    ws.writeData(0x2, msg,strlen(msg));
-                    ws.close();
-                    return;
-                }
-                Server *ser = SerList[SerID];
-                if ( ser->UsrID != UsrID )
-                {
-                    SerMutex.unlock();
-                    char msg[] = "Authentication failed";
-                    ws.writeData(0x2, msg,strlen(msg));
-                    ws.close();
-                    return;
-                }
-                if( !ser->add(&ws) )
-                {
-                    SerMutex.unlock();
-                    char msg[] = "join server failed";
-                    ws.writeData(0x2, msg,strlen(msg));
-                    ws.close();
-                    return;
-                }
-                SerMutex.unlock();
-                thread wsReadTh(wsRead,&ws,ser);
-                wsReadTh.join();
-                if( !ws.isClose )
-                {
-                    ser->remove(&ws);
-                    ws.close();
-                    cout << "WebSocket主动退出" << endl;
-                }else{
-                    cout << "WebSocket被动退出" << endl;
-                    ws.close();
-                }
-            }
-            break;
-    }
+    httpRoute(IDInfo.socket, HTTPRequest);
 }

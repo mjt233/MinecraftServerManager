@@ -2,9 +2,11 @@
 * File name: typedefine.h
 * Description:  各种常量和对象的定义 以及函数的提前声明
 * Author: mjt233@qq.com
-* Version: 1.0
+* Version: 1.1
 * Date: 2019.1.28
-* History: none
+* History: 
+*   2019.2.6    增加HTTP_POST 常量标识
+*   2019.1.28   创建
 *********************************************************************************************************/
 
 
@@ -13,6 +15,7 @@
 #define CONTROLLER 1                                // 控制器TAG
 #define COMMAND 2                                   // 快捷命令TAG
 #define HTTP_GET 3                                  // HTTP请求
+#define HTTP_POST 4                                 // HTTP POST请求
 #define UNKNOW_TYPE -1                              // 未知TAG
 #define SERID_FORMAT_INCOREET -2                    // 服务器ID格式错误
 #define USRID_FORMAT_INCOREET -3                    // 用户ID格式错误

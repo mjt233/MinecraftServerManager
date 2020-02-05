@@ -2,10 +2,11 @@
 * File name: websocket.h
 * Description:  C++ WebSocket协议基本功能的实现
 * Author: mjt233@qq.com
-* Version: 1.1
-* Date: 2019.2.2
+* Version: 1.2
+* Date: 2019.2.6
 * History: 
-*   修正readHeadFrame对操作码的错误判断
+*   2019.2.6  增加die函数
+*   2019.2.2  修正readHeadFrame对操作码的错误判断
 * Reference0 : https://blog.csdn.net/p312011150/article/details/79758068
 * Reference1 : https://blog.csdn.net/lell3538/article/details/60470558
 *********************************************************************************************************/
@@ -82,10 +83,17 @@ class WebSocket{
         string getAcceptKey(string sec_key);
         int readHeadFrame(wsHeadFrame &wsFrame);
         int readData(wsHeadFrame &wsFrame, char * buf, size_t len);
-        int writeData(unsigned char opcode, char * buf, size_t len);
+        int writeData(unsigned char opcode,const char * buf, size_t len);
         int close();
+        int die(const char * msg, size_t len);
 
 };
+
+int WebSocket::die(const char * msg, size_t len)
+{
+    writeData(0x2, msg, len);
+    close();
+}
 
 // Returns 0 on success, -1 for errors.
 int WebSocket::close()
@@ -105,7 +113,7 @@ WebSocket::WebSocket(HTTPRequestInfo HTTPRequest ,int fd)
     
 }
 
-int WebSocket::writeData(unsigned char opcode, char * buf, size_t len)
+int WebSocket::writeData(unsigned char opcode,const char * buf, size_t len)
 {
     writeMutex.lock();
     unsigned char *head_frame;

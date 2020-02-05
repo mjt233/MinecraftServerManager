@@ -38,7 +38,7 @@ void * manager_server_start(void * arg)
         {
             char ip[INET_ADDRSTRLEN];
             inet_ntop(AF_INET,&cli_addr.sin_addr.s_addr,ip,sizeof(ip));
-            cout << "ip : " << ip << endl;
+            // cout << "ip : " << ip << endl;
         }
 
         // 开启线程取处理
