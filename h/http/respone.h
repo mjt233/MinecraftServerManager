@@ -180,7 +180,7 @@ int HTTPResponeInfo::outputFile(int fd, string filePath, int range_first, int ra
         content_length -= count;
 
         // 文件读取或socket发送出错时
-        if( count <= 0 || write( fd, buffer, count ) <= 0 )
+        if( count <= 0 || send( fd, buffer, count, 0 ) <= 0 )
         {
             success = 0;
             break;
@@ -207,5 +207,5 @@ int HTTPResponeInfo::sendErrPage(int fd, int code, string info)
     {
         return 0;
     }
-    return write(fd, data.c_str(), data.length());
+    return send(fd, data.c_str(), data.length(), 0);
 }

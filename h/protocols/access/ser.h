@@ -58,7 +58,7 @@ void Server::server_read()
             case 0:
                 while ( total < f_builder.length )
                 {
-                    count = read(this->socket, buffer,DEFAULT_CHAR_BUFFER_SIZE - 1);
+                    count = recv(this->socket, buffer,DEFAULT_CHAR_BUFFER_SIZE - 1, 0);
 
                     // 读取错误时退出
                     if ( count <= 0 || count > f_builder.length ) return;

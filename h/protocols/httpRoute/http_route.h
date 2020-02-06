@@ -25,6 +25,11 @@ void httpRoute(int socket_fd, HTTPRequestInfo &HTTPRequest)
             if( HTTPRequest.url.substr(0,3) == "/ws" )
             {
                 terminalAccess(HTTPRequest, socket_fd);
+            }else if(HTTPRequest.url.substr(0,10) == "/test.html"){
+                HTTPRespone.header["Content-Type"] = "text/plain";
+                HTTPRespone.header["Content-Length"] = strlen( HTTPRequest.getRequest() );
+                HTTPRespone.sendHeader(socket_fd);
+                send(socket_fd, HTTPRequest.getRequest(), strlen( HTTPRequest.getRequest() ), MSG_WAITALL);
             }else
             {
                 HTTPRespone.sendErrPage(socket_fd, code, filePath);

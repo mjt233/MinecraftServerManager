@@ -105,7 +105,7 @@ void Controller::controller_read_socket()
             case 0:
                 while ( total < f_builder.length )
                 {
-                    count = read( ctl->socket, buffer, f_builder.length );
+                    count = recv( ctl->socket, buffer, f_builder.length , 0);
                     if ( count <= 0 || count > f_builder.length)
                     {
                         break;

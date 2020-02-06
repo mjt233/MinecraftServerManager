@@ -202,7 +202,7 @@ int WebSocket::readData(wsHeadFrame &wsFrame, char * buf, size_t len)
 {
     int count = 0;
     unsigned long long t = wsFrame.payload_length - wsFrame.cur_read;
-    count = read( fd, buf, t > len ? len : t );
+    count = recv( fd, buf, t > len ? len : t , 0);
     if ( count <= 0 )
     {
         return 0;
@@ -229,7 +229,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
     char data[1024] = {0};
 
     // 读取FIN与opcode
-    if( read( fd, (char *)&one_char, 1 ) <= 0 )
+    if( recv( fd, (char *)&one_char, 1 , 0) <= 0 )
     {
         return 0;
     }
@@ -237,7 +237,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
     wsFrame.opcode = one_char & 0xF;
 
     // 读取mask开关与payload_len
-    if( read( fd, (char *)&one_char, 1 ) <= 0 )
+    if( recv( fd, (char *)&one_char, 1 , 0) <= 0 )
     {
         return 0;
     }
@@ -249,7 +249,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
     if( wsFrame.payload_length == 126 )
     {
         // 长度升级至2Bytes
-        if( read( fd, data, 2 ) < 2 )
+        if( recv( fd, data, 2, MSG_WAITALL ) < 2 )
         {
             return 0;
         }
@@ -260,7 +260,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
     }else if(wsFrame.payload_length == 127)
     {
         // 长度升级至8Bytes
-        if( read( fd, data, 8 ) < 8 )
+        if( recv( fd, data, 8, MSG_WAITALL ) < 8 )
         {
             return 0;
         }
@@ -271,7 +271,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
     if( wsFrame.mask == true )
     {    
         // 读取掩码key
-        if( read( fd, wsFrame.masking_key, 4 ) <= 3 )
+        if( recv( fd, wsFrame.masking_key, 4 , MSG_WAITALL) <= 3 )
         {
             return 0;
         }

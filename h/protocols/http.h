@@ -38,17 +38,6 @@ void http_post(baseInfo &IDInfo)
     }
     HTTPRequest.type = "POST";
 
-    HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
-    return;
-    /**
-     * 
-     * 未完善,暂时不处理POST请求
-     * 
-     * 
-     * 
-     */
-
-
     // 读取header以及部分请求体
     cnt = recv(IDInfo.socket, buffer, 1023, 0);
     buffer[cnt] = 0;
@@ -67,11 +56,33 @@ void http_post(baseInfo &IDInfo)
     
     // 将第一次读取header时多读的POST Body数据存入到另一个buffer
     strncpy(bodyBuffer, buffer + pos + 4 , cnt - pos);
+    total = atoi( HTTPRequest.header["Content-Length"].c_str());
 
-    if ( HTTPRequest.AnalysisPostBody(IDInfo.socket, bodyBuffer, cnt) == 0){
+    // 拒绝掉大于8KB的请求
+    if( total >= 8192 )
+    {
+        HTTPRespone.sendErrPage(IDInfo.socket, 413, "Request Entity Too Large");
+        return;
+    }
+
+    a = total - cnt + pos + 4;
+    while ( a > 0 )
+    {
+        cnt = recv(IDInfo.socket, bodyBuffer + total - a, 8192, 0);
+        a -= cnt;
+    }
+
+
+    if ( HTTPRequest.AnalysisPostBody(IDInfo.socket, bodyBuffer, total) == 0){
         HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
     }
     
+    for (map<string,string>::iterator i = HTTPRequest.POST.begin(); i != HTTPRequest.POST.end(); i++)
+    {
+        cout << i->first << " " << i->second << endl;
+    }
+    
+
     httpRoute(IDInfo.socket, HTTPRequest);
     return;
 }
@@ -89,12 +100,12 @@ void http_GET(baseInfo &IDInfo)
 
     // 因协议识别,前3个字符被read掉了 看看什么时候有空改掉协议识别的方式
     // 消耗掉GET后面的空格
-    read(IDInfo.socket, buffer ,1);
+    recv(IDInfo.socket, buffer ,1, 0);
     buffer[0] = 0;
     
     // 读取后续的完整HTTP报文
     // 因为是GET请求,就不考虑请求体的内容了
-    cnt = read(IDInfo.socket, buffer , 1024);
+    cnt = recv(IDInfo.socket, buffer , 1024, 0);
 
     // 解析HTTP请求头信息
     if ( HTTPRequest.AnalysisRequest(buffer,cnt) == HTTP_REQUEST_ERROR )

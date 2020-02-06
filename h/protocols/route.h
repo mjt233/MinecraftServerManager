@@ -26,7 +26,7 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
         SerID = 0,
         isServerExist = 0;
     IDInfo.socket = sock_fd;
-    read( sock_fd, buffer,3);
+    recv( sock_fd, buffer,3, MSG_WAITALL);
     // 获取请求接入的类型
     if ( !strcmp( buffer, "SER" ) )
     {
@@ -46,7 +46,7 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
     }
 
     // 获取请求的服务器ID
-    if ( read(sock_fd, buffer, 6) <= 0 || buffer[5]!='E' || ( IDInfo.SerID = atoi( buffer ) ) <= 0 )
+    if ( recv(sock_fd, buffer, 6, MSG_WAITALL) <= 0 || buffer[5]!='E' || ( IDInfo.SerID = atoi( buffer ) ) <= 0 )
     {
         return SERID_FORMAT_INCOREET;
     }
@@ -63,7 +63,7 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
         return SERID_UNEXIST;
     }
 
-    if ( read(sock_fd, buffer, 6) <= 0 || buffer[5]!='E' || ( IDInfo.UsrID = atoi( buffer ) ) <= 0 )
+    if ( recv(sock_fd, buffer, 6, MSG_WAITALL) <= 0 || buffer[5]!='E' || ( IDInfo.UsrID = atoi( buffer ) ) <= 0 )
     {
         return USRID_FORMAT_INCOREET;
     }
@@ -92,7 +92,7 @@ void * protocols_route(void * arg)
             break;
         case HTTP_GET:
             http_GET(IDInfo);
-            while ( read( sock_fd, buffer, 1024 ) > 0 );
+            while ( recv( sock_fd, buffer, 1024, 0 ) > 0 );
             close(sock_fd);
             break;
         case HTTP_POST:
