@@ -1,0 +1,8 @@
+{
+	"Console":{
+		"BGColor":{"r":64,"g":64,"b":64,"alpha":255},
+		"Font":{"name":"Microsoft YaHei UI","style":0,"size":12},
+		"FontColor":{"r":0,"g":255,"b":0,"alpha":255}
+	},
+	"Look&Feel":"com.sun.java.swing.plaf.windows.WindowsLookAndFeel"
+}
