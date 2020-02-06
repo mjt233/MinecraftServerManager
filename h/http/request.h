@@ -48,16 +48,16 @@ class HTTPRequestInfo : public HTTPInfo{
 };
 
 
-int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * firstData, size_t firstDataLen)
+int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * data, size_t len)
 {
     if( header["Content-Type"].find("application/x-www-form-urlencoded") != -1 ){
-        char *l, *p = firstData, *splitPos;
+        char *l, *p = data, *splitPos;
         int pos = 0,cnt = 0;
         size_t ll, lll;
         list<string> dataList;
-        while ( pos < firstDataLen )
+        while ( pos < len )
         {
-            l = strtok(firstData + pos, "&");
+            l = strtok(data + pos, "&");
             ll = strnlen(l, 8192);
             if( ll >= 8192){
                 return HTTP_REQUEST_ERROR;
@@ -67,8 +67,8 @@ int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * firstData, size_t fir
             POST[splitPos] = lll >= 8192 ? "" : (splitPos + lll + 1 );
 
             pos += ll + 1;
-            return 1;
         }
+        return 1;
     }else{
         return 0;
     }
@@ -236,6 +236,15 @@ const char * HTTPRequestInfo::getRequest()
         HTTPMsg += i->first + ": " + i->second + "\r\n";
     }
     HTTPMsg += "\r\n";
+    if ( type == "POST" )
+    {
+        for (map<string,string>::iterator i = POST.begin(); i != POST.end(); i++)
+        {
+            HTTPMsg += i->first + "=" + i->second + "&";
+        }
+        HTTPMsg = HTTPMsg.substr(0, HTTPMsg.length() - 1);
+    }
+    
     return HTTPMsg.c_str();
 }
 
