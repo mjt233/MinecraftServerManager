@@ -1,5 +1,6 @@
 import java.io.*;
 
+import javax.swing.JFrame;
 import javax.swing.JTextArea;
 final class AccessType{
 	static final int  SERVER = 1;
@@ -8,7 +9,7 @@ final class AccessType{
 public class msmc{
 	public static void main(String[] args) {
 		GUI gui = new GUI();
-		InfoShower is = new InfoShower("127.0.0.1", 6636, 1, 12345, AccessType.SERVER, gui.textArea);
+		InfoShower is = new InfoShower("www.xiaotao233.top", 6636, 1, 12345, AccessType.CONTROLLER, gui.textArea);
 		GUIAction aa = new GUIAction(is.ac, gui);
 		gui.send.addActionListener(aa);
 		new Thread(is).start();

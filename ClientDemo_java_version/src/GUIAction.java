@@ -12,7 +12,7 @@ class GUIAction implements ActionListener{
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String str = gui.input.getText();
+		String str = gui.input.getText()+"\n";
 		if(e.getSource() == gui.send ) {
 			try {
 				ac.write(0x0, str.getBytes());
