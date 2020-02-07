@@ -126,6 +126,7 @@ class Server : public Client{
         int remove(WebSocket *ws);
         int Broadcast(char *buf,size_t len);
         SOCKET_T startUpload(const char * name, const char * path, size_t length, mutex * mtx);
+        SOCKET_T createTask(unsigned char opcode, const char * otherInfo, size_t len, mutex * mtx);
 };
 
 

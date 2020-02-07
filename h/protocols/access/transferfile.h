@@ -6,7 +6,6 @@ void transferfile(baseInfo &IDInfo)
     mutex *mtx;
     cnt = recv(IDInfo.socket, buffer, 1024, 0);
     taskID = atoi(buffer);
-    cout << "taskID : " << taskID << endl;
 
     SerMutex.lock();
     if( SerList.count(IDInfo.SerID) == 0 )
@@ -24,7 +23,6 @@ void transferfile(baseInfo &IDInfo)
         SerMutex.unlock();
         return;
     }
-    cout << "sock: " << IDInfo.socket << endl;
     for (size_t i = 0; i < cnt; i++)
     {
         if( buffer[i] == ' ' )

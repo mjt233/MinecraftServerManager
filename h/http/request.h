@@ -40,10 +40,17 @@ class HTTPRequestInfo : public HTTPInfo{
         // 根据对象当前属性创建HTTP请求报文
         const char * getRequest();
 
-        // 获取请求的URL中文件的物理地址
+        /** 获取请求的URL中文件的物理地址
+         *  @param path 保存本地文件地址的string对象,若错误,则存放错误信息
+         *  @return 文件存在 返回200,文件存在且只请求部分,返回206,若请求的是文件夹,返回403,文件不存在返回404
+        */
         int getRequestFilePath(string &path);
 
-        // 解析Range
+        /** 获取请求头中的Range信息 
+         * 
+         *  @param part _RANGE_FIRST 取起始位置, _RANGE_LAST取结束位置
+         *  @return Range缺省返回-1, 解析错误返回-2
+         */
         int getRange(int part);
 };
 
@@ -77,12 +84,7 @@ int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * data, size_t len)
     
 }
 
-/** 获取请求头中的Range信息 
- *  缺省返回-1
- *  错误返回-2
- * 
- *  @param part _RANGE_FIRST or _RANGE_LAST
- */
+
 int HTTPRequestInfo::getRange(int part)
 {
     string range = header["Range"];

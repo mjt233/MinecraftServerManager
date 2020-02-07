@@ -12,7 +12,6 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     WebSocket ws(HQ, socket_fd);
     if ( !ws.wsHandShake() )
     {
-        DEBUG_OUT("WebSocket握手失败,SecKey:" << HQ.header["Sec-WebSocket-Key"]);
         ws.close();
         return;
     }
@@ -86,27 +85,42 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
         mtx.unlock();
         return ;
     }
-    char buffer[8192];
-    if ( !ws.readHeadFrame(wsf) )
-    {
-        ws.die("die",3);
-        mtx.unlock();
-        return;
-    }
+    char buffer[204800];
     
     size_t recv_len = 0;
-    while ( recv_len < wsf.payload_length )
+    size_t ws_recv = 0;
+    size_t a;
+    string proc;
+    while ( ws_recv < len )
     {
-        cnt = ws.readData(wsf, buffer, 8192);
-        cout << buffer << endl;
-        if( cnt <= 0 || send(rec_fd, buffer, cnt, MSG_WAITALL) != cnt)
+        if ( !ws.readHeadFrame(wsf) )
         {
-            ws.close();
-            shutdown(rec_fd,SHUT_RDWR);
+            ws.die("die",3);
             mtx.unlock();
             return;
         }
-        recv_len += cnt;
+        while ( recv_len < wsf.payload_length )
+        {
+            cnt = ws.readData(wsf, buffer, 204800);
+            proc = to_string(cnt);
+            a = proc.length();
+            ws.writeData(0x1, proc.c_str(), a);
+            if( cnt <= 0 || send(rec_fd, buffer, cnt, MSG_WAITALL) != cnt)
+            {
+                ws.close();
+                shutdown(rec_fd,SHUT_RDWR);
+                mtx.unlock();
+                return;
+            }
+            recv_len += cnt;
+        }
+        recv_len = 0;
+        ws_recv += wsf.payload_length;
     }
+    
+
+    cout << ws.readHeadFrame(wsf) << endl;
+    recv(rec_fd, buffer, 2, MSG_WAITALL);
+    ws.close();
     mtx.unlock();
 }

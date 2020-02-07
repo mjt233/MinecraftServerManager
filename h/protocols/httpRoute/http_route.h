@@ -1,5 +1,6 @@
 #include "wsTerminal.h"
 #include "wsFileUpload.h"
+#include "webAPI.h"
 /********************************************************************************************************
 * File name: http_route.h
 * Description:  HTTP路由模块
@@ -28,7 +29,9 @@ void httpRoute(int socket_fd, HTTPRequestInfo &HTTPRequest)
                 terminalAccess(HTTPRequest, socket_fd);
             }else if( HTTPRequest.url.substr(0,13) == "/fileupload" ){
                 wsFileUpload(HTTPRequest, socket_fd);
-            }else{
+            }else if( HTTPRequest.url.substr(0,5) == "/api/" ){
+                webAPI(socket_fd, HTTPRequest);
+            }else {
                 HTTPRespone.sendErrPage(socket_fd, code, filePath);
             }
             break;

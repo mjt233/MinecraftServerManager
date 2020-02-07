@@ -9,6 +9,25 @@
 *   2019.1.28   创建
 *********************************************************************************************************/
 
+/**
+ *  验证用户ID和服务器实例ID是否相匹配
+ *  执行该函数前注意加锁(SerMutex)
+ *  @return 匹配返回1 否则0
+*/
+int checkID(int SerID, int UsrID)
+{
+    if( SerList.count(SerID) == 0 ){
+        return 0;
+    }
+
+    Server *ser = SerList[SerID];
+    if( ser->UsrID == UsrID ){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
 // 提前声明 用于向WebSocket虚拟终端转发服务器的控制台IO
 void * writeWebSocket(void * arg);
 
@@ -150,30 +169,32 @@ int Server::remove(Controller *ctl)
 }
 int closeWebSocket(WebSocket *ws);
 
-/** 用于向服务器发出"发送文件"请求,
- *  @param name 文件名
- *  @param path 服务器接收文件的路径
- *  @param length 文件大小(Byte)
- *  @param ws WebSocket对象的地址
- *  @return 成功返回接收文件socket,失败返回-1
+/** 用于向服务器发出"创建任务"请求,
+ *  @param otherInfo 附加任务信息
+ *  @param mtx 任务锁
+ *  @return 成功返回任务socket通道,失败返回-1
  */ 
-SOCKET_T Server::startUpload(const char * name, const char * path, size_t length, mutex * mtx)
+SOCKET_T Server::createTask(unsigned char opcode, const char * otherInfo, size_t len, mutex * mtx)
 {
-    char buffer[1024] ={0};
+    if( len > 1000 )
+    {
+        return -1;
+    }
     int taskID;
+    char buffer[1024] = {0};
     SOCKET_T rec_fd;
     srand(time(NULL));
-    taskID = rand() % 10000 + 1;
+    taskID = rand() % 99999 + 1;
 
     // 随机生成任务ID
     while ( taskList.count(taskID) )
     {
-        taskID = rand() % 99999 + 1;
+        taskID = (rand() % 99999) + 1;
     }
     taskList[taskID] = -1;
     taskMutex[taskID] = mtx;
-    snprintf(buffer, 1024, "%s\n%s\n%ld\n%d", name, path, length, taskID);
-    writeSocketData(0x1, buffer, strlen(buffer));
+    snprintf(buffer, 1024, "%s\n%d", otherInfo, taskID);
+    writeSocketData(opcode, buffer, strnlen(buffer, 1024));
     for (size_t i = 0; i < 10; i++)
     {
         for (size_t j = 0; j < 10; j++)
@@ -193,6 +214,55 @@ SOCKET_T Server::startUpload(const char * name, const char * path, size_t length
     taskList.erase(taskID);
     statMutex.unlock();
     return -1;
+}
+
+
+/** 用于向服务器发出"发送文件"请求,
+ *  @param name 文件名
+ *  @param path 服务器接收文件的路径
+ *  @param length 文件大小(Byte)
+ *  @param mtx 任务锁
+ *  @return 成功返回接收文件socket,失败返回-1
+ */ 
+SOCKET_T Server::startUpload(const char * name, const char * path, size_t length, mutex * mtx)
+{
+    char info[1024];
+    snprintf(info, 1024, "%s\n%s\n%ld", name, path, length);
+    return createTask(0x1, info, strnlen(info, 1024), mtx);
+    // char buffer[1024] ={0};
+    // int taskID;
+    // SOCKET_T rec_fd;
+    // srand(time(NULL));
+    // taskID = rand() % 10000 + 1;
+
+    // // 随机生成任务ID
+    // while ( taskList.count(taskID) )
+    // {
+    //     taskID = rand() % 99999 + 1;
+    // }
+    // taskList[taskID] = -1;
+    // taskMutex[taskID] = mtx;
+    // snprintf(buffer, 1024, "%s\n%s\n%ld\n%d", name, path, length, taskID);
+    // writeSocketData(0x1, buffer, strlen(buffer));
+    // for (size_t i = 0; i < 10; i++)
+    // {
+    //     for (size_t j = 0; j < 10; j++)
+    //     {
+    //         usleep(100000);
+    //         statMutex.lock();
+    //         if( taskList[taskID] != -1 )
+    //         {
+    //             rec_fd = taskList[taskID];
+    //             statMutex.unlock();
+    //             return rec_fd;
+    //         }
+    //         statMutex.unlock();
+    //     }
+    // }
+    // statMutex.lock();
+    // taskList.erase(taskID);
+    // statMutex.unlock();
+    // return -1;
 
 }
 
