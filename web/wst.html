@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WebSocket传输文件测试</title>
+    <script>
+        var input;
+        var file;
+        function init()
+        {
+            input = document.getElementById("file")
+            input.addEventListener("change", (e) =>{
+                file = input.files[0]
+                
+            })
+        }
+        function constructFileInfo(fileName, targetPath, fileSize){
+            var res = fileName + "\n" + targetPath + "\n" + fileSize + "\n"
+            return res;
+        }
+        function sendFile()
+        {
+            var reader = new FileReader();
+            if( file == undefined )
+            {
+                throw new Error("未选择文件");
+            }
+            var SerID = document.getElementById("SerID").value
+            var UsrID = document.getElementById("UsrID").value
+            
+            if( UsrID == 0 || SerID == 0 || UsrID == undefined || SerID == undefined )
+            {
+                throw new Error("ID无效")
+            }
+
+            var info = constructFileInfo(file.name,"/",file.size);
+
+            var ws = new WebSocket("ws://" + location.host + "/fileupload?SerID=" + SerID + "&UsrID=" + UsrID)
+            ws.onopen = ()=>{
+                console.log("连接已打开");
+                reader.readAsBinaryString(file);
+                reader.onload = () =>{
+                    ws.send(info)
+                    ws.send(reader.result)
+                }
+                reader.onerror = () =>{
+                    console.log("error")
+                }
+            }
+            ws.onclose = ()=>{
+                console.log("连接已断开");
+            }
+            ws.onmessage = (e)=>{
+                console.log(e.data);
+            }
+        }
+    </script>
+</head>
+<body onload="init()">
+    <input type="text" id="SerID" value="1">
+    <input type="text" id="UsrID" value="12345">
+    <input type="file" name="" id="file">
+    <button onclick="sendFile()">测试</button>
+</body>
+</html>

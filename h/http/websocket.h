@@ -235,7 +235,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
     }
     wsFrame.FIN = ( one_char & 0x80 ) == 0x80;
     wsFrame.opcode = one_char & 0xF;
-
+    wsFrame.cur_read = 0;
     // 读取mask开关与payload_len
     if( recv( fd, (char *)&one_char, 1 , 0) <= 0 )
     {

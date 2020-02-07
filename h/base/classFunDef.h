@@ -4,10 +4,12 @@
 * Author: mjt233@qq.com
 * Version: 1.0
 * Date: 2019.1.28
-* History: none
+* History: 
+*   2019.2.6    移除管道相关函数 增加服务器接收文件函数
+*   2019.1.28   创建
 *********************************************************************************************************/
 
-// 提前声明
+// 提前声明 用于向WebSocket虚拟终端转发服务器的控制台IO
 void * writeWebSocket(void * arg);
 
 /*  各类的方法定义     */
@@ -19,7 +21,6 @@ Client::Client( int SerID, int UsrID, int socket )
     this->SerID = SerID;
     this->UsrID = UsrID;
     this->socket = socket;
-    pipe(pipe_fd);
 }
 
 void Client::setDisable()
@@ -36,23 +37,7 @@ void Client::setClose()
     isClose = true;
     statMutex.unlock();
 }
-int Client::writePipeData(frame_builder frame,const char * buf)
-{
-    size_t count = 0,total = 0;
-    pipeIOMutex.lock();
-    send(pipe_fd[1], frame.build(), 5, MSG_WAITALL);
-    while ( total < frame.length )
-    {
-        count = write(pipe_fd[1], buf, frame.length);
-        if ( count <=0 || count > frame.length )
-        {
-            break;
-        }
-        total += count;
-    }
-    pipeIOMutex.unlock();
-    return total;
-}
+
 
 // 向对象的socket描述符写数据
 int Client::writeSocketData(unsigned char opcode, const char * buf, unsigned int len)
@@ -165,8 +150,55 @@ int Server::remove(Controller *ctl)
 }
 int closeWebSocket(WebSocket *ws);
 
+/** 用于向服务器发出"发送文件"请求,
+ *  @param name 文件名
+ *  @param path 服务器接收文件的路径
+ *  @param length 文件大小(Byte)
+ *  @param ws WebSocket对象的地址
+ *  @return 成功返回接收文件socket,失败返回-1
+ */ 
+SOCKET_T Server::startUpload(const char * name, const char * path, size_t length, mutex * mtx)
+{
+    char buffer[1024] ={0};
+    int taskID;
+    SOCKET_T rec_fd;
+    srand(time(NULL));
+    taskID = rand() % 10000 + 1;
+
+    // 随机生成任务ID
+    while ( taskList.count(taskID) )
+    {
+        taskID = rand() % 99999 + 1;
+    }
+    taskList[taskID] = -1;
+    taskMutex[taskID] = mtx;
+    snprintf(buffer, 1024, "%s\n%s\n%ld\n%d", name, path, length, taskID);
+    writeSocketData(0x1, buffer, strlen(buffer));
+    for (size_t i = 0; i < 10; i++)
+    {
+        for (size_t j = 0; j < 10; j++)
+        {
+            usleep(100000);
+            statMutex.lock();
+            if( taskList[taskID] != -1 )
+            {
+                rec_fd = taskList[taskID];
+                statMutex.unlock();
+                return rec_fd;
+            }
+            statMutex.unlock();
+        }
+    }
+    statMutex.lock();
+    taskList.erase(taskID);
+    statMutex.unlock();
+    return -1;
+
+}
+
 Server::~Server()
 {    
+    SerMutex.lock();
 
     // 将自身设置为不可用
     setDisable();
@@ -197,6 +229,7 @@ Server::~Server()
 
     // 将该Server从服务器列表中移除
     SerList.erase(SerID);
+    SerMutex.unlock();
 }
 
 
@@ -227,8 +260,6 @@ Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID
 void Controller::stop()
 {
     setClose();
-    close(pipe_fd[1]);
-    close(pipe_fd[0]);
     shutdown( socket, SHUT_RDWR );
 }
 
@@ -237,7 +268,3 @@ Controller::~Controller()
     ser->remove(this);
     delete(th2);
 }
-
-
-
-

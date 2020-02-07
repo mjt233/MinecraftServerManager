@@ -43,16 +43,6 @@ void Server::server_read()
             cout << endl;
             return ;
         }
-        if ( DEBUG_MODE )
-        {
-            cout << "收到来自服务器的帧,以下为具体帧信息" << endl;
-            for (size_t i = 0; i < 5; i++)
-            {
-                printf("%02x ",head[i]);
-            }
-            cout << endl;
-        }
-        
         switch (f_builder.opcode)
         {
             case 0:
@@ -68,17 +58,6 @@ void Server::server_read()
                     this->sbMutex.lock();
                     buffer_append(&this->sb, buffer);
                     this->sbMutex.unlock();
-
-                    if ( DEBUG_MODE )
-                    {
-                        cout << "收到来自服务器的信息:" << endl;
-                        for (size_t i = 0; i < count; i++)
-                        {
-                            cout << buffer[i];
-                        }
-                        cout << endl;
-                    }
-                    
 
                     // 广播给所有控制器
                     Broadcast(buffer, count);

@@ -8,12 +8,26 @@
 *   2019.2.6    增加HTTP_POST 常量标识
 *   2019.1.28   创建
 *********************************************************************************************************/
-
-
+/*
+服务器/控制器数据帧定义
+|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|0 1 2 3 4 5 6 7|
++-+-------------+---------------------------------------------------------------+
+|F|             |                                                               |
+|I|   opcode    |             Data length(4 Bytes)                              |
+|N|(unsigned)   |                                                               |
++-+-------------+---------------------------------------------------------------+
+|                                                                               |
+|                            other Data                                         |
+|                                                                               |
++-+-------------+---------------------------------------------------------------+
+opcode操作码定义
+0x0: 服务器控制台纯文本传输
+0x1: 控制端请求发送文件
+*/
 #define DEFAULT_CHAR_BUFFER_SIZE 1024               // 默认的buffer大小
 #define SERVER 0                                    // 服务器TAG
 #define CONTROLLER 1                                // 控制器TAG
-#define COMMAND 2                                   // 快捷命令TAG
+#define TRANSFERFILE 2                                   // 快捷命令TAG
 #define HTTP_GET 3                                  // HTTP请求
 #define HTTP_POST 4                                 // HTTP POST请求
 #define UNKNOW_TYPE -1                              // 未知TAG
@@ -55,7 +69,7 @@ void * manager_server_start(void * arg);                            // 连接入
 void * server_read(void * arg);                                     // 从Server的socket读取数据并处理
 void * server_write(void * arg);                                    // 往Server的socket写入数据
 void * server_write_ctl_socket(void * arg);                         // 往Server的Controller的socket写入数据
-void * controller_read_pipe(void * Controller_arg);                 // 从Controller中的pipe读取数据并发送到socket
+// void * controller_read_pipe(void * Controller_arg);                 // 从Controller中的pipe读取数据并发送到socket
 void * controller_read_socket(void * Controller_arg);               // 从Controller中的socket读取数据并发送到所接入的Server的socket
 
 void invert(char * buf, size_t len);
@@ -69,17 +83,15 @@ class Client{
     public:
         int SerID,              // 服务器ID
             UsrID,              // 用户ID
-            socket,             // socket_fd文件描述符
-            pipe_fd[2];         // 数据缓冲管道
+            socket;             // socket_fd文件描述符
         bool isClose = false,   // 管道与socket流是否已被关闭
              disable = false;   // 是否不可用
         mutex statMutex;        // 资源状态锁
         mutex netIOMutex;       // socket读写锁
-        mutex pipeIOMutex;      // 管道读写锁
         Client( int SerID, int UsrID, int socket );
         void setDisable();
         void setClose();
-        int writePipeData(frame_builder frame,const char * buf);
+        // int writePipeData(frame_builder frame,const char * buf);
         int writeSocketData(unsigned char opcode, const char * buf, unsigned int len);
 };
 
@@ -99,8 +111,10 @@ class Server : public Client{
     public :
         thread *th1;
         mutex sbMutex,cliMutex;
-        list<Controller*> CTLList;
-        list<WebSocket*> WSList;
+        list<Controller*> CTLList;      // 控制器列表
+        list<WebSocket*> WSList;        // WebSocket会话列表
+        map<int,SOCKET_T> taskList;     // 任务会话列表
+        map<int,mutex*> taskMutex;       // 任务会话同步锁
         pthread_t thid,thid2;
         stringBuffer sb;
         Server( int SerID, int UsrID, int socket );
@@ -111,6 +125,7 @@ class Server : public Client{
         int remove(Controller *ctl);
         int remove(WebSocket *ws);
         int Broadcast(char *buf,size_t len);
+        SOCKET_T startUpload(const char * name, const char * path, size_t length, mutex * mtx);
 };
 
 

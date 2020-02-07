@@ -67,8 +67,7 @@ void controller_join(baseInfo &IDInfo)
 +-+-------------+---------------------------------------------------------------+
 opcode操作码定义
 0x0: 服务器控制台纯文本传输
-0x1: 
-
+0x1: 控制端请求发送文件
 */
 void Controller::controller_read_socket()
 {

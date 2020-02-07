@@ -8,6 +8,11 @@
 #include<ctime>
 #include<signal.h>
 using namespace std;
+
+string serAddr;
+unsigned short serPort;
+int SERID,USRID;
+// 解决大小端序问题
 void invert(char * buf, size_t len)
 {
     char t;
@@ -20,13 +25,12 @@ void invert(char * buf, size_t len)
 }
 #include"../h/base/frame_builder.h"
 #include"../h/base/socketTool.h"
-#include "remote.h"
 #include "socketPipe.h"
-void ReadData();
-void ReadRemoteData(char const *argv[]);
-void stop(int sign);
-// 服务器socket as pipe IO
 socketPipe outputPipe,inputPipe;
+#include "remote.h"
+
+void ReadData();
+void stop(int sign);
 
 
 pid_t pid,      // 子进程ID
@@ -42,6 +46,10 @@ int main(int argc, char const *argv[])
         cout << "[usage] ./demo [addr] [port] [SerID] [UsrID] \"[Server Start Command]\"" << endl;
         return 1;
     }
+    serAddr = argv[1];
+    serPort = atoi( argv[2] );
+    SERID = atoi( argv[3] );
+    USRID = atoi( argv[4] );
     if ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4])))
     {
         return 1;
@@ -109,63 +117,4 @@ void ReadData()
         usleep(50000);
     }
     
-}
-
-void ReadRemoteData(char const *argv[])
-{
-    char buffer[2048];
-    int count = 0,total = 0;
-    frame_head_data frame;
-    frame_builder fb;
-    START :
-    while ( recv( remote_socket, frame, 5, MSG_WAITALL ) == 5)
-    {
-        fb.analyze(frame);
-        if ( fb.FIN != 1 )
-        {
-            cout << "无效数据帧信息" << endl;
-            exit(EXIT_FAILURE);
-        }
-        count = 0;total = 0;
-        switch ( fb.opcode )
-        {
-        case 0x0:
-            while ( total < fb.length )
-            {
-                if ( ( count = recv(remote_socket, buffer, 2048, 0) ) <=0 )
-                {
-                    cout << "接收数据错误" << endl;
-                }
-                total += count;
-                inputPipe.write(buffer, count);
-                cout << "收到数据" << endl;
-                for (size_t i = 0; i < count; i++)
-                {
-                    cout << buffer[i];
-                }
-                cout << endl;
-                
-            }
-            break;
-        
-        default:
-            cout << "无效控制码" << endl;
-            shutdown(remote_socket, SHUT_RDWR);
-            goto END;
-            break;
-        }
-    }
-    END:
-    Connected = 0;
-    close(remote_socket);
-    int i = 0;
-    do
-    {
-        cout << "连接已断开..准备重连(第" << ++i << "次)" << endl;
-        sleep(5);
-    } while ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4]))  );
-    Connected = 1;
-    std::cout << "重连成功" << std::endl;
-    
-    goto START;
 }

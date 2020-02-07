@@ -12,6 +12,7 @@
 
 #include "access/ctl.h"
 #include "access/ser.h"
+#include "access/transferfile.h"
 #include "http.h"
 #ifndef SERVER_ROUTE
 
@@ -34,9 +35,9 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
     }else if( !strcmp( buffer, "CTL" ) )
     {
         tag = CONTROLLER;
-    }else if( !strcmp( buffer, "CMD" ) )
+    }else if( !strcmp( buffer, "TSF" ) )
     {
-        tag = COMMAND;
+        tag = TRANSFERFILE;
     }else if( !strcmp( buffer, "GET" ) ){
             return HTTP_GET;
     }else if( !strcmp( buffer, "POS") ) {
@@ -58,7 +59,7 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
     if ( tag == SERVER && isServerExist )
     {
         return SERID_EXIST;
-    }else if( (tag == CONTROLLER || tag == COMMAND) && !isServerExist )
+    }else if( (tag == CONTROLLER || tag == TRANSFERFILE) && !isServerExist )
     {
         return SERID_UNEXIST;
     }
@@ -88,7 +89,8 @@ void * protocols_route(void * arg)
         case CONTROLLER:
             controller_join(IDInfo);
             break;
-        case COMMAND:
+        case TRANSFERFILE:
+            transferfile(IDInfo);
             break;
         case HTTP_GET:
             http_GET(IDInfo);
