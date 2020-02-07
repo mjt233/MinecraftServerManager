@@ -20,6 +20,7 @@ public class ConsoleConfig implements IQzConfig {
 	private Font font;
 	
 	
+	
 	public Color getBgColor() {
 		return bgColor;
 	}
@@ -38,14 +39,16 @@ public class ConsoleConfig implements IQzConfig {
 	public Font getFont() {
 		return font;
 	}
-	private ConsoleConfig() {
+	
+	public ConsoleConfig() {
+		setDefaultConfig();
 	}
 	
-	static ConsoleConfig getDefaultConfig() {
-		ConsoleConfig console = new ConsoleConfig();
-		console.setDefaultConfig();
-		return console;
-	}
+//	static ConsoleConfig getDefaultConfig() {
+//		ConsoleConfig console = new ConsoleConfig();
+//		console.setDefaultConfig();
+//		return console;
+//	}
 
 	public void setDefaultConfig() {
 		this.bgColor = ConsolePanel.DEFAULT_BG_COLOR;

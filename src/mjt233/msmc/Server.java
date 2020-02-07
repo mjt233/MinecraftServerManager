@@ -12,7 +12,7 @@ class Server extends AccessClient{
 			int count = 0;
 			byte[] buf = new byte[30];
 			count = socket.getInputStream().read(buf);
-			throw new AccessRefuseException(new String(b)+new String(buf, 0, count));
+			throw new AccessRefuseException(new String(b)+new String(buf, 0, count, AccessClient.CHARSET));
 		}
 	}
 	

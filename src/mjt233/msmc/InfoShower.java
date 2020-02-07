@@ -23,7 +23,7 @@ public class InfoShower implements Runnable{
 			throw e;
 		} catch (AccessRefuseException e) {
 //			show("接入失败,原因:"+e.getMessage());
-			listener.linkrefused(e.getMessage());
+			listener.linkRefused(e.getMessage());
 			e.printStackTrace();
 			throw e;
 		}
@@ -52,7 +52,7 @@ public class InfoShower implements Runnable{
 						}
 						t -= count;
 //						show(new String(buf, 0, count)+"\n");
-						listener.readSucceeded(new String(buf, 0, count)+"\n");
+						listener.readSucceeded(new String(buf, 0, count, AccessClient.CHARSET)+"\n");
 					}
 					break;
 				}

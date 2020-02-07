@@ -10,8 +10,12 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.prefs.Preferences;
 
 import javax.swing.JFrame;
@@ -38,13 +42,18 @@ import javax.swing.JButton;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame implements IToConfig{
-	public static final String PATH_ROOT;
-	public static final String PATH_CONFIG;
-	public static final String PATH_SERVER_CONFIG;
+	public static final File PATH_ROOT;
+	public static final File PATH_CONFIG;
+	public static final File PATH_CRASH_REPORT;
+	public static final File FILE_CONFIG_WIN;
+	public static final File FILE_SERVER_CONFIG;
 	static {
-		PATH_ROOT = System.getProperty("user.dir").replace('\\', '/');
-		PATH_CONFIG = PATH_ROOT + "/config/windows.json";
-		PATH_SERVER_CONFIG = PATH_ROOT + "/config/server.json";
+		PATH_ROOT = new File(System.getProperty("user.dir").replace('\\', '/'));
+		PATH_CONFIG = new File(PATH_ROOT, "config");
+		PATH_CRASH_REPORT = new File(PATH_ROOT, "carsh-report");
+		
+		FILE_CONFIG_WIN = new File(PATH_CONFIG, "windows.json");
+		FILE_SERVER_CONFIG = new File(PATH_CONFIG, "server.json");
 	}
 	private JPanel contentPane;
 	private ConsolePanel cp;
@@ -67,9 +76,30 @@ public class MainFrame extends JFrame implements IToConfig{
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
+					crashReport(e);
 				}
 			}
 		});
+	}
+
+	protected static void crashReport(Exception e) {
+		File crFolder = PATH_CRASH_REPORT;
+		if(!crFolder.exists()) crFolder.mkdirs();
+		String date = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date());
+		File crFile = new File(crFolder, "crash-"+date+".txt");
+		try {
+			if(!crFile.exists()) crFile.createNewFile();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		try {
+			PrintStream ps = new PrintStream(crFile);
+			e.printStackTrace(ps);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 	}
 
 	/**
@@ -245,14 +275,20 @@ public class MainFrame extends JFrame implements IToConfig{
 	}
 	
 	private void initConfig() {
-		File[] cfs = new File[] {new File(PATH_CONFIG), new File(PATH_SERVER_CONFIG)};
+		File[] cfs = new File[] {FILE_CONFIG_WIN, FILE_SERVER_CONFIG};
 		for(int i=0; i<cfs.length; i++) {
 			if(cfs[i].exists()) {
 				try {
 					FileInputStream cis = new FileInputStream(cfs[i]);
 					switch(i) {
-					case 0: config = WinConfig.read(cis); break;
-					case 1: server = ServerConfig.read(cis); break;
+					case 0: 
+						config = WinConfig.read(cis);
+						if(config == null) config = new WinConfig();
+						break;
+					case 1: 
+						server = ServerConfig.read(cis);
+						if(server == null) server = new ServerConfig();
+						break;
 					}
 					cis.close();
 				} catch (IOException e) {
@@ -261,10 +297,9 @@ public class MainFrame extends JFrame implements IToConfig{
 			}
 			else {
 				switch (i) {
-				case 0: config = WinConfig.getDefaultConfig(); break;
+				case 0: config = new WinConfig(); break;
 				case 1: server = new ServerConfig(); break;
 				}
-				saveConfig();
 			}
 			String laf = config.getLookAndFeel();
 			try {
@@ -274,18 +309,19 @@ public class MainFrame extends JFrame implements IToConfig{
 				e.printStackTrace();
 			}
 		}
+		saveConfig();
 	}
 	private void initLater() {
 		setServer(server);
 	}
 	
 	public void saveConfig() {
-		File[] cfs = new File[] {new File(PATH_CONFIG), new File(PATH_SERVER_CONFIG)};
+		File cFolder = PATH_CONFIG;
+		if(!cFolder.exists()) cFolder.mkdirs(); 
+		File[] cfs = new File[] {FILE_CONFIG_WIN, FILE_SERVER_CONFIG};
 		for(int i=0; i<cfs.length; i++) {
 			try {
 				if(!cfs[i].exists()) {
-					File cFolder = cfs[i].getParentFile();
-					if(!cFolder.exists()) cFolder.mkdirs(); 
 					cfs[i].createNewFile();
 				}
 				FileOutputStream os = new FileOutputStream(cfs[i]);
@@ -321,7 +357,7 @@ public class MainFrame extends JFrame implements IToConfig{
 	public void setServer(ServerConfig s) {
 		this.server = s;
 		serverInfo.setText("IP: [" + server.getAddress() + ":" + server.getPort()
-					+ "], SID:" + server.getServerID() + ", UID:" + server.getUserID());
+		+ "], SID:" + server.getServerID() + ", UID:" + server.getUserID());
 		linkStop();
 		if(s.auto) linkStart();
 	}
@@ -335,7 +371,7 @@ public class MainFrame extends JFrame implements IToConfig{
 			cp.appendMsgLine("连接失败\n");
 			linkingStates.setText("[连接失败]");
 		}
-		public void linkrefused(String msg) {
+		public void linkRefused(String msg) {
 			cp.appendMsgLine("接入失败,原因:"+msg+"\n");
 			linkingStates.setText("[接入失败]");
 		}

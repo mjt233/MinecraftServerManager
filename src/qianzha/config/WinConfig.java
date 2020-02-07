@@ -36,7 +36,8 @@ public class WinConfig implements IQzSavableConfig {
 	public void setRestart(int restart) {
 		this.restart = restart;
 	}
-	protected WinConfig() {
+	public WinConfig() {
+		setDefaultConfig();
 	}
 	
 	@JSONField(name="Look&Feel")
@@ -61,16 +62,9 @@ public class WinConfig implements IQzSavableConfig {
 	}
 	
 	
-	
-	public static WinConfig getDefaultConfig() {
-		WinConfig ret = new WinConfig();
-		ret.setDefaultConfig();
-		return ret;
-	}
-	
 	public void setDefaultConfig() {
 		lookAndFeel = getDefaultLAF();
-		console = ConsoleConfig.getDefaultConfig();
+		console = new ConsoleConfig();
 	}
 	
 	public static WinConfig getConfig(IToConfig itc) {

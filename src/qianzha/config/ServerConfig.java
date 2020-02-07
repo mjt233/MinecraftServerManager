@@ -11,7 +11,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 public class ServerConfig implements IQzSavableConfig {
 	public static final String DEFAULT_ADDRESS = "www.xiaotao233.top";
 	public static final int DEFAULT_PORT = 6636;
-	public static final int DEFAULT_SID = 2;
+	public static final int DEFAULT_SID = 1;
 	public static final int DEFAULT_UID = 12345;
 	
 	@JSONField(name = "Address")

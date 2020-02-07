@@ -3,8 +3,10 @@ package mjt233.msmc;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 
 public abstract class AccessClient{
+	public static final Charset CHARSET = Charset.forName("UTF-8");
 	public Socket socket;
 	public AccessClient(String addr, int port) throws UnknownHostException, IOException {
 		socket = new Socket(addr, port);
