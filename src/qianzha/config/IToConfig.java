@@ -5,6 +5,7 @@ import qianzha.frame.ConsolePanel;
 import qianzha.frame.MainFrame;
 
 public interface IToConfig {
-	public ConsolePanel getConsolePanel();
-	public MainFrame getFrame();
+	ConsolePanel getConsolePanel();
+	MainFrame getFrame();
+	void setServer(ServerConfig s);
 }

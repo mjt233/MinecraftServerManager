@@ -11,7 +11,7 @@ import javax.swing.JList;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import qianzha.config.QzConfig;
+import qianzha.config.WinConfig;
 import qianzha.frame.icon.IconQz;
 
 @SuppressWarnings("serial")
@@ -23,13 +23,13 @@ public class ConfigLAFSetter implements IConfigSetter<String> {
 	private JLabel lafLabel;
 	private String lafCurrent = UIManager.getLookAndFeel().getClass().getName();
 	private JComboBox<?> lafCom;
-	private QzConfig config;
+	private WinConfig config;
 	private String oldValue;
 	/**
 	 * Create the panel.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ConfigLAFSetter(QzConfig config) {
+	public ConfigLAFSetter(WinConfig config) {
 		this.config = config;
 		oldValue = config.getLookAndFeel();
 		

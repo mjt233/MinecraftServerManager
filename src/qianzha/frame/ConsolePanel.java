@@ -90,6 +90,9 @@ public class ConsolePanel extends JPanel {
 	public List<IConsoleSender> getSenders() { return this.senders; }
 	public boolean removeSender(IConsoleSender o) { return this.senders.remove(o); };
 	
+	public void clear() {
+		this.msgArea.setText("");
+	}
 	
 	public void appendMsgLine(String line) {
 		msgArea.append("\n"+line);

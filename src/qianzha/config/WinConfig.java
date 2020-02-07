@@ -3,7 +3,6 @@ package qianzha.config;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 
 import javax.swing.UIManager;
 
@@ -14,8 +13,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import qianzha.frame.ConsolePanel;
 import qianzha.frame.MainFrame;
 
-public class QzConfig {
-	public static final Charset DEFAULT_CHARSET= Charset.forName("UTF-8");
+public class WinConfig implements IQzSavableConfig {
 	public static final int RS_NONEED = 0;
 	public static final int RS_LAF = 1;
 	@JSONField(serialize = false)
@@ -38,7 +36,7 @@ public class QzConfig {
 	public void setRestart(int restart) {
 		this.restart = restart;
 	}
-	protected QzConfig() {
+	protected WinConfig() {
 	}
 	
 	@JSONField(name="Look&Feel")
@@ -64,8 +62,8 @@ public class QzConfig {
 	
 	
 	
-	public static QzConfig getDefaultConfig() {
-		QzConfig ret = new QzConfig();
+	public static WinConfig getDefaultConfig() {
+		WinConfig ret = new WinConfig();
 		ret.setDefaultConfig();
 		return ret;
 	}
@@ -75,8 +73,8 @@ public class QzConfig {
 		console = ConsoleConfig.getDefaultConfig();
 	}
 	
-	public static QzConfig getQzConfig(IToConfig itc) {
-		QzConfig ret = new QzConfig();
+	public static WinConfig getConfig(IToConfig itc) {
+		WinConfig ret = new WinConfig();
 		ret.lookAndFeel = UIManager.getLookAndFeel().getClass().getName();
 		ret.setConfig(itc);
 		return ret;
@@ -85,34 +83,33 @@ public class QzConfig {
 	public void setConfig(IToConfig itc) {
 		ConsolePanel cp = itc.getConsolePanel();
 		MainFrame f = itc.getFrame();
-		console = ConsoleConfig.getConsoleConfig(itc.getConsolePanel());
+		console = ConsoleConfig.getConfig(itc);
 		cp.appendTestMsg(""+f.getExtendedState());
 		cp.appendTestMsg(""+f.getSize());
 		cp.appendTestMsg(""+f.getPreferredSize());
-
 	}
 	
 	public void doConfig(IToConfig toConfig){
-		console.doConfig(toConfig.getConsolePanel());
+		console.doConfig(toConfig);
 	}
 	
 	
 	public void save(OutputStream os) throws IOException {
-		JSON.writeJSONString(os, DEFAULT_CHARSET, this, SerializerFeature.PrettyFormat);
+		JSON.writeJSONString(os, IQzSavableConfig.DEFAULT_CHARSET, this, SerializerFeature.PrettyFormat);
 	}
 	
 	public String toJSONString() {
 		return JSON.toJSONString(this, SerializerFeature.PrettyFormat);
 	}
 	
-	public static QzConfig read(InputStream is) throws IOException {
-		QzConfig ret = JSON.parseObject(is, DEFAULT_CHARSET, QzConfig.class);
+	public static WinConfig read(InputStream is) throws IOException {
+		WinConfig ret = JSON.parseObject(is, IQzSavableConfig.DEFAULT_CHARSET, WinConfig.class);
 		return ret;
 	}
 	
-	public static QzConfig read(String json) {
-		QzConfig ret = new QzConfig();
-		ret = JSON.parseObject(json, QzConfig.class);
+	public static WinConfig read(String json) {
+		WinConfig ret = new WinConfig();
+		ret = JSON.parseObject(json, WinConfig.class);
 		return ret;
 	}
 	

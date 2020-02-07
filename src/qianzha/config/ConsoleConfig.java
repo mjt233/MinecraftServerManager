@@ -7,7 +7,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 import qianzha.frame.ConsolePanel;
 
-public class ConsoleConfig {
+public class ConsoleConfig implements IQzConfig {
 	public static final String KEY_BG_COLOR = "BGColor";
 	public static final String KEY_FONT_COLOR = "FontColor";
 	public static final String KEY_FONT = "Font";
@@ -43,25 +43,31 @@ public class ConsoleConfig {
 	
 	static ConsoleConfig getDefaultConfig() {
 		ConsoleConfig console = new ConsoleConfig();
-		console.bgColor = ConsolePanel.DEFAULT_BG_COLOR;
-		console.fontColor = ConsolePanel.DEFAULT_FONT_COLOR;
-		console.font = ConsolePanel.DEFAULT_FONT;
+		console.setDefaultConfig();
 		return console;
 	}
+
+	public void setDefaultConfig() {
+		this.bgColor = ConsolePanel.DEFAULT_BG_COLOR;
+		this.fontColor = ConsolePanel.DEFAULT_FONT_COLOR;
+		this.font = ConsolePanel.DEFAULT_FONT;
+	}
 	
-	static public ConsoleConfig getConsoleConfig(ConsolePanel cp) {
+	static public ConsoleConfig getConfig(IToConfig toGet) {
 		ConsoleConfig console = new ConsoleConfig();
-		console.setConfig(cp);
+		console.setConfig(toGet);
 		return console;
 	}
 	
-	public void setConfig(ConsolePanel cp) {
+	public void setConfig(IToConfig toGet) {
+		ConsolePanel cp = toGet.getConsolePanel();
 		this.bgColor = cp.getBackground();
 		this.fontColor = cp.getFontColor();
 		this.font = cp.getFont();
 	}
-	
-	public void doConfig(ConsolePanel cp) {
+
+	public void doConfig(IToConfig itc) {
+		ConsolePanel cp = itc.getConsolePanel();
 		cp.setBackground(bgColor);
 		cp.setFontColor(fontColor);
 		cp.setFont(font);

@@ -21,18 +21,18 @@ import javax.swing.border.TitledBorder;
 
 import qianzha.config.ConsoleConfig;
 import qianzha.config.IToConfig;
-import qianzha.config.QzConfig;
+import qianzha.config.WinConfig;
 
 @SuppressWarnings("serial")
 public class ConfigPanel extends JPanel {
 	private JTextArea msgArea;
-	private QzConfig config;
+	private WinConfig config;
 	private IToConfig toConfig;
 	IConfigSetter<?>[] setters;
 	/**
 	 * Create the panel.
 	 */
-	public ConfigPanel(QzConfig config, IToConfig toConfig) {
+	public ConfigPanel(WinConfig config, IToConfig toConfig) {
 		this.config = config;
 		this.toConfig = toConfig;
 		setLayout(new BorderLayout(0, 0));

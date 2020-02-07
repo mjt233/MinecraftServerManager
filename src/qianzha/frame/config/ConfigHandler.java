@@ -1,14 +1,14 @@
 package qianzha.frame.config;
 
-import qianzha.config.QzConfig;
+import qianzha.config.WinConfig;
 
-public class ConfigHandler extends QzConfig {
+public class ConfigHandler extends WinConfig {
 	
 	// setter(name, getComp, getClass, get, set), 
 	{
 	}
 	IConfigSetter<?>[] setters;
-	public ConfigHandler(QzConfig config) {
+	public ConfigHandler(WinConfig config) {
 		setters = new IConfigSetter<?>[] {
 					};
 	}

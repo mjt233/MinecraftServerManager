@@ -32,6 +32,10 @@ public abstract class AccessClient{
 		return info;
 	}
 	
+	public void stop() throws IOException {
+		socket.close();
+	}
+	
 	/**
 	 * 从该对象中读取length个byte的数据
 	 * 请务必保障要读取的长度准确,严格遵循数据帧的信息,否则将可能误读下一数据帧的信息
