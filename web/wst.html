@@ -35,7 +35,7 @@
                 throw new Error("ID无效")
             }
 
-            var info = constructFileInfo(file.name,"/",file.size);
+            var info = constructFileInfo(file.name,"wow/",file.size);
 
             var ws = new WebSocket("ws://" + location.host + "/fileupload?SerID=" + SerID + "&UsrID=" + UsrID)
             ws.onopen = ()=>{
@@ -52,8 +52,10 @@
             ws.onclose = ()=>{
                 console.log("连接已断开");
             }
+            var total = file.size
+            var curr = 0;
             ws.onmessage = (e)=>{
-                console.log(e.data);
+                console.log(e.data)
             }
         }
     </script>

@@ -147,30 +147,44 @@ void acceptFile(const char * data, size_t len)
         close(f_sock);
         return;
     }
-
+    char cwd[1024];
+    getcwd(cwd, 1024);
+    char newFilePath[2048];
     char buffer[8192] = {0};
-    size_t cnt,s = fileLen;
+    snprintf(newFilePath, 2048, "%s/%s/%s",cwd,path,name);
     if ( recv(f_sock, buffer, strnlen(id, 20), 0) != strnlen(id, 64) || strncmp(id, buffer, 20))
     {
         cout << "接收文件连接认证失败 MSG: " << buffer << " " << strnlen(id,20) << endl;
         close(f_sock);
         return;
     }
+    
+    size_t cnt,s = fileLen;
+    FILE *fp = fopen(newFilePath, "wb");
+    if( !fp )
+    {
+        cout << "文件创建失败" << endl;
+        close(f_sock);
+        return;
+    }
+
+    // 开始接收文件
     while ( s > 0 )
     {
         cnt = recv(f_sock, buffer, s > 8192 ? 8192 : s, 0);
         if( cnt <= 0 )
         {
             close(f_sock);
-            cout << "接收错误" << endl;
+            cout << "接收错误 已接收:" << fileLen - s << endl;
+            fclose(fp);
             return;
         }
-        for (size_t i = 0; i < cnt; i++)
-        {
-            cout << buffer[i];
-        }
         s -= cnt;
+        fwrite(buffer, cnt, 1, fp);
     }
+    send(f_sock, "OK", 2, MSG_WAITALL);
+    cout << "接收完成 已接收:" << fileLen - s << " Bytes 文件位于: " << newFilePath << endl;
+    fclose(fp);
     cout << endl;
     
 }
