@@ -4,6 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -18,14 +21,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.prefs.Preferences;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
 
+import mjt233.msmc.AccessClient;
 import mjt233.msmc.AccessRefuseException;
 import mjt233.msmc.ILinkListener;
 import mjt233.msmc.InfoShower;
@@ -34,11 +40,6 @@ import qianzha.config.ServerConfig;
 import qianzha.config.WinConfig;
 import qianzha.frame.config.ConfigPanel;
 import qianzha.frame.icon.IconQz;
-import javax.swing.SwingConstants;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.JButton;
 
 @SuppressWarnings("serial")
 public class MainFrame extends JFrame implements IToConfig{
@@ -376,7 +377,7 @@ public class MainFrame extends JFrame implements IToConfig{
 			linkingStates.setText("[接入失败]");
 		}
 		public void readSucceeded(String readed) {
-			cp.appendMsgLine(readed);
+			cp.appendMsg(readed);
 		}
 		public void linkBreak() {
 			cp.appendMsgLine("连接已断开\n");
@@ -414,7 +415,7 @@ public class MainFrame extends JFrame implements IToConfig{
 						public void send(ActionEvent e, ConsolePanel cp, String text) {
 							String str = text+"\n";
 							try {
-								is.ac.write(0x0, str.getBytes());
+								is.ac.write(0x0, str.getBytes(AccessClient.CHARSET));
 							} catch (IOException e1) {
 								cp.appendMsg("SenderError", "-------信息发送失败-------");
 							}

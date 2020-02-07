@@ -93,11 +93,15 @@ public class ConsolePanel extends JPanel {
 	public void clear() {
 		this.msgArea.setText("");
 	}
-	
-	public void appendMsgLine(String line) {
-		msgArea.append("\n"+line);
+
+	public void appendMsg(String line) {
+		msgArea.append(line);
 		msgArea.setCaretPosition(msgArea.getText().length());
 //		messageArea.paintImmediately(messageArea.getBounds());
+	}
+	
+	public void appendMsgLine(String line) {
+		appendMsg("\n"+line);
 	}
 	public void appendTestMsg(String msg) {
 		appendMsg("TestMsg", msg);

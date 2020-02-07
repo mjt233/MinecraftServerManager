@@ -52,7 +52,7 @@ public class InfoShower implements Runnable{
 						}
 						t -= count;
 //						show(new String(buf, 0, count)+"\n");
-						listener.readSucceeded(new String(buf, 0, count, AccessClient.CHARSET)+"\n");
+						listener.readSucceeded(new String(buf, 0, count, AccessClient.CHARSET));
 					}
 					break;
 				}
