@@ -33,10 +33,15 @@ class HTTPResponeInfo : public HTTPInfo{
         // 向目标传输文件内容
         int outputFile(int fd, string filePath);
         int outputFile(int fd, string filePath, int range_first, int range_right);
+        int sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, string headerInfo, string msg);
+        void setJsonHeader();
 };
 
 
-
+void HTTPResponeInfo::setJsonHeader()
+{
+    header["Content-Type"] = "application/json";
+}
 
 
 // 生成HTTP响应报文header
@@ -55,6 +60,24 @@ const char * HTTPResponeInfo::getRespone()
     return HTTPMsg.c_str();
 }
 
+/**
+ * 发送JSON格式响应并关闭连接
+ * @param fd SOCKET描述符
+ * @param httpCode HTTP响应状态码
+ * @param headerInfo HTTP响应状态消息
+ * @param msg json数据消息
+*/
+int HTTPResponeInfo::sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, string headerInfo, string msg)
+{
+    code = httpCode;
+    info = headerInfo;
+    string json = "{\"code\":" + to_string(statCode) + ",\"msg\":\""+ msg +"\"}";
+    header["Content-Type"] = "application/json";
+    header["Content-Length"] = to_string(json.length());
+    sendHeader(fd);
+    send(fd,json.c_str(),json.length(), MSG_WAITALL);
+}
+
 // 生成HTTP响应报文header
 const char * HTTPResponeInfo::getRespone( int autoAddContentType )
 {
@@ -68,7 +91,10 @@ const char * HTTPResponeInfo::getRespone( int autoAddContentType )
     return HTTPMsg.c_str();
 }
 
-// 发送HTTP响应报文Header 失败返回-1或0
+/**
+ *  发送HTTP报文头部
+ *  @return 失败返回-1 or 0 成功返回正整数
+*/
 int HTTPResponeInfo::sendHeader(int fd)
 {
     getRespone();

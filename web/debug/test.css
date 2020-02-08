@@ -1,0 +1,119 @@
+body{
+    margin: 0px;
+    padding: 0px;
+}
+
+.title{
+    text-align: center;
+}
+table{
+    width: 100%;
+    background-color: blanchedalmond;
+}
+table tr{
+    overflow: hidden;
+}
+input{
+    height: 24px;
+    border-radius: 2px;
+    border: 1px solid blue;
+}
+#form{
+    width: 50%;
+    float: left;
+}
+
+#respone{
+    width: 50%;
+    float: left;
+    background-color: beige;
+    transition: all 0.5s;
+}
+
+
+.btn-group{
+    float: left;
+    width: 100%;
+}
+
+.btn-group button{
+    width: 10%;
+    height: 48px;
+    border-radius: 5px;
+    background-color: white;
+    border-style: solid;
+    border-color: rgb(112, 182, 112);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-group button:hover{
+    background-color: rgb(112, 182, 112);
+}
+
+
+.btn-group .submit{
+    border-color: rgb(147, 147, 255);
+}
+.btn-group .submit:hover{
+    background-color: rgb(147, 147, 255);
+}
+
+.rm{
+    width: 100%;
+    height: 25px;
+    border: none;
+    border-radius: 5px;
+    background-color: red;
+}
+
+.browser{
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    width: 60%;
+    height: 332px;
+    z-index: 2;
+}
+#browser-title{
+    width: 100%;
+    height: 32px;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background-color: bisque;
+    cursor: move;
+}
+
+.browser-content{
+    background-color: rgba(102, 212, 255, 0.356);
+    overflow: hidden;
+    height: 300px;
+}
+
+#browser-title button{
+    width: 48px;
+    height: 100%;
+    border-radius: 5px;
+    border: none;
+    margin-left: 10px;
+    background-color: rgb(110, 110, 31);
+    text-align: center;
+    float: right;
+    cursor: pointer;
+}
+#browser-iframe{
+    width: 100%;
+    height: 100%;
+}
+
+@media screen and (max-width:1000px)
+{
+    #form{
+        width: 100%;
+    }
+    #respone{
+        width: 100%;
+    }
+    .btn-group button{
+        width: 15%;
+    }
+}

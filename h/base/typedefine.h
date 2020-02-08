@@ -27,7 +27,7 @@ opcode操作码定义
 #define DEFAULT_CHAR_BUFFER_SIZE 1024               // 默认的buffer大小
 #define SERVER 0                                    // 服务器TAG
 #define CONTROLLER 1                                // 控制器TAG
-#define TRANSFERFILE 2                                   // 快捷命令TAG
+#define TASK 2                                      // 异步任务请求
 #define HTTP_GET 3                                  // HTTP请求
 #define HTTP_POST 4                                 // HTTP POST请求
 #define UNKNOW_TYPE -1                              // 未知TAG

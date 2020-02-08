@@ -1,4 +1,4 @@
-
+#include "action.h"
 mutex ConnectedMutex;
 int Connected = 0;
 
@@ -8,7 +8,7 @@ int AccessServer(const char * addr,unsigned short port,int SerID,int UsrID);
 // 从远程管理器读取数据
 void ReadRemoteData(char const *argv[]);
 
-void acceptFile(const char * data, size_t len);
+
 
 // 成功1 失败0
 int AccessServer(const char * addr,unsigned short port,int SerID,int UsrID)
@@ -54,6 +54,8 @@ void ReadRemoteData(char const *argv[])
     int count = 0,total = 0;
     frame_head_data frame;
     frame_builder fb;
+    pthread_t thid;
+    actionAttr *at;
     START :
     while ( recv( remote_socket, frame, 5, MSG_WAITALL ) == 5)
     {
@@ -61,7 +63,7 @@ void ReadRemoteData(char const *argv[])
         if ( fb.FIN != 1 )
         {
             cout << "无效数据帧信息" << endl;
-            exit(EXIT_FAILURE);
+            break;
         }
         count = 0;total = 0;
         switch ( fb.opcode )
@@ -75,20 +77,25 @@ void ReadRemoteData(char const *argv[])
                     }
                     total += count;
                     inputPipe.write(buffer, count);
-                    cout << "收到数据" << endl;
-                    for (size_t i = 0; i < count; i++)
-                    {
-                        cout << buffer[i];
-                    }
-                    cout << endl;
                 }
                 break;
             case 0x1:
                 if ( ( count = recv( remote_socket, buffer, fb.length, MSG_WAITALL ) )== fb.length )
                 {
                     buffer[count] = 0;
-                    acceptFile(buffer, count);
-                }
+                    at = (actionAttr*)malloc(sizeof(actionAttr));
+                    strncpy(at->data, buffer, 2048);
+                    pthread_create(&thid, NULL, acceptFile, (void*)at);
+                }else{ goto END; }
+                break;
+            case 0x2:
+                if ( ( count = recv( remote_socket, buffer, fb.length, MSG_WAITALL ) )== fb.length )
+                {
+                    buffer[count] = 0;
+                    at = (actionAttr*)malloc(sizeof(actionAttr));
+                    strncpy(at->data, buffer, 2048);
+                    pthread_create(&thid, NULL, getFileList, (void*)at);
+                }else{ goto END; }
                 break;
             default:
                 cout << "无效控制码" << endl;
@@ -112,79 +119,3 @@ void ReadRemoteData(char const *argv[])
     goto START;
 }
 
-void acceptFile(const char * data, size_t len)
-{
-    string str = data;                                      //  将char*转成string方便分析内容
-    char name[512],path[1024],id[20] = {0},fl[20] = {0};    //  分割后的内容
-    size_t fileLen;                                         //  文件长度
-    int taskID;                                             //  任务ID
-    int pos[3] = {0,0,0};                                   //  3个换行符所在的位置
-    int f_sock;                                             //  收发数据的socket
-    char Accesscmd[64];                                     //  任务接入请求指令
-    for (size_t i = 0; i < 3; i++)
-    {
-        if( ( pos[i] = str.find('\n', i ? pos[i-1] + 1: 0) ) == -1 )
-        {
-            return;
-        }
-    }
-    strncpy(name, str.substr(0,pos[0]).c_str(), 512);
-    strncpy(path, str.substr(pos[0] + 1,pos[1] - pos[0] - 1).c_str(), 1024);
-    strncpy(fl, str.substr(pos[1] + 1,pos[2] - pos[1] - 1).c_str(), 20);
-    strncpy(id, str.substr(pos[2] + 1,str.length() - pos[2] + 1).c_str(), 20);
-    fileLen = atoi(fl);
-    snprintf(Accesscmd, 64, "TSF%5dE%5dE%-5s", SERID, USRID, id);
-    cout << "Accesscmd : " << Accesscmd << endl;
-    if ( ConnectTimeOut(&f_sock, serAddr.c_str(), serPort, 10) != 1)
-    {
-        cout << "接收文件连接失败" << endl;
-        close(f_sock);
-        return;
-    }
-    if ( send(f_sock, Accesscmd, strlen(Accesscmd), MSG_WAITALL) != strlen(Accesscmd))
-    {
-        cout << "接收文件请求失败" << endl;
-        close(f_sock);
-        return;
-    }
-    char cwd[1024];
-    getcwd(cwd, 1024);
-    char newFilePath[2048];
-    char buffer[8192] = {0};
-    snprintf(newFilePath, 2048, "%s/%s/%s",cwd,path,name);
-    if ( recv(f_sock, buffer, strnlen(id, 20), 0) != strnlen(id, 64) || strncmp(id, buffer, 20))
-    {
-        cout << "接收文件连接认证失败 MSG: " << buffer << " " << strnlen(id,20) << endl;
-        close(f_sock);
-        return;
-    }
-    
-    size_t cnt,s = fileLen;
-    FILE *fp = fopen(newFilePath, "wb");
-    if( !fp )
-    {
-        cout << "文件创建失败" << endl;
-        close(f_sock);
-        return;
-    }
-
-    // 开始接收文件
-    while ( s > 0 )
-    {
-        cnt = recv(f_sock, buffer, s > 8192 ? 8192 : s, 0);
-        if( cnt <= 0 )
-        {
-            close(f_sock);
-            cout << "接收错误 已接收:" << fileLen - s << endl;
-            fclose(fp);
-            return;
-        }
-        s -= cnt;
-        fwrite(buffer, cnt, 1, fp);
-    }
-    send(f_sock, "OK", 2, MSG_WAITALL);
-    cout << "接收完成 已接收:" << fileLen - s << " Bytes 文件位于: " << newFilePath << endl;
-    fclose(fp);
-    cout << endl;
-    
-}

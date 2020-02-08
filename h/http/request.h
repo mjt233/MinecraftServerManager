@@ -22,6 +22,7 @@ class HTTPRequestInfo : public HTTPInfo{
         // 分析GET参数
         int AnalysisGETArgs();
     public:
+        SOCKET_T socket_fd;
         string url = "/";
         string type = "GET";
         string args;
@@ -57,11 +58,14 @@ class HTTPRequestInfo : public HTTPInfo{
 
 int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * data, size_t len)
 {
-    if( header["Content-Type"].find("application/x-www-form-urlencoded") != -1 ){
+    if( header["Content-Type"].find("multipart/form-data") != -1 ){
+        return 0;
+    }else{
         char *l, *p = data, *splitPos;
         int pos = 0,cnt = 0;
         size_t ll, lll;
         list<string> dataList;
+        string v;
         while ( pos < len )
         {
             l = strtok(data + pos, "&");
@@ -71,13 +75,11 @@ int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * data, size_t len)
             }
             splitPos = strtok(l,"=");
             lll = strnlen(splitPos,8192);
-            POST[splitPos] = lll >= 8192 ? "" : (splitPos + lll + 1 );
-
+            v = lll >= 8192 ? "" : (splitPos + lll + 1 );
+            POST[splitPos] = deescapeURL(v);
             pos += ll + 1;
         }
         return 1;
-    }else{
-        return 0;
     }
     
     

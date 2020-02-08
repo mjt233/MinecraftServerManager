@@ -7,6 +7,8 @@
 #include<mutex>
 #include<ctime>
 #include<signal.h>
+#include<dirent.h>
+#include<list>
 using namespace std;
 
 string serAddr;
@@ -23,6 +25,7 @@ void invert(char * buf, size_t len)
         buf[len-i-1] = t;
     }
 }
+#include "typedef.h"
 #include"../h/base/frame_builder.h"
 #include"../h/base/socketTool.h"
 #include "socketPipe.h"

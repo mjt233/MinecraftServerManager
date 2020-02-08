@@ -1,4 +1,4 @@
-void transferfile(baseInfo &IDInfo)
+void taskStart(baseInfo &IDInfo)
 {
     char buffer[8192] = {0};
     int cnt;
@@ -29,7 +29,7 @@ void transferfile(baseInfo &IDInfo)
             buffer[i] = 0;
     }
     
-    // 回射taskID 让客户端确认传输开始
+    // 回射taskID 让客户端确认任务开始
     if ( send( IDInfo.socket, buffer, strnlen(buffer, 8192), MSG_WAITALL ) != strnlen(buffer, 8192))
     {
         cout << "发送失败" << endl;
@@ -40,7 +40,7 @@ void transferfile(baseInfo &IDInfo)
     ser->statMutex.unlock();
     SerMutex.unlock();
 
-    // 阻塞 直到文件传输完成或关闭
+    // 阻塞 直到任务完成或关闭
     mtx->lock();
     mtx->unlock();
     ser->statMutex.lock();

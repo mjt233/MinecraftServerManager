@@ -76,12 +76,6 @@ void http_post(baseInfo &IDInfo)
     if ( HTTPRequest.AnalysisPostBody(IDInfo.socket, bodyBuffer, total) == 0){
         HTTPRespone.sendErrPage(IDInfo.socket, 400, "Bad Request");
     }
-    
-    for (map<string,string>::iterator i = HTTPRequest.POST.begin(); i != HTTPRequest.POST.end(); i++)
-    {
-        cout << i->first << " " << i->second << endl;
-    }
-    
 
     httpRoute(IDInfo.socket, HTTPRequest);
     return;

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API测试页面</title>
+    <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+    <meta  charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet"  href="test.css">
+    <script src="test.js"></script>
+    <script>
+    $.post("/api/ls?SerID=1&UsrID=12345",{path:"/"},(e)=>{
+        console.log(e)
+    })
+    </script>
+</head>
+<body>
+<div class="btn-group">
+    <button type="button" onclick="add()">+增加参数</button>
+    <button type="button" onclick="submit(1)" id="submit" class="submit">提交请求</button>
+</div>
+
+<div style="width: 100%;float: left;height:32px">
+    <span style="float: left;width: 10%">请求地址:</span>
+    <input style="width: 30%;float: left;" id="url" value="/api/ls" placeholder="/api/ls">
+    <select style="float: left;height: 80%" onchange="$('#url').val(this.value)">
+        <option value="/api/ls">取服务器文件列表</option>
+    </select>
+</div>
+    <form id="form">
+        <table id="table">
+            <tr>
+                <th style="width: 25%;text-align: left">参数名</th>
+                <th style="width: 67%;text-align: left">参数值</th>
+                <th style="width: 8%;">操作</th>
+            </tr>
+        </table>
+    </form>
+    <div id="respone">
+    </div>
+</body>
+</html>

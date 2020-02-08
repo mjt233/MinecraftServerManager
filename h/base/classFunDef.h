@@ -197,9 +197,9 @@ SOCKET_T Server::createTask(unsigned char opcode, const char * otherInfo, size_t
     writeSocketData(opcode, buffer, strnlen(buffer, 1024));
     for (size_t i = 0; i < 10; i++)
     {
-        for (size_t j = 0; j < 10; j++)
+        for (size_t j = 0; j < 100; j++)
         {
-            usleep(100000);
+            usleep(10000);
             statMutex.lock();
             if( taskList[taskID] != -1 )
             {
