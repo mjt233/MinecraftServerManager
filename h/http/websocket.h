@@ -200,13 +200,20 @@ int WebSocket::writeData(unsigned char opcode,const char * buf, size_t len)
  */
 int WebSocket::readData(wsHeadFrame &wsFrame, char * buf, size_t len)
 {
-    int count = 0;
+    size_t count = 0;
     unsigned long long t = wsFrame.payload_length - wsFrame.cur_read;
-    count = recv( fd, buf, t > len ? len : t , 0);
-    if ( count <= 0 )
+    size_t needRead = t > len ? len : t;
+    size_t ok = 0;
+    while ( ok < needRead )
     {
-        return 0;
+        count = recv( fd, buf + ok, needRead , 0);
+        if( count <= 0 )
+        {
+            return 0;
+        }
+        ok += count;
     }
+    
     for (size_t i = 0; i < count; i++)
     {
         buf[i] = buf[i] ^ wsFrame.masking_key[wsFrame.cur_read++%4];
@@ -277,7 +284,7 @@ int WebSocket::readHeadFrame(wsHeadFrame &wsFrame)
         }
     }
 
-    if( wsFrame.opcode != 0x1 && wsFrame.opcode !=0x0)
+    if( wsFrame.opcode != 0x1 && wsFrame.opcode !=0x0 && wsFrame.opcode != 0x2)
     {
         return 0;
     }

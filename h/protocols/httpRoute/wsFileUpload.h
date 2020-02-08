@@ -50,10 +50,15 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     size_t len;
     wsHeadFrame wsf;
     ws.readHeadFrame(wsf);
+    cout << "msg操作码:" << (unsigned int)wsf.opcode << endl;
     if( wsf.payload_length >= 1023 ){
         ws.die((char*)"Data Too Long", 13);
     }
-    cnt = ws.readData(wsf, data, 1024);
+    if ( (cnt = ws.readData(wsf, data, 1024)) <= 0 )
+    {
+        cout << "握手失败" << endl;
+        return;
+    }
     data[cnt] = 0;
     dataStr = data;
     int i = 0;
@@ -95,7 +100,7 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     {
         if ( !ws.readHeadFrame(wsf) )
         {
-            ws.die("die",3);
+            ws.die("帧读取失败",15);
             mtx.unlock();
             return;
         }
@@ -119,8 +124,8 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     }
     
 
-    cout << ws.readHeadFrame(wsf) << endl;
     recv(rec_fd, buffer, 2, MSG_WAITALL);
+    ws.writeData(0x1, "OK", 2);
     ws.close();
     mtx.unlock();
 }

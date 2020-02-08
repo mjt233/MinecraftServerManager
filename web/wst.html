@@ -18,6 +18,7 @@
         }
         function constructFileInfo(fileName, targetPath, fileSize){
             var res = fileName + "\n" + targetPath + "\n" + fileSize + "\n"
+            
             return res;
         }
         function sendFile()
@@ -35,27 +36,26 @@
                 throw new Error("ID无效")
             }
 
-            var info = constructFileInfo(file.name,"wow/",file.size);
+            var info = constructFileInfo(file.name,"/",file.size);
 
             var ws = new WebSocket("ws://" + location.host + "/fileupload?SerID=" + SerID + "&UsrID=" + UsrID)
             ws.onopen = ()=>{
+                var recv = 0;
                 console.log("连接已打开");
-                reader.readAsBinaryString(file);
+                ws.send(info)
+                reader.readAsArrayBuffer(file);
                 reader.onload = () =>{
-                    ws.send(info)
                     ws.send(reader.result)
                 }
                 reader.onerror = () =>{
                     console.log("error")
                 }
-            }
-            ws.onclose = ()=>{
-                console.log("连接已断开");
-            }
-            var total = file.size
-            var curr = 0;
-            ws.onmessage = (e)=>{
-                console.log(e.data)
+                ws.onclose = ()=>{
+                    console.log("连接已断开,服务器已接收:",recv);
+                }
+                ws.onmessage = (e)=>{
+                    console.log( typeof(e.data) )
+                }
             }
         }
     </script>
