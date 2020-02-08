@@ -114,7 +114,6 @@ public class ServerSetterPanel extends JPanel {
 		gbc_showUsrId = new GridBagConstraints();
 		gbc_showUsrId.fill = GridBagConstraints.HORIZONTAL;
 		gbc_showUsrId.anchor = GridBagConstraints.WEST;
-		gbc_showUsrId.fill = GridBagConstraints.VERTICAL;
 		gbc_showUsrId.insets = new Insets(0, 0, 5, 5);
 		gbc_showUsrId.gridx = 1;
 		gbc_showUsrId.gridy = 4;
@@ -129,20 +128,6 @@ public class ServerSetterPanel extends JPanel {
 		ssp.initShowPane();
 		ssp.initInfo();
 		return ssp;
-	}
-	
-	public static void showSetDialog(ServerConfig config) {
-		JDialog dd = new JDialog(MainFrame.INSTANCE, "服务器设置");
-		
-		ServerSetterPanel ssp = new ServerSetterPanel(config);
-		ssp.initSetPane(dd);
-		ssp.initInfo();
-		
-		dd.setContentPane(ssp);
-		dd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		dd.pack();
-		dd.setLocationRelativeTo(MainFrame.INSTANCE);
-		dd.setVisible(true);
 	}
 	
 	private void initShowPane() {
@@ -163,13 +148,28 @@ public class ServerSetterPanel extends JPanel {
 		btnSet = new JButton("设置");
 		btnSet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				showSetDialog(config);
+				showSetDialog(config, ServerSetterPanel.this);
 			}
 		});
 		panel.add(btnSet);
 	}
 
-	private void initSetPane(JDialog dd) {
+	public static void showSetDialog(ServerConfig config, ServerSetterPanel parent) {
+		JDialog dd = new JDialog(MainFrame.INSTANCE, "服务器设置");
+		
+		ServerSetterPanel ssp = new ServerSetterPanel(config);
+		ssp.initSetPane(dd, parent);
+		ssp.initInfo();
+		
+		dd.setContentPane(ssp);
+		dd.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		dd.pack();
+		dd.setLocationRelativeTo(MainFrame.INSTANCE);
+		dd.setVisible(true);
+	}
+	
+	
+	private void initSetPane(JDialog dd, ServerSetterPanel parent) {
 		inIp = new JTextField();
 		add(inIp, gbc_showIp);
 		
@@ -189,9 +189,12 @@ public class ServerSetterPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				config.setAddress(inIp.getText());
 				config.setPort(Integer.parseInt(inPort.getText()));
-				config.setServerID(Integer.parseInt(inPort.getText()));
+				config.setServerID(Integer.parseInt(inSerId.getText()));
 				config.setUserID(Integer.parseInt(inUsrId.getText()));
 				config.auto = showAuto.isSelected();
+				dd.dispose();
+				parent.initInfo();
+				MainFrame.INSTANCE.setServer(config);
 			}
 		});
 		panel.add(btnSave);
@@ -203,6 +206,16 @@ public class ServerSetterPanel extends JPanel {
 			}
 		});
 		panel.add(btnCancel);
+		
+		ActionListener enter = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				btnSave.doClick();
+			}
+		};
+		inIp.addActionListener(enter);
+		inPort.addActionListener(enter);
+		inSerId.addActionListener(enter);
+		inUsrId.addActionListener(enter);
 	}
 	
 	private void initInfo() {

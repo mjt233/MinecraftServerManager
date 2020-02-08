@@ -465,6 +465,7 @@ public class MainFrame extends JFrame implements IToConfig{
 							try {
 								is.ac.write(0x0, str.getBytes(AccessClient.CHARSET));
 							} catch (IOException e1) {
+								e1.printStackTrace();
 								cp.appendMsg("SenderError", "-------信息发送失败-------");
 							}
 						}

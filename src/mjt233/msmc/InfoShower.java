@@ -24,7 +24,6 @@ public class InfoShower implements Runnable{
 		} catch (AccessRefuseException e) {
 //			show("接入失败,原因:"+e.getMessage());
 			listener.linkRefused(e.getMessage());
-			e.printStackTrace();
 			throw e;
 		}
 	}

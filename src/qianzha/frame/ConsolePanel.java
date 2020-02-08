@@ -66,7 +66,6 @@ public class ConsolePanel extends JPanel {
 		ActionListener senderListener = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// Enter Event
 				sendInput(e);
 			}
 		};
