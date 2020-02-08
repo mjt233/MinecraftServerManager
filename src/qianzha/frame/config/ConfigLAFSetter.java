@@ -68,7 +68,7 @@ public class ConfigLAFSetter implements IConfigSetter<String> {
 			lafLabel.setToolTipText("");
 		}
 		else {
-			lafLabel.setIcon(IconQz.WARNING);
+			lafLabel.setIcon(IconQz.Warning);
 			lafLabel.setToolTipText("该变更需要重启程序");
 		}
 	}

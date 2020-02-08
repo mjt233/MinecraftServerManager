@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -25,8 +26,9 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
-import javax.swing.SwingConstants;
+import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EmptyBorder;
@@ -38,7 +40,9 @@ import mjt233.msmc.InfoShower;
 import qianzha.config.IToConfig;
 import qianzha.config.ServerConfig;
 import qianzha.config.WinConfig;
+import qianzha.frame.component.ToolButton;
 import qianzha.frame.config.ConfigPanel;
+import qianzha.frame.config.ServerSetterPanel;
 import qianzha.frame.icon.IconQz;
 
 @SuppressWarnings("serial")
@@ -69,12 +73,13 @@ public class MainFrame extends JFrame implements IToConfig{
 	/**
 	 * Launch the application.
 	 */
+	public static MainFrame INSTANCE;
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					MainFrame frame = new MainFrame();
-					frame.setVisible(true);
+					INSTANCE = new MainFrame();
+					INSTANCE.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 					crashReport(e);
@@ -195,60 +200,40 @@ public class MainFrame extends JFrame implements IToConfig{
 		{
 			setLinking = new JPanel();
 			tabbedPane.addTab("连接配置", null, setLinking, null);
-			GridBagLayout gbl_setLinking = new GridBagLayout();
-			gbl_setLinking.columnWidths = new int[]{69, 0};
-			gbl_setLinking.rowHeights = new int[]{15, 0, 0, 0};
-			gbl_setLinking.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-			gbl_setLinking.rowWeights = new double[]{1.0, 1.0, 0.0, Double.MIN_VALUE};
-			setLinking.setLayout(gbl_setLinking);
-			{
-				lblNewLabel = new JLabel("别看了这啥都没有，去配置文件改啦！");
-				lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
-				gbc_lblNewLabel.anchor = GridBagConstraints.SOUTH;
-				gbc_lblNewLabel.insets = new Insets(0, 0, 5, 0);
-				gbc_lblNewLabel.gridx = 0;
-				gbc_lblNewLabel.gridy = 0;
-				setLinking.add(lblNewLabel, gbc_lblNewLabel);
-			}
-			{
-				lblNewLabel_1 = new JLabel("\"\\config\\server.json\" (暂时)");
-				GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
-				gbc_lblNewLabel_1.insets = new Insets(0, 0, 5, 0);
-				gbc_lblNewLabel_1.anchor = GridBagConstraints.NORTH;
-				gbc_lblNewLabel_1.gridx = 0;
-				gbc_lblNewLabel_1.gridy = 1;
-				setLinking.add(lblNewLabel_1, gbc_lblNewLabel_1);
-			}
+			setLinking.setLayout(new BorderLayout(0, 0));
 			{
 				panel = new JPanel();
-				GridBagConstraints gbc_panel = new GridBagConstraints();
-				gbc_panel.fill = GridBagConstraints.BOTH;
-				gbc_panel.gridx = 0;
-				gbc_panel.gridy = 2;
-				setLinking.add(panel, gbc_panel);
+				setLinking.add(panel, BorderLayout.NORTH);
+				GridBagLayout gbl_panel = new GridBagLayout();
+				gbl_panel.columnWidths = new int[]{0, 100, 0, 0};
+				gbl_panel.rowHeights = new int[]{0, 0, 0, 0};
+				gbl_panel.columnWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+				gbl_panel.rowWeights = new double[]{0.0, 0.0, 1.0, Double.MIN_VALUE};
+				panel.setLayout(gbl_panel);
 				{
-					btnNewButton = new JButton("（重新）连接");
-					btnNewButton.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							linkStart();
-						}
-					});
-					panel.add(btnNewButton);
+					label = new JLabel("连接配置");
+					label.setFont(new Font("Microsoft YaHei UI", Font.PLAIN, 18));
+					GridBagConstraints gbc_label = new GridBagConstraints();
+					gbc_label.gridwidth = 2;
+					gbc_label.insets = new Insets(0, 0, 5, 5);
+					gbc_label.gridx = 0;
+					gbc_label.gridy = 0;
+					panel.add(label, gbc_label);
 				}
 				{
-					btnNewButton_1 = new JButton("断开");
-					btnNewButton_1.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) {
-							new Thread(new Runnable() {
-								public void run() {
-									linkStop();
-								}
-							}).start();
-						}
-					});
-					panel.add(btnNewButton_1);
+					separator = new JSeparator();
+					GridBagConstraints gbc_separator = new GridBagConstraints();
+					gbc_separator.fill = GridBagConstraints.HORIZONTAL;
+					gbc_separator.gridwidth = 3;
+					gbc_separator.insets = new Insets(0, 0, 5, 0);
+					gbc_separator.gridx = 0;
+					gbc_separator.gridy = 1;
+					panel.add(separator, gbc_separator);
 				}
+			}
+			{
+				panel_2 = ServerSetterPanel.getShowPane(server);
+				setLinking.add(panel_2, BorderLayout.CENTER);
 			}
 		}
 		
@@ -258,11 +243,15 @@ public class MainFrame extends JFrame implements IToConfig{
 			tabbedPane.addTab(setPanel.getName(), null, setPanel, setPanel.getName());
 		}
 		{
+			panel_1 = new JPanel();
+			contentPane.add(panel_1, BorderLayout.SOUTH);
+			panel_1.setLayout(new BorderLayout(0, 0));
+			
 			statesPanel = new JPanel();
 			FlowLayout fl_statesPanel = (FlowLayout) statesPanel.getLayout();
 			fl_statesPanel.setVgap(0);
 			fl_statesPanel.setAlignment(FlowLayout.LEFT);
-			contentPane.add(statesPanel, BorderLayout.SOUTH);
+			panel_1.add(statesPanel, BorderLayout.WEST);
 			{
 				linkingStates = new JLabel("[未连接]");
 				statesPanel.add(linkingStates);
@@ -270,6 +259,43 @@ public class MainFrame extends JFrame implements IToConfig{
 			{
 				serverInfo = new JLabel("IP: [127.0.0.1:6636], SID:1, UID:12345");
 				statesPanel.add(serverInfo);
+			}
+		}
+		{
+			toolBar = new JToolBar();
+			contentPane.add(toolBar, BorderLayout.NORTH);
+			{
+				toolBtnStart = new ToolButton(IconQz.Start);
+				toolBtnStart.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						linkStart();
+					}
+				});
+				toolBar.add(toolBtnStart);
+			}
+			{
+				toolBtnStop = new ToolButton(IconQz.Stop);
+				toolBtnStop.setEnabled(false);
+				toolBtnStop.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						new Thread(new Runnable() {
+							public void run() {
+								linkStop();
+							}
+						}).start();
+					}
+				});
+				toolBar.add(toolBtnStop);
+			}
+			toolBar.add(new JToolBar.Separator());
+			{
+				btnClear = new ToolButton(IconQz.Clear);
+				btnClear.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						cp.clear();
+					}
+				});
+				toolBar.add(btnClear);
 			}
 		}
 		initLater();
@@ -364,17 +390,33 @@ public class MainFrame extends JFrame implements IToConfig{
 	}
 	
 	private ILinkListener linkListener = new ILinkListener() {
+		private void linked() {
+			linkingStates.setText("[已连接]");
+			MainFrame.this.setIconImage(IconQz.Logo_OK.getImage());
+			toolBtnStart.setIcon(IconQz.Restart);
+			toolBtnStop.setEnabled(true);;
+		}
+		private void end() {
+			toolBtnStart.setIcon(IconQz.Start);
+			toolBtnStop.setEnabled(false);;
+		}
+		
 		public void linkSucceeded() {
 			cp.appendMsgLine("连接成功\n");
-			linkingStates.setText("[已连接]");
+			linked();
 		}
+		
 		public void linkFailed() {
 			cp.appendMsgLine("连接失败\n");
 			linkingStates.setText("[连接失败]");
+			MainFrame.this.setIconImage(IconQz.Logo_ERROR.getImage());
+			end();
 		}
 		public void linkRefused(String msg) {
 			cp.appendMsgLine("接入失败,原因:"+msg+"\n");
 			linkingStates.setText("[接入失败]");
+			MainFrame.this.setIconImage(IconQz.Logo_WARN.getImage());
+			end();
 		}
 		public void readSucceeded(String readed) {
 			cp.appendMsg(readed);
@@ -382,6 +424,8 @@ public class MainFrame extends JFrame implements IToConfig{
 		public void linkBreak() {
 			cp.appendMsgLine("连接已断开\n");
 			linkingStates.setText("[未连接]");
+			MainFrame.this.setIconImage(IconQz.Logo.getImage());
+			end();
 		}
 		
 	};
@@ -396,11 +440,15 @@ public class MainFrame extends JFrame implements IToConfig{
 		}
 	}
 	
-	private JLabel lblNewLabel;
-	private JLabel lblNewLabel_1;
+	private JPanel panel_1;
+	private JToolBar toolBar;
+	private JButton toolBtnStart;
+	private JButton toolBtnStop;
 	private JPanel panel;
-	private JButton btnNewButton;
-	private JButton btnNewButton_1;
+	private JLabel label;
+	private JSeparator separator;
+	private JPanel panel_2;
+	private JButton btnClear;
 	public void linkStart() {
 		new Thread(new Runnable() {
 			public void run() {
