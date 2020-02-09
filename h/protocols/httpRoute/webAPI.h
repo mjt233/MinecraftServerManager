@@ -1,4 +1,5 @@
 void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
+void serCtl(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
 
 void webAPI(int socket_fd, HTTPRequestInfo &HQ)
 {
@@ -30,11 +31,30 @@ void webAPI(int socket_fd, HTTPRequestInfo &HQ)
     if ( APIName == "ls" )
     {
         ls(ser, HQ, mtx);
+    }else if( APIName == "ctl" ){
+        serCtl(ser, HQ, mtx);
+        mtx->unlock();
+        return;
     }else{
         HP.sendErrPage(socket_fd, 404, "Not Found");
     }
     mtx->unlock();
 }
+
+void serCtl(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
+{
+    HTTPResponeInfo HP;
+    frame_builder fb;
+    frame_head_data fhd;
+    if( HQ.GET.count("type") == 0 )
+    {
+        HP.sendJsonMsg(HQ.socket_fd, 200, -3, "lost param", "缺少type");
+        return;
+    }
+    ser->writeSocketData(0x3, HQ.GET["type"].c_str(), HQ.GET["type"].length());
+    HP.sendJsonMsg(HQ.socket_fd, 200, 200, "OK", "OK");
+}
+
 
 void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
 {

@@ -1,6 +1,7 @@
 SOCKET_T getTaskAccessCmd(const char * taskID_ch);
 void * acceptFile(void * arg);
 void * getFileList(void * arg);
+void * serverControl(void * arg);
 
 /**
  *  启动任务连接,并完成任务接入握手
@@ -184,4 +185,22 @@ void * getFileList(void * arg)
     send(f_sock, res.c_str(), res.length(), MSG_WAITALL);
     close(f_sock);
     return NULL;
+}
+
+
+void * serverControl(void * arg)
+{
+    string data = ((actionAttr*)arg)->data;
+    cout << "收到服务器控制指令: " << data << endl;
+    if( data == "force-shutdown" )
+    {
+        kill(pid, SIGABRT);
+    }else if( data == "stop" ){
+        send(inputPipe.psocket, "stop\n", 5, MSG_WAITALL);
+    }else if( data == "reboot" ){
+        serAttr.reboot = 1;
+        send(inputPipe.psocket, "stop\n", 5, MSG_WAITALL);
+    }else if( data == "hoog" ){
+        
+    }
 }

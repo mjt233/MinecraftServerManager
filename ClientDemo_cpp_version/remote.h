@@ -1,4 +1,13 @@
 #include "action.h"
+#define CREATE_TASK_THREAD(func) \
+    if ( ( count = recv( remote_socket, buffer, fb.length, MSG_WAITALL ) )== fb.length )    \
+    {                                                                                       \
+        buffer[count] = 0;                                                                  \
+        at = (actionAttr*)malloc(sizeof(actionAttr));                                       \
+        strncpy(at->data, buffer, 2048);                                                    \
+        pthread_create(&thid, NULL, func, (void*)at);                                       \
+    }else{ goto END; }                                                                      \
+
 mutex ConnectedMutex;
 int Connected = 0;
 
@@ -13,11 +22,6 @@ void ReadRemoteData(char const *argv[]);
 // 成功1 失败0
 int AccessServer(const char * addr,unsigned short port,int SerID,int UsrID)
 {
-    // if( InitConnect(&remote_socket, addr, port) != 0 )
-    // {
-    //     cout << "connect error" << endl;
-    //     return 0;
-    // }
     if( ConnectTimeOut(&remote_socket, addr, port, 5) != 1 )
     {
         cout << "connect error" << endl;
@@ -80,22 +84,13 @@ void ReadRemoteData(char const *argv[])
                 }
                 break;
             case 0x1:
-                if ( ( count = recv( remote_socket, buffer, fb.length, MSG_WAITALL ) )== fb.length )
-                {
-                    buffer[count] = 0;
-                    at = (actionAttr*)malloc(sizeof(actionAttr));
-                    strncpy(at->data, buffer, 2048);
-                    pthread_create(&thid, NULL, acceptFile, (void*)at);
-                }else{ goto END; }
+                CREATE_TASK_THREAD(acceptFile)
                 break;
             case 0x2:
-                if ( ( count = recv( remote_socket, buffer, fb.length, MSG_WAITALL ) )== fb.length )
-                {
-                    buffer[count] = 0;
-                    at = (actionAttr*)malloc(sizeof(actionAttr));
-                    strncpy(at->data, buffer, 2048);
-                    pthread_create(&thid, NULL, getFileList, (void*)at);
-                }else{ goto END; }
+                CREATE_TASK_THREAD(getFileList)
+                break;
+            case 0x3:
+                CREATE_TASK_THREAD(serverControl)
                 break;
             default:
                 cout << "无效控制码" << endl;

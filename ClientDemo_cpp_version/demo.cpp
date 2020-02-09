@@ -11,6 +11,7 @@
 #include<list>
 #include<sys/shm.h>
 #include<sys/ipc.h>
+#include<sys/wait.h>
 using namespace std;
 #include"../h/base/socketTool.h"
 #include "socketPipe.h"
@@ -20,7 +21,7 @@ socketPipe outputPipe,inputPipe;
 #include "remote.h"
 
 void ReadData();
-
+void launch(const char * launch_cmd);
 // 主函数
 int main(int argc, char const *argv[])
 {
@@ -38,41 +39,17 @@ int main(int argc, char const *argv[])
         Exit(0);
         return 1;
     }
-    pid = fork();
-    if ( pid == 0 )
+    thread launchTh(launch, argv[5]);                    // 服务器线程
+    thread readTh(ReadData);                    // 读取子进程的数据
+    thread readRmTh(ReadRemoteData,argv);       // 读取服务器的数据
+    string input;
+    while ( 1 )
     {
-        // 将子进程的标准输入,标准输出和标准错误重定向到管道
-        dup2(outputPipe.psocket, 1);
-        dup2(outputPipe.psocket, 2);
-        dup2(inputPipe.psocket, 0);
-        serAttr_t *sAttr = (serAttr_t*)shmat(shm_id, 0, 0);
-        L1:
-        cout << "子进程: " << getpid() << endl;
-        system(argv[5]);
-        if( sAttr->loop == 1 )
+        cin >> input;
+        input+="\n";
+        if ( send(inputPipe.psocket, input.c_str(), input.length(), MSG_WAITALL) <= 0)
         {
-            for (size_t i = 0; i < 10; i++)
-            {
-                cout << "服务器已退出,将在" << 10-i <<"s后重启" << endl;
-                sleep(1);
-            }
-            goto L1;
-        }
-        kill(main_pid,SIGINT);
-        exit(EXIT_SUCCESS);
-    }else if ( pid != 0 ){
-        cout << "主进程: " << main_pid << endl;
-        thread readTh(ReadData);            // 读取子进程的数据
-        thread readRmTh(ReadRemoteData,argv);    // 读取服务器的数据
-        string input;
-        while ( 1 )
-        {
-            cin >> input;
-            input+="\n";
-            if ( send(inputPipe.psocket, input.c_str(), input.length(), MSG_WAITALL) <= 0)
-            {
-                exit(EXIT_SUCCESS);
-            }
+            exit(EXIT_SUCCESS);
         }
     }
     Exit(0);
@@ -107,4 +84,58 @@ void ReadData()
         usleep(50000);
     }
     
+}
+
+
+
+void launch(const char * launch_cmd)
+{
+    int first = 1;
+    while( first || serAttr.loop )
+    {
+        pid = fork();
+        if(pid == 0){
+            dup2(outputPipe.psocket, 1);
+            dup2(outputPipe.psocket, 2);
+            dup2(inputPipe.psocket, 0);
+            execl("/bin/bash","bash","-c",launch_cmd,nullptr);
+            goto FAIL;
+        }else if(pid != -1){
+            waitpid(pid, NULL, 0);
+
+            // 服务器暂时挂起
+            if( serAttr.hang )
+            {
+                serAttr.hang = 0;
+                while ( !serAttr.launch )
+                {
+                    sleep(1);
+                }
+                serAttr.launch = 0;
+            }
+
+            // 收到指令,立即重启
+            if( serAttr.reboot )
+            {
+                serAttr.reboot = 0;
+                continue;
+            }
+
+            // 崩溃自重启
+            char str[512];
+            if ( serAttr.loop )
+            {
+                for (size_t i = 0; i < 10; i++)
+                {
+                    snprintf(str, 512, "服务器已停止,将在%lds后重启\n",10-i);
+                    send(outputPipe.psocket, str, strnlen(str, 512), MSG_WAITALL);
+                    sleep(1);
+                }
+            }
+        }else{
+            FAIL:
+            cout << "创建子进程失败" << endl;
+            exit(EXIT_FAILURE);
+        }
+    }
 }
