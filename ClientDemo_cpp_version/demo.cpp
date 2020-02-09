@@ -9,66 +9,59 @@
 #include<signal.h>
 #include<dirent.h>
 #include<list>
+#include<sys/shm.h>
+#include<sys/ipc.h>
 using namespace std;
-
-string serAddr;
-unsigned short serPort;
-int SERID,USRID;
-// 解决大小端序问题
-void invert(char * buf, size_t len)
-{
-    char t;
-    for (size_t i = 0; i < len/2; i++)
-    {
-        t = buf[i];
-        buf[i] = buf[ len-i-1 ];
-        buf[len-i-1] = t;
-    }
-}
-#include "typedef.h"
-#include"../h/base/frame_builder.h"
 #include"../h/base/socketTool.h"
 #include "socketPipe.h"
 socketPipe outputPipe,inputPipe;
+#include "typedef.h"
+#include"../h/base/frame_builder.h"
 #include "remote.h"
 
 void ReadData();
-void stop(int sign);
-
-
-pid_t pid,      // 子进程ID
-    main_pid;   // 主进程ID
 
 // 主函数
 int main(int argc, char const *argv[])
 {
-    signal(SIGINT, stop);
+    signal(SIGINT, Exit);
     main_pid = getpid();
     if ( argc != 6 )
     {
         cout << "[usage] ./demo [addr] [port] [SerID] [UsrID] \"[Server Start Command]\"" << endl;
         return 1;
     }
-    serAddr = argv[1];
-    serPort = atoi( argv[2] );
-    SERID = atoi( argv[3] );
-    USRID = atoi( argv[4] );
+    InitData(argv);
+    // 接入服务器
     if ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4])))
     {
+        Exit(0);
         return 1;
     }
-    
-    if ( (pid = fork()) == 0 )
+    pid = fork();
+    if ( pid == 0 )
     {
+        // 将子进程的标准输入,标准输出和标准错误重定向到管道
         dup2(outputPipe.psocket, 1);
         dup2(outputPipe.psocket, 2);
         dup2(inputPipe.psocket, 0);
-        // execlp("java","java","-jar","minecraft_server.1.12.2.jar",NULL);
-        // system("cd server && java -jar minecraft_server.1.12.2.jar");
+        serAttr_t *sAttr = (serAttr_t*)shmat(shm_id, 0, 0);
+        L1:
+        cout << "子进程: " << getpid() << endl;
         system(argv[5]);
+        if( sAttr->loop == 1 )
+        {
+            for (size_t i = 0; i < 10; i++)
+            {
+                cout << "服务器已退出,将在" << 10-i <<"s后重启" << endl;
+                sleep(1);
+            }
+            goto L1;
+        }
         kill(main_pid,SIGINT);
         exit(EXIT_SUCCESS);
-    }else{
+    }else if ( pid != 0 ){
+        cout << "主进程: " << main_pid << endl;
         thread readTh(ReadData);            // 读取子进程的数据
         thread readRmTh(ReadRemoteData,argv);    // 读取服务器的数据
         string input;
@@ -82,17 +75,11 @@ int main(int argc, char const *argv[])
             }
         }
     }
+    Exit(0);
     return 0;
 }
 
-void stop(int sign)
-{
-    cout << "Interrupt" << endl;
-    inputPipe.write("stop\n",5);
 
-    kill(pid,SIGINT);
-    exit(EXIT_SUCCESS);
-}
 
 void ReadData()
 {

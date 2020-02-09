@@ -104,6 +104,7 @@ void * getFileList(void * arg)
 {
     string data = ((actionAttr*)arg)->data;
     string path;
+    string res = "{\"code\":200,\"data\":[";
     DIR *dp;
     frame_builder fb;
     frame_head_data fhd;
@@ -116,10 +117,30 @@ void * getFileList(void * arg)
     {
         return NULL;
     }
+
+    // 解析路径,taskID
     path = data.substr(0, pos);
     taskID = atoi( data.substr(pos + 1).c_str() );
+
+    // 准备读取
     path = s_getcwd() + "/" + path;
+    cout << "读取目录: " << path << endl;
+
+    // 任务接入
+    SOCKET_T f_sock;
+    f_sock = startTask(data.substr(pos + 1).c_str());
+
+    // 打开文件夹
     dp = opendir(path.c_str());
+    if( !dp )
+    {
+        res = "{\"code\":-2,\"msg\":\"文件夹打开失败\"}";
+        fb.build(0x0, res.length());
+        send(f_sock, fb.f_data, 5, MSG_WAITALL);
+        send(f_sock, res.c_str(), res.length(), MSG_WAITALL);
+        close(f_sock);
+        return NULL;
+    }
     list<string> dirList;
     list<string> fileList;
     while( dirp = readdir(dp) )
@@ -136,21 +157,24 @@ void * getFileList(void * arg)
         }
     }
     list<string>::iterator i,j;
+    int flag = 0;
     i = dirList.begin();
     j = fileList.begin();
-    string res = "{\"code\":200,\"data\":[";
     for (; i!= dirList.end(); i++ )
     {
         res += "{\"name\":\"" + *i + "\", \"type\": \"folder\"},";
+        flag =1;
     }
     for (; j!= fileList.end(); j++ )
     {
         res += "{\"name\":\"" + *j + "\", \"type\": \"file\"},";
+        flag = 1;
     }
-    res[res.length() - 1] = ']';
+    if( flag )
+    {
+        res[res.length() - 1] = ']';
+    }
     res += "}";
-    SOCKET_T f_sock;
-    f_sock = startTask(data.substr(pos + 1).c_str());
     if( f_sock == -1 )
     {
         return NULL;
