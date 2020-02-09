@@ -43,6 +43,7 @@ void taskStart(baseInfo &IDInfo)
     // 阻塞 直到任务完成或关闭
     mtx->lock();
     mtx->unlock();
+    delete(mtx);
     ser->statMutex.lock();
     ser->taskMutex.erase(taskID);
     ser->statMutex.unlock();

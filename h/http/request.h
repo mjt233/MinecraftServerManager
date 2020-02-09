@@ -224,10 +224,9 @@ int HTTPRequestInfo::AnalysisGETArgs()
                 break;
         }
     }
+    p[count] = 0;
     GET[key] = value;
     return 1;
-
-    
 }
 
 

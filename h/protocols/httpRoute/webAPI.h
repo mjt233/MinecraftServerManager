@@ -23,17 +23,17 @@ void webAPI(int socket_fd, HTTPRequestInfo &HQ)
     }
     ser = SerList[SerID];
     SerMutex.unlock();
-    mutex mtx;
+    mutex *mtx = new mutex;
 
     // Web API Route
-    mtx.lock();
+    mtx->lock();
     if ( APIName == "ls" )
     {
-        ls(ser, HQ, &mtx);
+        ls(ser, HQ, mtx);
     }else{
         HP.sendErrPage(socket_fd, 404, "Not Found");
     }
-    mtx.unlock();
+    mtx->unlock();
 }
 
 void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
@@ -49,7 +49,7 @@ void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
         HP.sendJsonMsg(HQ.socket_fd, 200, -3, "lost param", "缺少path");
         return;
     }
-    sock = ser->createTask(0x2, "/", 1, mtx);
+    sock = ser->createTask(0x2, HQ.GET["path"].c_str(), 1, mtx);
     if( sock == -1 )
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, 502, "Bad Gateway", "目标服务器响应请求超时" );
