@@ -343,12 +343,15 @@ int Server::add(WebSocket *ws)
         return 1;
     }
     sbMutex.unlock();
-    if ( !strbuf )
+    char * strbuf2 = (char*)malloc(strlen(strbuf)+2);
+    if ( !strbuf || !strbuf2 )
     {
         cout << "malloc error" << endl;
     }
-    ws->writeData(0x2, strbuf, strlen(strbuf));
+    sprintf(strbuf2, "T%s",strbuf);
+    ws->writeData(0x2, strbuf2, strlen(strbuf2));
     free(strbuf);
+    free(strbuf2);
     return 1;
 }
 

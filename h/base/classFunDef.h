@@ -229,41 +229,14 @@ SOCKET_T Server::startUpload(const char * name, const char * path, size_t length
     char info[1024];
     snprintf(info, 1024, "%s\n%s\n%ld", name, path, length);
     return createTask(0x1, info, strnlen(info, 1024), mtx);
-    // char buffer[1024] ={0};
-    // int taskID;
-    // SOCKET_T rec_fd;
-    // srand(time(NULL));
-    // taskID = rand() % 10000 + 1;
 
-    // // 随机生成任务ID
-    // while ( taskList.count(taskID) )
-    // {
-    //     taskID = rand() % 99999 + 1;
-    // }
-    // taskList[taskID] = -1;
-    // taskMutex[taskID] = mtx;
-    // snprintf(buffer, 1024, "%s\n%s\n%ld\n%d", name, path, length, taskID);
-    // writeSocketData(0x1, buffer, strlen(buffer));
-    // for (size_t i = 0; i < 10; i++)
-    // {
-    //     for (size_t j = 0; j < 10; j++)
-    //     {
-    //         usleep(100000);
-    //         statMutex.lock();
-    //         if( taskList[taskID] != -1 )
-    //         {
-    //             rec_fd = taskList[taskID];
-    //             statMutex.unlock();
-    //             return rec_fd;
-    //         }
-    //         statMutex.unlock();
-    //     }
-    // }
-    // statMutex.lock();
-    // taskList.erase(taskID);
-    // statMutex.unlock();
-    // return -1;
+}
 
+int Server::BroadcastStatus(unsigned char statusCode)
+{
+    char msg[128] = {0};
+    snprintf(msg, 128, "S{\"status\":%d}", statusCode);
+    return Broadcast(msg, strnlen(msg, 128));
 }
 
 Server::~Server()

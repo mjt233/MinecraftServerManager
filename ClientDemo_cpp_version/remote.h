@@ -1,3 +1,5 @@
+
+int remote_socket;
 #include "action.h"
 #define CREATE_TASK_THREAD(func) \
     if ( ( count = recv( remote_socket, buffer, fb.length, MSG_WAITALL ) )== fb.length )    \
@@ -8,10 +10,9 @@
         pthread_create(&thid, NULL, func, (void*)at);                                       \
     }else{ goto END; }                                                                      \
 
-mutex ConnectedMutex;
+mutex SendMutex;
 int Connected = 0;
 
-int remote_socket;
 int AccessServer(const char * addr,unsigned short port,int SerID,int UsrID);
 
 // 从远程管理器读取数据

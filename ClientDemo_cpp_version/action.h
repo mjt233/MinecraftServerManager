@@ -1,7 +1,9 @@
 SOCKET_T getTaskAccessCmd(const char * taskID_ch);
+SOCKET_T startTask(const char * taskID_ch);
 void * acceptFile(void * arg);
 void * getFileList(void * arg);
 void * serverControl(void * arg);
+void setServerStatus(unsigned char status);
 
 /**
  *  启动任务连接,并完成任务接入握手
@@ -200,7 +202,17 @@ void * serverControl(void * arg)
     }else if( data == "reboot" ){
         serAttr.reboot = 1;
         send(inputPipe.psocket, "stop\n", 5, MSG_WAITALL);
-    }else if( data == "hoog" ){
-        
+    }else if( data == "suspend" ){
+        serAttr.suspend = 1;
+        send(inputPipe.psocket, "stop\n", 5, MSG_WAITALL);
+    }else if( data == "launch" ){
+        serAttr.launch = 1;
     }
+}
+
+void setServerStatus(unsigned char status)
+{
+    frame_builder fb;
+    fb.build(status,0);
+    send(remote_socket, fb.f_data, sizeof(fb.f_data), MSG_WAITALL);
 }

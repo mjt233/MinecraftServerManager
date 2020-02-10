@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>API测试</title>
+    <script src="lib/jquery.min.js"></script>
+    <script>
+        function submit_(elem)
+        {
+            var SerID = document.getElementById("SerID").value
+            var UsrID = document.getElementById("UsrID").value
+            var fd = new FormData(elem)
+            var data = {}
+            data["SerID"] = SerID
+            data["UsrID"] = UsrID
+            fd.forEach((v,k)=>{
+                data[k] = v
+            })
+            var url = elem.getAttribute("_action_")
+            console.log(data)
+            try {
+                $.post(url,data,(e)=>{
+                    console.log(e)
+                })
+            } catch (error) {
+                console.log(error)
+                return false;
+            }
+            return false;
+        }
+    </script>
+</head>
+<body>
+    <label for="">SerID</label><input type="text" value="1" id="SerID">
+    <label for="">UsrID</label><input type="text" value="12345" id="UsrID">
+    <form _action_="/api/ls" onsubmit="return submit_(this)">
+        <h3 onclick="submit(this.parentNode)">获取文件列表/api/ls</h3>
+        <label for="">path</label><input value="/" type="text" name="path" id="path">
+        <button >提交</button>
+    </form>
+    <form _action_="/api/ctl" onsubmit="return submit_(this)">
+        <h3>服务器启停控制/api/ctl</h3>
+        <label for="">type</label>
+        <select name="type" id="type">
+            <option value="suspend">挂起</option>
+            <option value="launch">启动</option>
+            <option value="stop">关闭</option>
+            <option value="reboot">重启</option>
+            <option value="force-shutdown">强制关闭</option>
+        </select>
+        <button type="submit">提交</button>
+    </form>
+    <!-- <form action="/api/ctl">
+        <h3>文件上传ws://fileupload</h3>
+        <input type="file">
+        <button type="submit">提交</button>
+    </form> -->
+</body>
+</html>

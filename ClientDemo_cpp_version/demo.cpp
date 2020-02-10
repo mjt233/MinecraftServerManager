@@ -63,23 +63,25 @@ void ReadData()
     char buffer[1024] = {0};
     int count;
     frame_builder fb;
-    while ( ( count = recv(outputPipe.psocket, buffer, 1023, 0) ) > 0 )
+    while ( ( count = recv(outputPipe.psocket, buffer + 1, 1022, 0) ) > 0 )
     {
-        buffer[count] = 0;
-        cout << buffer;
-        fb.build(0x0,count);
+        SendMutex.lock();
+        buffer[0] = 'T';
+        buffer[count + 1] = 0;
+        cout << buffer + 1;
+        fb.build(0x0,count + 1);
         if ( !Connected || send(remote_socket, fb.f_data, 5, MSG_WAITALL) != 5)
         {
             cout << "远程服务器错误" << endl;
             Connected = 0;
         }
 
-        if ( !Connected || send(remote_socket, buffer, count, MSG_WAITALL) <= 0 )
+        if ( !Connected || send(remote_socket, buffer, count + 1, MSG_WAITALL) <= 0 )
         {
             cout << "远程服务器错误" << endl;
             Connected = 0;
         }
-
+        SendMutex.unlock();
         // 不加延迟会崩溃....好神奇
         usleep(50000);
     }
@@ -93,6 +95,8 @@ void launch(const char * launch_cmd)
     int first = 1;
     while( first || serAttr.loop )
     {
+        LAUNCH:
+        setServerStatus(RUNNING);
         pid = fork();
         if(pid == 0){
             dup2(outputPipe.psocket, 1);
@@ -104,21 +108,26 @@ void launch(const char * launch_cmd)
             waitpid(pid, NULL, 0);
 
             // 服务器暂时挂起
-            if( serAttr.hang )
+            if( serAttr.suspend )
             {
-                serAttr.hang = 0;
+                setServerStatus(SUSPENDED);
+                send(outputPipe.psocket, "服务器已被挂起\n", 22, MSG_WAITALL);
+                serAttr.suspend = 0;
                 while ( !serAttr.launch )
                 {
                     sleep(1);
                 }
                 serAttr.launch = 0;
+                send(outputPipe.psocket, "服务器重新唤醒..启动中\n", 33, MSG_WAITALL);
+                goto LAUNCH;
             }
-
+            setServerStatus(STOPED);
             // 收到指令,立即重启
             if( serAttr.reboot )
             {
+                send(outputPipe.psocket, "重启:正在启动...\n", 23, MSG_WAITALL);
                 serAttr.reboot = 0;
-                continue;
+                goto LAUNCH;
             }
 
             // 崩溃自重启

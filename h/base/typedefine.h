@@ -35,6 +35,11 @@ opcode操作码定义
 #define USRID_FORMAT_INCOREET -3                    // 用户ID格式错误
 #define SERID_UNEXIST -4                            // 服务器ID不存在
 #define SERID_EXIST -5                              // 服务器ID已存在
+#define SER_STATUS_RUNNING  1                       // 服务器运行中
+#define SER_STATUS_STOPPING 2                       // 服务器停止中
+#define SER_STATUS_SUSPENDED    3                   // 服务器已挂起
+#define SER_STATUS_LAUNCHING    4                   // 服务器启动中
+#define SER_STATUS_STOPED    5                      // 服务器启动中
 typedef unsigned char frame_head_data[5];
 class Client;
 class Controller;
@@ -91,7 +96,6 @@ class Client{
         Client( int SerID, int UsrID, int socket );
         void setDisable();
         void setClose();
-        // int writePipeData(frame_builder frame,const char * buf);
         int writeSocketData(unsigned char opcode, const char * buf, unsigned int len);
 };
 
@@ -114,7 +118,8 @@ class Server : public Client{
         list<Controller*> CTLList;      // 控制器列表
         list<WebSocket*> WSList;        // WebSocket会话列表
         map<int,SOCKET_T> taskList;     // 任务会话列表
-        map<int,mutex*> taskMutex;       // 任务会话同步锁
+        map<int,mutex*> taskMutex;      // 任务会话同步锁
+        int status;                     // 服务器状态
         pthread_t thid,thid2;
         stringBuffer sb;
         Server( int SerID, int UsrID, int socket );
@@ -125,6 +130,7 @@ class Server : public Client{
         int remove(Controller *ctl);
         int remove(WebSocket *ws);
         int Broadcast(char *buf,size_t len);
+        int BroadcastStatus(unsigned char statusCode);
         SOCKET_T startUpload(const char * name, const char * path, size_t length, mutex * mtx);
         SOCKET_T createTask(unsigned char opcode, const char * otherInfo, size_t len, mutex * mtx);
 };

@@ -54,18 +54,35 @@ void Server::server_read()
                     if ( count <= 0 || count > f_builder.length ) return;
 
                     buffer[count] = 0;
-                    // 写入到缓冲字符串
-                    this->sbMutex.lock();
-                    buffer_append(&this->sb, buffer);
-                    this->sbMutex.unlock();
+
+                    if( buffer[0] == 'T' )
+                    {
+                        // 写入到缓冲字符串
+                        this->sbMutex.lock();
+                        buffer_append(&this->sb, buffer + 1);
+                        this->sbMutex.unlock();
+                    }
 
                     // 广播给所有控制器
                     Broadcast(buffer, count);
                     total += count;
                 }
-                
                 break;
-            
+            case 0x1:
+                status = SER_STATUS_RUNNING;
+                BroadcastStatus(SER_STATUS_RUNNING);
+                DEBUG_OUT("[SerID:" << SerID << "] 运行中");
+                break;
+            case 0x2:
+                DEBUG_OUT("[SerID:" << SerID << "] 已挂起");
+                status = SER_STATUS_SUSPENDED;
+                BroadcastStatus(SER_STATUS_SUSPENDED);
+                break;
+            case 0x3:
+                DEBUG_OUT("[SerID:" << SerID << "] 已停止");
+                status = SER_STATUS_STOPED;
+                BroadcastStatus(SER_STATUS_STOPED);
+                break;
             default:
                 DEBUG_OUT("服务器收到无效操作码");
                 return;
@@ -97,11 +114,15 @@ int Server::add(Controller *ctl)
         return 1;
     }
     sbMutex.unlock();
-    if ( !strbuf )
+    char * strbuf2 = (char*)malloc(strlen(strbuf)+2);
+    cout << sizeof(strbuf) << endl;
+    if ( !strbuf || !strbuf2 )
     {
         cout << "malloc error" << endl;
     }
-    ctl->writeSocketData(0x0, strbuf, strlen(strbuf));
+    sprintf(strbuf2,"T%s",strbuf);
+    ctl->writeSocketData(0x0, strbuf2, strlen(strbuf2));
     free(strbuf);
+    free(strbuf2);
     return 1;
 }

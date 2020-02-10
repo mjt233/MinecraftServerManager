@@ -1,7 +1,7 @@
 /******************************** 常亮声明      *************************/
-#define RUNNING 1
-#define STOPPING 2
-#define HANGUP  3
+#define RUNNING 0x1
+#define SUSPENDED 0x2
+#define STOPED  0x3
 
 /******************************** 数据类型声定义 *************************/
     // 多线程参数结构体
@@ -14,7 +14,7 @@ typedef struct {
 typedef struct {
     int loop = 1;       // 是否崩溃自动重启标识
     int reboot = 0;     // 重启标识
-    int hang = 0;       // 挂起标识
+    int suspend = 0;       // 挂起标识
     int launch = 0;     // 指令启动标识
     int status = 0;     // 服务器状态
 }serAttr_t;      // 服务器属性结构体
@@ -82,5 +82,6 @@ void Exit(int sign)
     inputPipe.write("stop\n",5);
     cout << "Interrupt" << endl;
     sleep(1);
+    kill(pid, SIGABRT);
     exit(EXIT_FAILURE);
 }

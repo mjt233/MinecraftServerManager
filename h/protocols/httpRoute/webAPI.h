@@ -7,8 +7,8 @@ void webAPI(int socket_fd, HTTPRequestInfo &HQ)
     HQ.socket_fd = socket_fd;
     HTTPResponeInfo HP;
     Server *ser;
-    int SerID = atoi( HQ.GET["SerID"].c_str() );
-    int UsrID = atoi( HQ.GET["UsrID"].c_str() );
+    int SerID = atoi( HQ.POST["SerID"].c_str() );
+    int UsrID = atoi( HQ.POST["UsrID"].c_str() );
     SerMutex.lock();
     if ( !checkID(SerID, UsrID) )
     {
@@ -46,12 +46,25 @@ void serCtl(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
     HTTPResponeInfo HP;
     frame_builder fb;
     frame_head_data fhd;
-    if( HQ.GET.count("type") == 0 )
+    string type;
+    if( HQ.POST.count("type") == 0 )
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, -3, "lost param", "缺少type");
         return;
     }
-    ser->writeSocketData(0x3, HQ.GET["type"].c_str(), HQ.GET["type"].length());
+    type = HQ.POST["type"];
+    if( ( type == "stop" || type == "suspend" || type == "reboot" ) && ser->status != SER_STATUS_RUNNING)
+    {
+        HP.sendJsonMsg(HQ.socket_fd, 200, -4, "error", "只可以对运行中的服务器使用该操作");
+        return;
+    }
+    if( type == "stop" || type == "suspend" || type == "reboot" || type == "force-shutdown")
+    {
+        DEBUG_OUT("[SerID:" << ser->SerID << "] 关闭中");
+        ser->BroadcastStatus(SER_STATUS_STOPPING);
+        ser->status = SER_STATUS_STOPPING;
+    }
+    ser->writeSocketData(0x3, type.c_str(), type.length());
     HP.sendJsonMsg(HQ.socket_fd, 200, 200, "OK", "OK");
 }
 
@@ -64,12 +77,12 @@ void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
     SOCKET_T sock;
 
 
-    if( HQ.GET.count("path") == 0 )
+    if( HQ.POST.count("path") == 0 )
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, -3, "lost param", "缺少path");
         return;
     }
-    sock = ser->createTask(0x2, HQ.GET["path"].c_str(), 1, mtx);
+    sock = ser->createTask(0x2, HQ.POST["path"].c_str(), 1, mtx);
     if( sock == -1 )
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, 502, "Bad Gateway", "目标服务器响应请求超时" );
