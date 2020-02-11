@@ -82,6 +82,9 @@ void Exit(int sign)
     inputPipe.write("stop\n",5);
     cout << "Interrupt" << endl;
     sleep(1);
-    kill(pid, SIGABRT);
+    if(sign)
+    {
+        kill(pid, SIGABRT);
+    }
     exit(EXIT_FAILURE);
 }

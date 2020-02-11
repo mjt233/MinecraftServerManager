@@ -25,9 +25,9 @@ void terminalAccess(HTTPRequestInfo &HQ, int socket_fd)
     }
     int SerID = atoi( ws.HTTPRequest.GET["SerID"].c_str() );
     int UsrID = atoi( ws.HTTPRequest.GET["UsrID"].c_str() );
-    if( SerID == 0 || UsrID == 0 )
+    if( SerID <= 0 || UsrID <= 0 )
     {
-        ws.die( (char *)"无效wsID",10);
+        ws.die( (char *)"T无效的ID",12);
         return;
     }
     SerMutex.lock();
@@ -35,7 +35,7 @@ void terminalAccess(HTTPRequestInfo &HQ, int socket_fd)
     // 判断服务器目标是否存在
     if( !SerList.count(SerID) )
     {
-        ws.die((char *)"Unexist Server",14);
+        ws.die((char *)"T认证失败,服务器ID与创建用户ID不匹配",51);
         SerMutex.unlock();
         return;
     }
@@ -45,13 +45,13 @@ void terminalAccess(HTTPRequestInfo &HQ, int socket_fd)
     if ( ser->UsrID != UsrID )
     {
         SerMutex.unlock();
-        ws.die((char *)"Authentication failed", 21);
+        ws.die((char *)"T认证失败,服务器ID与创建用户ID不匹配", 51);
         return;
     }
     if( !ser->add(&ws) )
     {
         SerMutex.unlock();
-        ws.die((char *)"Join Server Failed", 18);
+        ws.die((char *)"T服务器内部错误", 22);
         return;
     }
     SerMutex.unlock();

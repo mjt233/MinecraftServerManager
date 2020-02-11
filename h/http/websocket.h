@@ -334,6 +334,7 @@ int Server::add(WebSocket *ws)
     }
     cliMutex.lock();
     WSList.push_back(ws);
+    ws->writeData(0x2, "TOK", 3);
     cliMutex.unlock();
     sbMutex.lock();
     char * strbuf = buffer_get_string(&sb);
