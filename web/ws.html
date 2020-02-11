@@ -5,16 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="src/css/terminal.css">
+    <link rel="stylesheet" href="src/css/controlPanel.css">
     <title>WebSocket测试</title>
 </head>
 <body>
-    <form onsubmit="return send()">
-        <div class="terminal-panel">
-            <div class="terminal" id = "terminal"></div>
+    <div id="msgbox-panel"></div>
+    <div id="login-panel">
+        <form onsubmit="return Connect()">
+            <div class="login-group">
+                <span>服务器ID</span>
+                <input id="SerID" onfocus="this.parentNode.className='login-group active'" onblur="if(this.value == '') this.parentNode.className='login-group'" type="text">
+            </div>
+            <div class="login-group">
+                <span>服务器ID</span>
+                <input id="UsrID" onfocus="this.parentNode.className='login-group active'" onblur="if(this.value == '') this.parentNode.className='login-group'" type="text">
+            </div>
+            <div style="clear:both"></div>
+            <button type="submit" class="blue">连接</button>
+        </form>
+    </div>
+    <div class="terminal-panel">
+        <div class="terminal" id = "terminal"></div>
+        <form onsubmit="return send()">
             <input autocapitalize="off" autocomplete="off" placeholder="在这里输入命令吧 回车发送&#8629" type="text" id="input">
-        </div>
+        </form>
         <button type="submit" style="display: none;"></button>
-    </form>
+    </div>
 </body>
 <script src="src/javascript/terminal.js"></script>
 <script src="ws.js"></script>

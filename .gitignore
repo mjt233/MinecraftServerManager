@@ -9,6 +9,7 @@ iotest.cpp
 ClientDemo_cpp_version/server
 ClientDemo_cpp_version/demo
 ClientDemo_cpp_version/wow
+ClientDemo_cpp_version/minecraft_server.1.12.2.jar
 client
 client.cpp
 server
