@@ -111,7 +111,9 @@ void ReadRemoteData(char const *argv[])
     } while ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4]))  );
     Connected = 1;
     std::cout << "重连成功" << std::endl;
-    
+    cout << (int)SERSTATUS << endl;
+    // 跟进当前状态
+    setServerStatus(SERSTATUS);
     goto START;
 }
 

@@ -169,7 +169,7 @@ int WebSocket::writeData(unsigned char opcode,const char * buf, size_t len)
     // {
     //     buf[i] = buf[i] ^ head_frame[ masking_pos + i%4 ];
     // }
-    if ( write( fd, head_frame, frame_length ) < frame_length)
+    if ( send( fd, head_frame, frame_length , MSG_WAITALL) < frame_length)
     {
         free(head_frame);
         return 0;
@@ -178,8 +178,8 @@ int WebSocket::writeData(unsigned char opcode,const char * buf, size_t len)
     while ( count < len )
     {
         a = len - count;
-        i = write( fd, buf + count, ( a > 1024 ) ? 1024 : a );
-        if( i <= 0 )
+        i = send( fd, buf + count, ( a > 1024 ) ? 1024 : a , 0);
+        if( i <= 0 || i>len)
         {
             free(head_frame);
             return 0;
@@ -338,6 +338,7 @@ int Server::add(WebSocket *ws)
     cliMutex.unlock();
     sbMutex.lock();
     char * strbuf = buffer_get_string(&sb);
+    BroadcastStatus(status);
     if( !strbuf )
     {
         sbMutex.unlock();

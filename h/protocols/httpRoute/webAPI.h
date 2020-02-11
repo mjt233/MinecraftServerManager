@@ -53,12 +53,23 @@ void serCtl(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
         return;
     }
     type = HQ.POST["type"];
-    if( ( type == "stop" || type == "suspend" || type == "reboot" ) && ser->status != SER_STATUS_RUNNING)
+    int isClose = ( type == "stop" || type == "suspend" || type == "reboot" || type == "force-shutdown");
+    if( type == "launch" && ser->status == SER_STATUS_RUNNING )
     {
-        HP.sendJsonMsg(HQ.socket_fd, 200, -4, "error", "只可以对运行中的服务器使用该操作");
+        HP.sendJsonMsg(HQ.socket_fd, 200, -4, "error", "已经在运行啦!");
         return;
     }
-    if( type == "stop" || type == "suspend" || type == "reboot" || type == "force-shutdown")
+    if( type == "launch" && ser->status == SER_STATUS_STOPED )
+    {
+        HP.sendJsonMsg(HQ.socket_fd, 200, -4, "error", "只能启动被挂起的服务器");
+        return;
+    }
+    if( isClose && ser->status != SER_STATUS_RUNNING)
+    {
+        HP.sendJsonMsg(HQ.socket_fd, 200, -4, "error", "服务器已经关掉啦~");
+        return;
+    }
+    if( isClose )
     {
         DEBUG_OUT("[SerID:" << ser->SerID << "] 关闭中");
         ser->BroadcastStatus(SER_STATUS_STOPPING);

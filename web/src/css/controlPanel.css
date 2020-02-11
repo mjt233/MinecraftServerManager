@@ -1,144 +1,151 @@
 body{
     --bc : #64b5f6;
+    --panel-height: 600px;
+    --hid-panel-height: -600px;
     position: relative;
     margin: 0;
 }
-/*  接入信息填写面板  */
-#login-panel{
-    font-family: monospace;
-    border-radius: 5px;
-    position: fixed;
-    top: 120px;
-    width: 80%;
-    margin: 0 10%;
-    overflow: hidden;
-    background-color: var(--bc);
-    padding: 25px 0;
-    transition: all 0.5s;
-}
 
-#login-panel.hid{
-    top: 0px;
-    opacity: 0;
-}
-
-/*  input效果组  */
-#login-panel .login-group{
-    position: relative;
-    float: left;
-    margin:10px 20px;
-}
-
-#login-panel button.blue{
-    margin-left: 20px;
-    background: #039BE5;
-    cursor: pointer;
-    padding: 4px 15px;
+/*  服务器控制面板  */
+#control-panel{
     color: white;
-    border: none;
-    border-radius: 3px;
+    position: fixed;
+    width: 80%;
+    height: var(--panel-height);
+    /* background-color: #336699; */
+    left: 0;
+    right: 0;
+    top: 0;
+    margin: 0 auto;
+    transition: all 0.75s;
 }
 
-/*  input效果组 下面那条线  */
-#login-panel .login-group::before{
+#control-panel.active .handle{
+    content: "折叠";
+    display: inline-block;
+    position: absolute;
+    bottom: -74px;
+    /* left: 0px; */
+    right: 0px;
+    width: 80px;
+    height: 40px;
+    margin: 0 auto;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: transparent;
+    border: 2px solid #BBDEFB;
+    color: darkgray;
+    font-size: 14px;
+    font-weight: bolder;
+}
+
+#control-panel.active .handle::before{
     content: "";
     display: inline-block;
-    width: 180px;
-    pointer-events: none;
-    height: 2px;
     position: absolute;
-    background-color: rgb(122, 213, 255);
-    top: 22px;
-    transform: rotatey(90deg);
-    transition: all 0.5s;
-}
-
-#login-panel .login-group input{
-    color: #455a64;
-    text-indent: 1em;
-    background-color: var(--bc);
-    border: none;
-    height: 21px;
-    width: 180px;
-    border-bottom: 1px solid rgb(34, 34, 34);
-    /* border-radius: 3px; */
-    margin-bottom: 2px;
-}
-
-
-#login-panel .login-group span{
+    width: 2px;
+    height: 36px;
+    background-color: #BBDEFB;
+    top: -36px;
+    left: 0;
+    right: 0;
+    cursor: pointer;
     pointer-events: none;
-    position: absolute;
-    font-size: 14px;
-    color: rgb(58, 58, 58);
-    top: 0px;
-    left: 10px;
-    transition: all 0.3s;
+    margin: 0 auto;
 }
 
-#login-panel .login-group.active span{
-    top: -20px;
-    left: 0px;
-    font-size: 13px;
-    color: rgb(255, 255, 255);
+#control-panel.hid{
+    top: var(--hid-panel-height);
 }
 
-#login-panel .login-group.active::before{
-    transform: rotatey(0deg);
+#control-panel .handle{
+    display: none;
 }
 
-#msgbox-panel{
+
+#control-panel nav{
+    height: 100%;
+    float: right;
+    background-color: #6699cc;
     z-index: 1;
-    pointer-events: none;
-    position: fixed;
-    margin: 0 20%;
-    top: 300px;
-    width: 60%;
-    overflow: hidden;
 }
 
-#msgbox-panel p{
-    left: 0px;
+#control-panel nav ul{
+    position: relative;
+    display: inline-block;
+    list-style: none;
+    padding: 0;
+}
+
+#control-panel nav ul li{
+    text-align: right;
+    position: relative;
+    padding: 15px 10px 15px 20px;
+    text-indent: 0.5em;
+    display: block;
+    cursor: pointer;
+    right: 0;
+    transition: all 0.25s;
+}
+
+#control-panel nav ul li.active{
+    right: 16px;
+}
+
+#control-panel nav ul li::before{
+    content: "";
+    /* background-color: white; */
+    position: absolute;
+    display: inline-block;
+    left: 0;
+    width: 0px;
+    height: 0px;
+    border-left: 12px solid transparent;
+    border-right: 12px solid transparent;
+    border-bottom: 24px solid #6699cc;
+    transform: rotateZ(-90deg);
+}
+
+/* 面板内容 */
+.control-panel-content{
+    position: relative;
+    background-color: rgba(187, 222, 251, 0.918);
+    overflow: hidden;
+    height: 100%;
+    z-index: -1;
+    color: black;
+}
+
+.control-panel-content ul{
     top: 0px;
     position: relative;
+    display: block;
+    margin: 0;
+    padding: 0;
+    list-style: none;
     width: 80%;
-    margin: 20px auto;
-    font-size: 14px;
-    line-height: 28px;
-    height: 24px;
-    color: #ffffff;
-    background-color: rgba(51, 180, 72, 0.719);
-    text-align: center;
-    transition: all 0.5s;
-    animation: awesome 0.5s;
-    -webkit-animation: awesome 0.5s;
-    border-radius: 5px;
-    z-index: 1;
+    padding-right: 20%;
+    transition: all 0.35s;
+}
+.control-panel-content ul li{
+    display: block;
+    width: 100%;
+    float: left;
+    height: 600px;
 }
 
-#msgbox-panel p.fade{
-    left: 40px;
-    opacity: 0;
+.control-panel-content fieldset{
+    width: 60%;
+    margin: 0 auto;
 }
 
-@keyframes awesome{
-    from {
-        opacity: 0;
-        top: 40px;
-    }
-    to {
-        opacity: 1;
-        top: 0px;
-    }
+#sstatus{
+    color: green;
 }
 
-@-webkit-keyframes awesome{
-    from {
-        opacity: 0;
-        top: 40px;
-    }
-    to {
-        opacity: 1;
-        top: 0px;
+@media screen and (max-width:1060px){
+    #control-panel{
+        width: 100%;
     }
 }

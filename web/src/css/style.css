@@ -1,0 +1,45 @@
+button.md{
+    position: relative;
+    margin: 5px 10px;
+    background: #039BE5;
+    cursor: pointer;
+    padding: 4px 15px;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    overflow: hidden;
+    outline: 0;
+}
+
+button.md::after{
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    border-radius: 50%;
+    content: "";
+    width: 0;height: 0;
+    /* padding: 29%; */
+    position: absolute;
+    display: inline-block;
+    background-color: aliceblue;
+    transition: all 0.5s;
+}
+
+button.md.press::after{
+    animation: btn-background-fade 0.5s;
+    -webkit-animation: btn-background-fade 0.5s;
+}
+
+@keyframes btn-background-fade{
+    0%{
+        top: 30%;
+        opacity: 0.8;
+        padding: 10%;
+    }
+    100%{
+        top: -50%;
+        opacity: 0;
+        padding: 50%;
+    }
+}

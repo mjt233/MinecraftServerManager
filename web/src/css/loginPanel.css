@@ -1,0 +1,114 @@
+/*  服务器接入面板  */
+#login-panel{
+    font-family: monospace;
+    border-radius: 5px;
+    top: 120px;
+    left: 0;
+    right: 0;
+    width: 330px;
+    margin: 0 auto;
+    overflow: hidden;
+    position: fixed;
+    animation: login-pop 0.5s;
+    -webkit-animation: login-pop 0.5s;
+    background-color: var(--bc);
+    padding: 25px 0;
+    transition: all 0.3s;
+}
+
+#login-panel.hid{
+    border-radius: 50%;
+    top: 0px;
+    transform: rotateY(90deg);
+    opacity: 0;
+}
+
+/*  input效果组  */
+#login-panel .login-group{
+    position: relative;
+    margin:10px auto 30px auto;
+    width: 240px;
+}
+
+#login-panel button.blue{
+    margin-left: 20px;
+    background: #039BE5;
+    cursor: pointer;
+    padding: 4px 15px;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+
+/*  input效果组 下面那条线  */
+#login-panel .login-group::before{
+    content: "";
+    display: inline-block;
+    /* width: 180px; */
+    width: 100%;
+    pointer-events: none;
+    height: 2px;
+    position: absolute;
+    background-color: rgb(122, 213, 255);
+    top: 22px;
+    transform: rotatey(90deg);
+    transition: all 0.5s;
+}
+
+#login-panel .login-group input{
+    color: #455a64;
+    outline: 0;
+    text-indent: 1em;
+    background-color: var(--bc);
+    border: none;
+    height: 21px;
+    width: 100%;
+    /* width: 180px; */
+    border-bottom: 1px solid rgb(34, 34, 34);
+    /* border-radius: 3px; */
+    margin-bottom: 2px;
+}
+
+
+#login-panel .login-group span{
+    pointer-events: none;
+    position: absolute;
+    font-size: 14px;
+    color: rgb(70, 70, 70);
+    top: 0px;
+    left: 10px;
+    transition: all 0.3s;
+}
+
+#login-panel .login-group.active span{
+    top: -20px;
+    left: 0px;
+    font-size: 13px;
+    color: rgb(65, 65, 65);
+}
+
+#login-panel .login-group.active::before{
+    transform: rotatey(0deg);
+}
+
+@-webkit-keyframes login-pop{
+    from {
+        opacity: 0;
+        top: 200px;
+    }
+    to {
+        opacity: 1;
+        top: 120px;
+    }
+}
+
+@keyframes login-pop{
+    from {
+        opacity: 0;
+        top: 200px;
+    }
+    to {
+        opacity: 1;
+        top: 120px;
+    }
+}

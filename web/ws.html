@@ -4,25 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- <meta http-equiv="Refresh" content="2";/> -->
+    <link rel="stylesheet" href="src/css/style.css">
     <link rel="stylesheet" href="src/css/terminal.css">
+    <link rel="stylesheet" href="src/css/msgboxPanel.css">
+    <link rel="stylesheet" href="src/css/loginPanel.css">
     <link rel="stylesheet" href="src/css/controlPanel.css">
+    <script src="lib/jquery.min.js"></script>
+    <script src="src/javascript/style.js"></script>
+    <script src="src/javascript/control.js"></script>
+    <script>
+    
+    </script>
     <title>WebSocket测试</title>
 </head>
-<body>
+<body onload="init()">
     <div id="msgbox-panel"></div>
     <div id="login-panel">
         <form onsubmit="return Connect()">
             <div class="login-group">
                 <span>服务器ID</span>
-                <input id="SerID" onfocus="this.parentNode.className='login-group active'" onblur="if(this.value == '') this.parentNode.className='login-group'" type="text">
+                <input id="SerID" autocomplete="off"  onfocus="this.parentNode.className='login-group active'" onblur="if(this.value == '') this.parentNode.className='login-group'" type="text">
             </div>
             <div class="login-group">
-                <span>服务器ID</span>
-                <input id="UsrID" onfocus="this.parentNode.className='login-group active'" onblur="if(this.value == '') this.parentNode.className='login-group'" type="text">
+                <span>创建者ID</span>
+                <input id="UsrID" autocomplete="off" onfocus="this.parentNode.className='login-group active'" onblur="if(this.value == '') this.parentNode.className='login-group'" type="text">
             </div>
             <div style="clear:both"></div>
             <button type="submit" class="blue">连接</button>
         </form>
+    </div>
+    <div id="control-panel" class="hid">
+        <nav>
+            <ul>
+                <li class="active">运行控制</li>
+                <li>资源管理</li>
+                <li>性能监控</li>
+                <li>定时任务</li>
+                <li>事件触发</li>
+            </ul>
+        </nav>
+        <div class="control-panel-content">
+            <ul id="panel-container">
+                <li>
+                    <fieldset>
+                        <legend><h3>运行控制</h3></legend>
+                        <button class="md" onclick="serswitch('launch')">启动</button>
+                        <button class="md" onclick="serswitch('suspend')">停止</button>
+                        <button class="md" onclick="serswitch('reboot')">重启</button>
+                        <button class="md" onclick="serswitch('force-shutdown')">强制停止</button>
+                        <p>服务器状态:<span id="sstatus">未获取</span> </p>
+                    </fieldset>
+                </li>
+                <li>
+                    <fieldset>
+                        <legend><h3>资管管理</h3></legend>
+                    </fieldset>
+                </li>
+                <li>
+                    <fieldset>
+                        <legend><h3>性能监控</h3></legend>
+                    </fieldset>
+                </li>
+                <li>
+                    <fieldset>
+                        <legend><h3>定时任务</h3></legend>
+                    </fieldset>
+                </li>
+                <li>
+                    <fieldset>
+                        <legend><h3>时间触发</h3></legend>
+                    </fieldset>
+                </li>
+            </ul>
+        </div>
+        <button class="handle" onclick="cpSlideUp()">控制面板</button>
     </div>
     <div class="terminal-panel">
         <div class="terminal" id = "terminal"></div>

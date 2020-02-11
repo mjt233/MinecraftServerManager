@@ -95,16 +95,3 @@ function addColor(str, color)
     return span
 }
 
-function addMsg(msg,timeout)
-{
-    var p = document.createElement("p")
-    p.innerText = msg
-    // msgbox_panel.appendChild(p)
-    msgbox_panel.insertBefore(p, msgbox_panel.childNodes[0])
-    setTimeout(() => {
-        p.className = "fade"
-        setTimeout(() => {
-            msgbox_panel.removeChild(p)
-        }, 500);
-    }, timeout == undefined ? 5000 : timeout);
-}

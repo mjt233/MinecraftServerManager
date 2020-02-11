@@ -215,4 +215,5 @@ void setServerStatus(unsigned char status)
     frame_builder fb;
     fb.build(status,0);
     send(remote_socket, fb.f_data, sizeof(fb.f_data), MSG_WAITALL);
+    SERSTATUS = status;
 }

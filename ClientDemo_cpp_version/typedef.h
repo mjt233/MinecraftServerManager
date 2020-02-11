@@ -1,4 +1,5 @@
-/******************************** 常亮声明      *************************/
+/********************************   常量声明    *************************/
+
 #define RUNNING 0x1
 #define SUSPENDED 0x2
 #define STOPED  0x3
@@ -20,6 +21,7 @@ typedef struct {
 }serAttr_t;      // 服务器属性结构体
 
 /******************************** 全局变量声明 **********************/
+
 pid_t   pid,                // 子进程ID
         main_pid;           // 主进程ID
 int shm_id;                 // 共享内存ID
@@ -27,6 +29,7 @@ int SERID,USRID;            // SerID and UsrID
 string serAddr;             // 管理服务器地址
 unsigned short serPort;     // 管理服务器端口
 serAttr_t serAttr;          // 服务器属性结构体
+unsigned char SERSTATUS;    // 服务器当前状态
 
 /************************** 函数声明 ****************************/
 
