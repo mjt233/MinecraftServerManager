@@ -49,7 +49,7 @@
     pointer-events: none;
     height: 2px;
     position: absolute;
-    background-color: rgb(122, 213, 255);
+    background-color: rgb(51, 162, 214);
     top: 22px;
     transform: rotatey(90deg);
     transition: all 0.5s;
@@ -64,7 +64,7 @@
     height: 21px;
     width: 100%;
     /* width: 180px; */
-    border-bottom: 1px solid rgb(34, 34, 34);
+    border-bottom: 1px solid rgb(180, 180, 180);
     /* border-radius: 3px; */
     margin-bottom: 2px;
 }
@@ -74,7 +74,7 @@
     pointer-events: none;
     position: absolute;
     font-size: 14px;
-    color: rgb(70, 70, 70);
+    color: rgb(128, 128, 128);
     top: 0px;
     left: 10px;
     transition: all 0.3s;
@@ -84,7 +84,7 @@
     top: -20px;
     left: 0px;
     font-size: 13px;
-    color: rgb(65, 65, 65);
+    color: rgb(63, 74, 83);
 }
 
 #login-panel .login-group.active::before{

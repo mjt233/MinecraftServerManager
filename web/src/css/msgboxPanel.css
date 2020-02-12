@@ -2,31 +2,36 @@
 #msgbox-panel{
     z-index: 1;
     pointer-events: none;
+    align-items: center;
     position: fixed;
-    margin: 0 20%;
-    top: 300px;
+    margin: 0 10%;
+    bottom: 300px;
     height: 300px;
-    width: 60%;
-    overflow: hidden;
+    width: 80%;
+    /* overflow: hidden; */
 }
 
 #msgbox-panel p{
-    left: 0px;
     top: 0px;
-    position: relative;
-    width: 40%;
-    margin: 20px auto;
+    width: 100%;
     font-size: 14px;
     line-height: 30px;
     min-height: 30px;
     color: #ffffff;
-    background-color: rgba(51, 180, 72, 0.719);
     text-align: center;
     transition: all 0.5s;
     animation: awesome 0.5s;
     -webkit-animation: awesome 0.5s;
     border-radius: 5px;
     z-index: 1;
+    margin: 20px auto;
+}
+
+#msgbox-panel p span{
+    display: inline-block;
+    background-color: rgba(51, 180, 72, 0.719);
+    border-radius: 5px;
+    padding: 2px 10px;
 }
 
 #msgbox-panel p.fade{

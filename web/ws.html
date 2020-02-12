@@ -13,9 +13,7 @@
     <script src="lib/jquery.min.js"></script>
     <script src="src/javascript/style.js"></script>
     <script src="src/javascript/control.js"></script>
-    <script>
-    
-    </script>
+    <script src="src/javascript/file.js"></script>
     <title>WebSocket测试</title>
 </head>
 <body onload="init()">
@@ -34,8 +32,9 @@
             <button type="submit" class="blue">连接</button>
         </form>
     </div>
-    <div id="control-panel" class="hid">
+    <div id="control-panel" class="active">
         <nav>
+            <button class="md" onclick="cpSlideUp()">&#8679</button>
             <ul>
                 <li class="active">运行控制</li>
                 <li>资源管理</li>
@@ -45,38 +44,52 @@
             </ul>
         </nav>
         <div class="control-panel-content">
-            <ul id="panel-container">
-                <li>
+            <div id="panel-container">
+                <div>
                     <fieldset>
                         <legend><h3>运行控制</h3></legend>
                         <button class="md" onclick="serswitch('launch')">启动</button>
                         <button class="md" onclick="serswitch('suspend')">停止</button>
                         <button class="md" onclick="serswitch('reboot')">重启</button>
                         <button class="md" onclick="serswitch('force-shutdown')">强制停止</button>
-                        <p>服务器状态:<span id="sstatus">未获取</span> </p>
+                        <p>服务器状态:<span id="sstatus">未获取</span></p>
                     </fieldset>
-                </li>
-                <li>
+                </div>
+                <div>
                     <fieldset>
-                        <legend><h3>资管管理</h3></legend>
+                        <legend><h3>文件管理</h3></legend>
+                        <p id="path"></p>
+                        <div id="filelist-container">
+                            <table id="filelist">
+                                <thead>
+                                    <tr>
+                                        <td>文件名</td>
+                                        <td>大小</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+    
+                                </tbody>
+                            </table>
+                        </div>
                     </fieldset>
-                </li>
-                <li>
+                </div>
+                <div>
                     <fieldset>
                         <legend><h3>性能监控</h3></legend>
                     </fieldset>
-                </li>
-                <li>
+                </div>
+                <div>
                     <fieldset>
                         <legend><h3>定时任务</h3></legend>
                     </fieldset>
-                </li>
-                <li>
+                </div>
+                <div>
                     <fieldset>
                         <legend><h3>时间触发</h3></legend>
                     </fieldset>
-                </li>
-            </ul>
+                </div>
+            </div>
         </div>
         <button class="handle" onclick="cpSlideUp()">控制面板</button>
     </div>
@@ -89,5 +102,5 @@
     </div>
 </body>
 <script src="src/javascript/terminal.js"></script>
-<script src="ws.js"></script>
+<script src="src/javascript/ws.js"></script>
 </html>

@@ -1,7 +1,12 @@
-var controlPanelHeight = 600;
+var controlPanelHeight = 100;
 function init(){
     initMDBtn();
     initControlPanel();
+    filelist = document.getElementById("filelist")
+    document.getElementById("SerID").value = 1
+    document.getElementById("UsrID").value = 12345
+    Connect()
+    ls('')
 }
 function initMDBtn()
 {
@@ -35,7 +40,7 @@ function initControlPanel()
                     i = index
                 }
             }
-            document.getElementById("panel-container").style.top = -(i*controlPanelHeight)+"px"
+            document.getElementById("panel-container").style.top = -(i*controlPanelHeight)+"%"
             setTimeout(() => {
                 elem.classList.add("active")
 

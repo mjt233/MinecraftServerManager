@@ -8,6 +8,7 @@ var loginPanel = document.getElementById("login-panel")
 var controlPanel = document.getElementById("control-panel")
 var SerID,UsrID;
 var StatusElem = document.getElementById("sstatus")
+var pathElem = document.getElementById("path")
 function Connect() {
     if( connectStatus == 1 )
     {
@@ -86,8 +87,10 @@ function send() {
 function addMsg(msg,color = "rgba(51, 180, 72, 0.719)")
 {
     var p = document.createElement("p")
-    p.innerText = msg
-    p.style.backgroundColor = color
+    var span = document.createElement("span")
+    span.style.backgroundColor = color
+    p.appendChild(span)
+    span.innerText = msg
     msgbox_panel.insertBefore(p, msgbox_panel.childNodes[0])
     setTimeout(() => {
         p.className = "fade"

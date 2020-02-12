@@ -1,3 +1,4 @@
+#include<sys/stat.h>
 SOCKET_T getTaskAccessCmd(const char * taskID_ch);
 SOCKET_T startTask(const char * taskID_ch);
 void * acceptFile(void * arg);
@@ -163,19 +164,23 @@ void * getFileList(void * arg)
     int flag = 0;
     i = dirList.begin();
     j = fileList.begin();
+    struct stat statbuf;
     for (; i!= dirList.end(); i++ )
     {
-        res += "{\"name\":\"" + *i + "\", \"type\": \"folder\"},";
+        res += "{\"name\":\"" + *i + "\", \"type\": \"folder\",\"size\":\"-\"},";
         flag =1;
     }
     for (; j!= fileList.end(); j++ )
     {
-        res += "{\"name\":\"" + *j + "\", \"type\": \"file\"},";
+        stat((path + *j).c_str(), &statbuf);
+        res += "{\"name\":\"" + *j + "\", \"type\": \"file\",\"size\":" + to_string(statbuf.st_size) + "},";
         flag = 1;
     }
     if( flag )
     {
         res[res.length() - 1] = ']';
+    }else{
+        res +="]";
     }
     res += "}";
     if( f_sock == -1 )
