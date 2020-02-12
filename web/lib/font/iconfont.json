@@ -1,0 +1,93 @@
+{
+  "id": "1636831",
+  "name": "MCSM",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "4922508",
+      "name": "返回",
+      "font_class": "back",
+      "unicode": "e670",
+      "unicode_decimal": 58992
+    },
+    {
+      "icon_id": "7193674",
+      "name": "返回",
+      "font_class": "fanhui1",
+      "unicode": "e72e",
+      "unicode_decimal": 59182
+    },
+    {
+      "icon_id": "3996617",
+      "name": "返回",
+      "font_class": "fanhui",
+      "unicode": "e641",
+      "unicode_decimal": 58945
+    },
+    {
+      "icon_id": "705682",
+      "name": "拼图",
+      "font_class": "pintu",
+      "unicode": "e61e",
+      "unicode_decimal": 58910
+    },
+    {
+      "icon_id": "924718",
+      "name": "文件",
+      "font_class": "wenjian",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "1164945",
+      "name": "地球",
+      "font_class": "diqiu",
+      "unicode": "e62e",
+      "unicode_decimal": 58926
+    },
+    {
+      "icon_id": "1444787",
+      "name": "json",
+      "font_class": "json",
+      "unicode": "e7bd",
+      "unicode_decimal": 59325
+    },
+    {
+      "icon_id": "3865278",
+      "name": "文件夹",
+      "font_class": "wenjianjia",
+      "unicode": "e604",
+      "unicode_decimal": 58884
+    },
+    {
+      "icon_id": "7056308",
+      "name": "库存",
+      "font_class": "kucun",
+      "unicode": "e631",
+      "unicode_decimal": 58929
+    },
+    {
+      "icon_id": "9111919",
+      "name": "配置",
+      "font_class": "peizhi",
+      "unicode": "e62d",
+      "unicode_decimal": 58925
+    },
+    {
+      "icon_id": "9559059",
+      "name": "齿轮",
+      "font_class": "ziyuan",
+      "unicode": "e61a",
+      "unicode_decimal": 58906
+    },
+    {
+      "icon_id": "10793057",
+      "name": "java",
+      "font_class": "java",
+      "unicode": "e624",
+      "unicode_decimal": 58916
+    }
+  ]
+}

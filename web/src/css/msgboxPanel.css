@@ -5,8 +5,8 @@
     align-items: center;
     position: fixed;
     margin: 0 10%;
-    bottom: 300px;
-    height: 300px;
+    bottom: 5px;
+    height: 180px;
     width: 80%;
     /* overflow: hidden; */
 }

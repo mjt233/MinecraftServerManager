@@ -91,6 +91,12 @@
     transform: rotatey(0deg);
 }
 
+#login-panel .title{
+    text-align: center;
+    margin-top: 0;
+    color: rgb(27, 112, 66);
+}
+
 @-webkit-keyframes login-pop{
     from {
         opacity: 0;

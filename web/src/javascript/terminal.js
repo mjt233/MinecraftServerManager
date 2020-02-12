@@ -1,5 +1,7 @@
-var target = document.getElementById("terminal");
-var msgbox_panel = document.getElementById("msgbox-panel")
+var target = document.getElementById("terminal");               // 终端输出DOM
+var msgbox_panel = document.getElementById("msgbox-panel")      // 消息框容器
+
+// 将字符串插入到模拟终端控制台并渲染颜色
 function appendInfo(str)
 {
     var p = document.createElement("p");
@@ -12,6 +14,8 @@ function appendInfo(str)
         l = str
         r = ""
     }
+
+    // append colorful string
     p.appendColStr = function(str,color,cssClass){
         var span = document.createElement("span")
         span.innerText = str;
@@ -23,7 +27,7 @@ function appendInfo(str)
     }
 
     p.appendStr = function(str, withNum){
-        var res = str.match(/tps|[0-9]+%|(\.|\\|\/|\s|\:)\-?[0-9]+|WARING|WARN|ERROR|INFO|\[|\]|\:/i)
+        var res = str.match(/[0-9]+\.+[0-9]+|tps|[0-9]+%|(\.|\\|\/|\s|\:)\-?[0-9]+|WARING|WARN|ERROR|INFO|\[|\]|\:/i)
         var l,m,r;
         if( res != null ){
             l = str.substr(0,res.index)

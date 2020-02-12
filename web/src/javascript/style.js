@@ -24,11 +24,12 @@ function initMDBtn()
     }
 }
 
+// 初始化控制面板的索引列表动作
 function initControlPanel()
 {
     var nav = document.getElementById("control-panel").getElementsByTagName("nav")[0]
     var ls = nav.getElementsByTagName("li")
-    for (let index = 0; index < ls.length; index++) {
+    for (let index = 0; index < ls.length - 1; index++) {
         const elem = ls[index];
         elem.addEventListener("click",()=>{
             let i;
@@ -49,6 +50,8 @@ function initControlPanel()
     }
 }
 
+
+// 控制面板的收缩
 function cpSlideUp()
 {
     var cp = document.getElementById("control-panel");
