@@ -40,6 +40,8 @@ opcode操作码定义
 #define SER_STATUS_SUSPENDED    3                   // 服务器已挂起
 #define SER_STATUS_LAUNCHING    4                   // 服务器启动中
 #define SER_STATUS_STOPED    5                      // 服务器启动中
+
+// #define DEBUG_OUT_N("LockSuccess");DEBUG_OUT_N(__FILE__);DEBUG_OUT(__LINE__);
 typedef unsigned char frame_head_data[5];
 class Client;
 class Controller;

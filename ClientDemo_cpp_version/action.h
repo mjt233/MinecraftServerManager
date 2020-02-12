@@ -185,12 +185,14 @@ void * getFileList(void * arg)
     res += "}";
     if( f_sock == -1 )
     {
+        closedir(dp);
         return NULL;
     }
     fb.build(0x0, res.length());
     send(f_sock, fb.f_data, sizeof(fb.f_data), MSG_WAITALL);
     send(f_sock, res.c_str(), res.length(), MSG_WAITALL);
     close(f_sock);
+    closedir(dp);
     return NULL;
 }
 

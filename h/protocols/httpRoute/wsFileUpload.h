@@ -81,13 +81,13 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     }
 
     // 获取接收端SOCKET
-    mutex mtx;
-    mtx.lock();
-    SOCKET_T rec_fd = ser->startUpload(name, path, len, &mtx);
+    mutex *mtx = new mutex;
+    mtx->lock();
+    SOCKET_T rec_fd = ser->startUpload(name, path, len, mtx);
     if ( rec_fd == -1 )
     {
         ws.die((char*)"Target server unable to accept file", 35);
-        mtx.unlock();
+        mtx->unlock();
         return ;
     }
     char buffer[204800];
@@ -101,7 +101,7 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
         if ( !ws.readHeadFrame(wsf) )
         {
             ws.die("帧读取失败",15);
-            mtx.unlock();
+            mtx->unlock();
             return;
         }
         while ( recv_len < wsf.payload_length )
@@ -114,7 +114,7 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
             {
                 ws.close();
                 shutdown(rec_fd,SHUT_RDWR);
-                mtx.unlock();
+                mtx->unlock();
                 return;
             }
             recv_len += cnt;
@@ -127,5 +127,5 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     recv(rec_fd, buffer, 2, MSG_WAITALL);
     ws.writeData(0x1, "OK", 2);
     ws.close();
-    mtx.unlock();
+    mtx->unlock();
 }

@@ -240,7 +240,8 @@ int Server::BroadcastStatus(unsigned char statusCode)
 }
 
 Server::~Server()
-{    
+{   
+
     SerMutex.lock();
 
     // 将自身设置为不可用

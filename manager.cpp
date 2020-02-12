@@ -10,6 +10,7 @@
 #include<mutex>
 bool DEBUG_MODE = false;
 #define DEBUG_OUT(msg) if(DEBUG_MODE){ cout << msg << endl; }
+#define DEBUG_OUT_N(msg) if(DEBUG_MODE){ cout << msg << endl; }
 using namespace std;
 #include "h/base/socketTool.h"
 #include "h/base/stringBuffer.h"
