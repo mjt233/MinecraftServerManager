@@ -33,6 +33,8 @@ void taskStart(baseInfo &IDInfo)
     if ( send( IDInfo.socket, buffer, strnlen(buffer, 8192), MSG_WAITALL ) != strnlen(buffer, 8192))
     {
         cout << "发送失败" << endl;
+        ser->statMutex.unlock();
+        SerMutex.unlock();
         return;
     }
     ser->taskList[taskID] = IDInfo.socket;

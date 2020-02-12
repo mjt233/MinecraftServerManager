@@ -182,6 +182,7 @@ int WebSocket::writeData(unsigned char opcode,const char * buf, size_t len)
         if( i <= 0 || i>len)
         {
             free(head_frame);
+            writeMutex.unlock();
             return 0;
         }
         count += i;

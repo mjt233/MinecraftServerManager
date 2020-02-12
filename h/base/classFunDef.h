@@ -68,6 +68,7 @@ int Client::writeSocketData(unsigned char opcode, const char * buf, unsigned int
     
     if ( send(this->socket, frame.f_data, 5, MSG_WAITALL) != 5)
     {
+        netIOMutex.unlock();
         cout << "控制发送帧时发生错误!" << endl;
         return 0;
     }
@@ -118,6 +119,7 @@ int Server::Broadcast(char * buf, size_t len)
         if ( !msg || !msg->msg)
         {
             cout << "广播失败" << endl;
+            cliMutex.unlock();
             return 0;
         }
         
@@ -136,6 +138,7 @@ int Server::Broadcast(char * buf, size_t len)
         if ( !msg || !msg->msg)
         {
             cout << "广播失败" << endl;
+            cliMutex.unlock();
             return 0;
         }
         
