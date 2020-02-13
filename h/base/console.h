@@ -31,6 +31,8 @@ void console_command()
             cout << "Server closing..." << endl;
             shutdown( SER_SOCKET, SHUT_RDWR );
             exit(EXIT_SUCCESS);
+        }else if ( !strcmp( input, "lock") ){
+            cout << SerMutex.toString() << endl;
         }else
         {
             cout << "< Unknow command.Try use \"help\" or \"?\" to get help" << endl;

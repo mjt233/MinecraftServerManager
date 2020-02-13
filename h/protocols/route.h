@@ -53,7 +53,7 @@ int read_request_id( int sock_fd, baseInfo &IDInfo )
     }
 
     // 判断服务器ID是否冲突
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
     isServerExist = SerList.count( IDInfo.SerID );
     SerMutex.unlock();
     if ( tag == SERVER && isServerExist )

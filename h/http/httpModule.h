@@ -102,11 +102,10 @@ string getGMTTime()
     time_t rawTime;
     struct tm* timeInfo;
     char tmp[64]={0};
-    string res;
     time(&rawTime);
     timeInfo = gmtime(&rawTime);
     strftime(tmp,sizeof(tmp),"%a, %d %b %Y %H:%M:%S GMT",timeInfo);
-    res = tmp;
+    string res(tmp);
     
     return res;
 }

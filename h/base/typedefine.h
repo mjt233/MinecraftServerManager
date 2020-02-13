@@ -86,6 +86,34 @@ void invert(char * buf, size_t len);
 
 
 /* class定义  */
+
+class myMutex{
+    public:
+        mutex *mtx;
+        char file[2048];
+        int line;
+        myMutex(mutex *mtx){
+            this->mtx = mtx;
+        }
+        void lock(const char *fileName,int Line){
+            mtx->lock();
+            snprintf(file, 2048, "%s",fileName);
+            line = Line;
+        }
+        void unlock(){
+            return mtx->unlock();
+        }
+        bool try_lock(){
+            return mtx->try_lock();
+        }
+        string toString(){
+            string res;
+            res = file;
+            res += "at line " + to_string(line);
+            return res;
+        }
+};
+
 class Client{
     public:
         int SerID,              // 服务器ID
@@ -140,5 +168,37 @@ class Server : public Client{
 
 /* 全局变量 */
 map<int,Server *> SerList;        // 服务器列表
-mutex SerMutex;       // 服务器多线程列表读写锁
+mutex SerMutexx;       // 服务器多线程列表读写锁
+mutex SrcMutex;         // 资源锁
+myMutex SerMutex(&SerMutexx);
 int SER_SOCKET;
+unsigned int cur_task_count = 0;    // 当前已创建的任务会话数
+unsigned int max_task_count = 100;  // 最大的任务会话数
+
+int incTaskCount()
+{
+    SrcMutex.lock();
+    if( cur_task_count >= max_task_count )
+    {
+        SrcMutex.unlock();
+        return 0;
+    }else{
+        cur_task_count++;
+        SrcMutex.unlock();
+        return 1;
+    }
+}
+
+int redTaskCount()
+{
+    SrcMutex.lock();
+    if( cur_task_count <= 0 )
+    {
+        SrcMutex.unlock();
+        return 0;
+    }else{
+        cur_task_count--;
+        SrcMutex.unlock();
+        return 1;
+    }
+}

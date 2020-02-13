@@ -6,6 +6,9 @@
 * Date: 2019.2.6
 * History: none
 *********************************************************************************************************/
+
+// 传输文件最大的buffer大小
+#define MAX_FILE_TRANS_SIZE 81920
 void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd);
 void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
 {
@@ -15,31 +18,17 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
         ws.close();
         return;
     }
+    
     int SerID = atoi( ws.HTTPRequest.GET["SerID"].c_str() );
     int UsrID = atoi( ws.HTTPRequest.GET["UsrID"].c_str() );
-    if( SerID == 0 || UsrID == 0 )
+    SerMutex.lock(__FILE__,__LINE__);
+    if( !checkID(SerID,UsrID))
     {
-        ws.die( (char *)"无效wsID",10);
-        return;
-    }
-    SerMutex.lock();
-
-    // 判断服务器目标是否存在
-    if( !SerList.count(SerID) )
-    {
-        ws.die((char *)"Unexist Server",14);
         SerMutex.unlock();
+        ws.die( (char *)"认证失败",12);
         return;
     }
     Server *ser = SerList[SerID];
-
-    // 需要请求者ID与服务器创建者ID需一致
-    if ( ser->UsrID != UsrID )
-    {
-        SerMutex.unlock();
-        ws.die((char *)"Authentication failed", 21);
-        return;
-    }
     SerMutex.unlock();
 
     char data[1024] = {0};
@@ -56,7 +45,7 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     }
     if ( (cnt = ws.readData(wsf, data, 1024)) <= 0 )
     {
-        cout << "握手失败" << endl;
+        cout << "读取信息失败" << endl;
         return;
     }
     data[cnt] = 0;
@@ -86,11 +75,19 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     SOCKET_T rec_fd = ser->startUpload(name, path, len, mtx);
     if ( rec_fd == -1 )
     {
-        ws.die((char*)"Target server unable to accept file", 35);
+        ws.die((char*)"服务器未响应", 18);
         mtx->unlock();
         return ;
+    }else if( rec_fd == -2 ){
+        mtx->unlock();
+        delete(mtx);
+        ws.die((char*)"管理服务器繁忙..", 24);
+        return;
     }
-    char buffer[204800];
+    SrcMutex.lock();
+    cur_task_count++;
+    SrcMutex.unlock();
+    char buffer[MAX_FILE_TRANS_SIZE];
     
     size_t recv_len = 0;
     size_t ws_recv = 0;
@@ -102,19 +99,18 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
         {
             ws.die("帧读取失败",15);
             mtx->unlock();
+            redTaskCount();
             return;
         }
         while ( recv_len < wsf.payload_length )
         {
-            cnt = ws.readData(wsf, buffer, 204800);
-            proc = to_string(cnt);
-            a = proc.length();
-            ws.writeData(0x1, proc.c_str(), a);
+            cnt = ws.readData(wsf, buffer, MAX_FILE_TRANS_SIZE);
             if( cnt <= 0 || send(rec_fd, buffer, cnt, MSG_WAITALL) != cnt)
             {
                 ws.close();
                 shutdown(rec_fd,SHUT_RDWR);
                 mtx->unlock();
+                redTaskCount();
                 return;
             }
             recv_len += cnt;
@@ -128,4 +124,5 @@ void wsFileUpload(HTTPRequestInfo &HQ, int socket_fd)
     ws.writeData(0x1, "OK", 2);
     ws.close();
     mtx->unlock();
+    redTaskCount();
 }

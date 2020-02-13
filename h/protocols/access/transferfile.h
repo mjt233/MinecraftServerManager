@@ -7,7 +7,7 @@ void taskStart(baseInfo &IDInfo)
     cnt = recv(IDInfo.socket, buffer, 1024, 0);
     taskID = atoi(buffer);
 
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
     if( SerList.count(IDInfo.SerID) == 0 )
     {
         cout << "服务器已退出" << endl;
@@ -30,13 +30,21 @@ void taskStart(baseInfo &IDInfo)
     }
     
     // 回射taskID 让客户端确认任务开始
-    if ( send( IDInfo.socket, buffer, strnlen(buffer, 8192), MSG_WAITALL ) != strnlen(buffer, 8192))
+    try
     {
-        cout << "发送失败" << endl;
-        ser->statMutex.unlock();
-        SerMutex.unlock();
-        return;
+        if ( send( IDInfo.socket, buffer, strnlen(buffer, 8192), MSG_WAITALL ) != strnlen(buffer, 8192))
+        {
+            cout << "发送失败" << endl;
+            ser->statMutex.unlock();
+            SerMutex.unlock();
+            return;
+        }
     }
+    catch(...)
+    {
+        cout << "反射taskID失败" << endl;
+    }
+    
     ser->taskList[taskID] = IDInfo.socket;
     mtx = ser->taskMutex[taskID];
     ser->statMutex.unlock();

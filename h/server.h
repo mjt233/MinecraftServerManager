@@ -17,10 +17,8 @@ void * manager_server_start(void * arg)
     InitServer(&SER_SOCKET,( char * )"0.0.0.0",6636);
     cout << "\r端口开始监听" << endl;
     fflush(stdout);
-    // 初始化锁
     int client_socket;
     struct sockaddr_in cli_addr;
-    socklen_t socklen = sizeof( cli_addr );
 
     int count = 0;
     while (1)
@@ -28,9 +26,11 @@ void * manager_server_start(void * arg)
         int *client_socket;
         pthread_t thid;
         client_socket =  new int;
+        socklen_t socklen = sizeof( cli_addr );
         if ( ( *client_socket = accept( SER_SOCKET, (struct sockaddr*)&cli_addr, &socklen ) ) ==-1 )
         {
             cout<< "\rServer Exit.... " << endl;
+            cout << errno << endl;
             break;
         }
 

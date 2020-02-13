@@ -33,7 +33,7 @@ class HTTPResponeInfo : public HTTPInfo{
         // 向目标传输文件内容
         int outputFile(int fd, string filePath);
         int outputFile(int fd, string filePath, int range_first, int range_right);
-        int sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, string headerInfo, string msg);
+        int sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, const char *headerInfo, const char* msg);
         void setJsonHeader();
 };
 
@@ -67,15 +67,16 @@ const char * HTTPResponeInfo::getRespone()
  * @param headerInfo HTTP响应状态消息
  * @param msg json数据消息
 */
-int HTTPResponeInfo::sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, string headerInfo, string msg)
+int HTTPResponeInfo::sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, const char *headerInfo, const char* msg)
 {
     code = httpCode;
     info = headerInfo;
-    string json = "{\"code\":" + to_string(statCode) + ",\"msg\":\""+ msg +"\"}";
+    char json[2048];
+    snprintf(json, 2048, "{\"code\":%d,\"msg\":\"%s\"}", statCode, msg);
     header["Content-Type"] = "application/json";
-    header["Content-Length"] = to_string(json.length());
+    header["Content-Length"] = to_string(strlen(json));
     sendHeader(fd);
-    send(fd,json.c_str(),json.length(), MSG_WAITALL);
+    send(fd,json,strlen(json), MSG_WAITALL);
 }
 
 // 生成HTTP响应报文header
@@ -97,8 +98,18 @@ const char * HTTPResponeInfo::getRespone( int autoAddContentType )
 */
 int HTTPResponeInfo::sendHeader(int fd)
 {
+    int a;
     getRespone();
-    return write( fd, HTTPMsg.c_str(), HTTPMsg.length() );
+    try
+    {
+        a = send( fd, HTTPMsg.c_str(), HTTPMsg.length() , MSG_WAITALL);
+    }
+    catch(...)
+    {
+        cout << "发送header失败" << endl;
+    }
+    
+    return (a == HTTPMsg.length());
 }
 
 // 向目标输出文件 成功返回1

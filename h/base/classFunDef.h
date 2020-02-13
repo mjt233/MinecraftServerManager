@@ -94,7 +94,7 @@ Server::Server( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID,
     sb = buffer_create(32,512);
 
     // 将自己添加到服务器列表
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
     SerList.insert( make_pair(SerID, this ) );
     SerMutex.unlock();
 
@@ -175,12 +175,17 @@ int closeWebSocket(WebSocket *ws);
 /** 用于向服务器发出"创建任务"请求,
  *  @param otherInfo 附加任务信息
  *  @param mtx 任务锁
- *  @return 成功返回任务socket通道,失败返回-1
+ *  @return 成功返回任务socket通道,失败返回-1,任务拥堵-2
  */ 
 SOCKET_T Server::createTask(unsigned char opcode, const char * otherInfo, size_t len, mutex * mtx)
 {
+    if( !incTaskCount() )
+    {
+        return -2;
+    }
     if( len > 1000 )
     {
+        redTaskCount();
         return -1;
     }
     int taskID;
@@ -194,13 +199,15 @@ SOCKET_T Server::createTask(unsigned char opcode, const char * otherInfo, size_t
     {
         taskID = (rand() % 99999) + 1;
     }
+    statMutex.lock();
     taskList[taskID] = -1;
     taskMutex[taskID] = mtx;
+    statMutex.unlock();
     snprintf(buffer, 1024, "%s\n%d", otherInfo, taskID);
     writeSocketData(opcode, buffer, strnlen(buffer, 1024));
     for (size_t i = 0; i < 10; i++)
     {
-        for (size_t j = 0; j < 100; j++)
+        for (size_t j = 0; j < 50; j++)
         {
             usleep(10000);
             statMutex.lock();
@@ -216,6 +223,7 @@ SOCKET_T Server::createTask(unsigned char opcode, const char * otherInfo, size_t
     statMutex.lock();
     taskList.erase(taskID);
     statMutex.unlock();
+    redTaskCount();
     return -1;
 }
 
@@ -245,7 +253,7 @@ int Server::BroadcastStatus(unsigned char statusCode)
 Server::~Server()
 {   
 
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
 
     // 将自身设置为不可用
     setDisable();
@@ -285,7 +293,7 @@ Server::~Server()
 
 Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID, socket )
 {
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
     ser = SerList[SerID];
 
     // 判断服务器是否为同一用户创建

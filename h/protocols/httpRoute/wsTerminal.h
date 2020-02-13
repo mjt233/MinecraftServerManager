@@ -30,24 +30,15 @@ void terminalAccess(HTTPRequestInfo &HQ, int socket_fd)
         ws.die( (char *)"T无效的ID",12);
         return;
     }
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
 
-    // 判断服务器目标是否存在
-    if( !SerList.count(SerID) )
+    if (!checkID(SerID,UsrID))
     {
-        ws.die((char *)"T认证失败,服务器ID与创建用户ID不匹配",51);
         SerMutex.unlock();
+        ws.die((char *)"T认证失败,服务器ID与创建用户ID不匹配",51);
         return;
     }
     Server *ser = SerList[SerID];
-
-    // 需要请求者ID与服务器创建者ID需一致
-    if ( ser->UsrID != UsrID )
-    {
-        SerMutex.unlock();
-        ws.die((char *)"T认证失败,服务器ID与创建用户ID不匹配", 51);
-        return;
-    }
     if( !ser->add(&ws) )
     {
         SerMutex.unlock();
@@ -62,7 +53,7 @@ void terminalAccess(HTTPRequestInfo &HQ, int socket_fd)
         ser->remove(&ws);
         DEBUG_OUT("WebSocket主动退出");
     }else{
-        DEBUG_OUT("WebSocket主动退出");
+        DEBUG_OUT("WebSocket被动退出");
     }
     ws.close();
     return;

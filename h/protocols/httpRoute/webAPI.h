@@ -9,7 +9,7 @@ void webAPI(int socket_fd, HTTPRequestInfo &HQ)
     Server *ser;
     int SerID = atoi( HQ.POST["SerID"].c_str() );
     int UsrID = atoi( HQ.POST["UsrID"].c_str() );
-    SerMutex.lock();
+    SerMutex.lock(__FILE__,__LINE__);
     if ( !checkID(SerID, UsrID) )
     {
         SerMutex.unlock();
@@ -98,27 +98,38 @@ void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, 502, "Bad Gateway", "目标服务器响应请求超时" );
         return;
+    }else if( sock == -2 ){
+        HP.sendJsonMsg(HQ.socket_fd, 503, 503, "Service Unavailable" ,"服务器已达到最大任务负载数");
+        return;
     }
     char buffer[8192] = {0};
     if ( recv(sock, fhd, sizeof(frame_head_data), MSG_WAITALL) != sizeof(frame_head_data))
     {
         close(sock);
+        redTaskCount();
         return;
     }
     fb.analyze(fhd);
     HP.setJsonHeader();
     HP.header["Content-Length"] = to_string(fb.length);
-    HP.sendHeader(HQ.socket_fd);
+    if ( HP.sendHeader(HQ.socket_fd) <= 0 )
+    {
+        close(sock);
+        redTaskCount();
+        return;
+    }
     size_t Rcnt = 0, Scnt = 0, cur = 0;
     while ( cur < fb.length )
     {
         if ( (Rcnt = recv(sock, buffer, 8192, 0)) <= 0 || (Scnt = send(HQ.socket_fd, buffer, Rcnt, MSG_WAITALL)) != Rcnt )
         {
             close(sock);
+            redTaskCount();
             return;
         }
         cur += Rcnt;
     }
     close(sock);
+    redTaskCount();
     return;
 }
