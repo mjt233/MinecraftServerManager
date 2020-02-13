@@ -7,21 +7,10 @@ var success = 0;                                                    // WebSocket
 var loginPanel = document.getElementById("login-panel")             // 登录输入框
 var controlPanel = document.getElementById("control-panel")         // 控制面板
 var SerID,UsrID;                                                    // 顾名思义
+var SerIDElem = document.getElementById("SerID")
+var UsrIDElem = document.getElementById("UsrID")
 var StatusElem = document.getElementById("sstatus")                 // 服务器状态显示DOM(在控制面板的运行控制内)
 var pathElem = document.getElementById("path")                      // 当前路径显示DOM(在控制面板的文件管理内)
-
-// 关闭连接,重置参数
-function closeConnect(){
-    var s,u;
-    s = document.getElementById("SerID")
-    u = document.getElementById("UsrID")
-    ws.close();
-    s.value = ''
-    u.value = ''
-    s.parentNode.classList.remove('active')
-    u.parentNode.classList.remove('active')
-    terminal.innerHTML=''
-}
 
 // 连接WebSocket并进行验证
 function Connect() {
@@ -46,7 +35,7 @@ function Connect() {
         }
         appendInfo("连接断开\n")
         addMsg("连接已断开","darkgrey")
-
+        curpath.length = 0
         // 收起并隐藏控制面板
         cpSlideUp()
         controlPanel.className = 'hid'
@@ -55,6 +44,11 @@ function Connect() {
         }, 250);
         connectStatus = 0;
         success = 0;
+        UsrIDElem.value = ''
+        SerIDElem.value = ''
+        UsrIDElem.parentNode.classList.remove('active')
+        SerIDElem.parentNode.classList.remove('active')
+        terminal.innerHTML=''
     }
     ws.onerror = function (e) {
         addMsg("连接出错啦~~QAQ!! 再试一次吧QWQ","darkred")
@@ -78,7 +72,7 @@ function Connect() {
                     if(text == "OK")
                     {
                         addMsg("接入成功!~")
-                        ls('')
+                        ls()
                         input.focus()
                         loginPanel.className="hid"
                         setTimeout(() => {

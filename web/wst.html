@@ -6,6 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>WebSocket传输文件测试</title>
     <script>
+        var bd;
         var input;
         var file;
         function init()
@@ -37,24 +38,41 @@
             }
 
             var info = constructFileInfo(file.name,"/",file.size);
-
+            console.log("info",info)
             var ws = new WebSocket("ws://" + location.host + "/fileupload?SerID=" + SerID + "&UsrID=" + UsrID)
             ws.onopen = ()=>{
-                var recv = 0;
                 console.log("连接已打开");
                 ws.send(info)
                 reader.readAsArrayBuffer(file);
                 reader.onload = () =>{
-                    ws.send(reader.result)
+                    console.log("onload",reader.result)
+                    var count = parseInt(reader.result.byteLength/40960)
+                    var other = reader.result.byteLength - count*40960
+                    var cur = 0;
+                    for (let i = 0; i < count; i++) {
+                        ws.send(reader.result.slice(i*40960,i*40960 + 40960))
+                        cur += 40960
+                    }
+                    ws.send(reader.result.slice(cur, reader.result.byteLength));
+                    // ws.send(reader.result)
                 }
                 reader.onerror = () =>{
                     console.log("error")
                 }
                 ws.onclose = ()=>{
-                    console.log("连接已断开,服务器已接收:",recv);
+                    console.log("连接已断开");
                 }
                 ws.onmessage = (e)=>{
-                    console.log( typeof(e.data) )
+                    if( typeof(e.data) == 'string' ){
+                        console.log(e.data)
+                    }else{
+                        console.log("Blob data")
+                        var rd = new FileReader()
+                        rd.readAsText(e.data)
+                        rd.onload = ()=>{
+                            console.log(rd.result)
+                        }
+                    }
                 }
             }
         }

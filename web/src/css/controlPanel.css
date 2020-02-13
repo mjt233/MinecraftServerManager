@@ -205,7 +205,19 @@ body{
 }
 
 .upload{
-    margin: 20px 0 !important;
+    border-radius: 50%;
+    position: absolute;
+    right: 44px;
+    bottom: 15px;
+    width: 52px;
+    height: 52px;
+    color: white;
+    font-size: 14px;
+    background-color: #3399cc;
+    border-style: none;
+    box-shadow: 0px 0px 10px darkgrey;
+    outline: 0;
+    cursor: pointer;
 }
 
 #sstatus{

@@ -1,4 +1,6 @@
 #include<sys/stat.h>
+#define MAX_FILE_TRANS_SIZE 81920
+mutex lsMutex;
 SOCKET_T getTaskAccessCmd(const char * taskID_ch);
 SOCKET_T startTask(const char * taskID_ch);
 void * acceptFile(void * arg);
@@ -41,6 +43,7 @@ SOCKET_T startTask(const char * taskID_ch)
 */  
 void * acceptFile(void * arg)
 {
+    cout << "开始传输文件" << endl;
     actionAttr *at = (actionAttr*)arg;
     string str = at->data;                                  //  将char*转成string方便分析内容
     free(arg);
@@ -70,7 +73,7 @@ void * acceptFile(void * arg)
     char cwd[1024];
     getcwd(cwd, 1024);
     char newFilePath[2048];
-    char buffer[8192] = {0};
+    char buffer[MAX_FILE_TRANS_SIZE] = {0};
     snprintf(newFilePath, 2048, "%s/%s/%s",cwd,path,name);
     size_t cnt,s = fileLen;
     FILE *fp = fopen(newFilePath, "wb");
@@ -84,7 +87,7 @@ void * acceptFile(void * arg)
     // 开始接收文件
     while ( s > 0 )
     {
-        cnt = recv(f_sock, buffer, s > 8192 ? 8192 : s, 0);
+        cnt = recv(f_sock, buffer, s > MAX_FILE_TRANS_SIZE ? MAX_FILE_TRANS_SIZE : s, 0);
         if( cnt <= 0 )
         {
             close(f_sock);
@@ -106,6 +109,7 @@ void * acceptFile(void * arg)
 
 void * getFileList(void * arg)
 {
+    lsMutex.lock();
     string data = ((actionAttr*)arg)->data;
     string path;
     string res = "{\"code\":200,\"data\":[";
@@ -119,6 +123,7 @@ void * getFileList(void * arg)
     pos = data.find('\n');
     if( pos == -1 )
     {
+        lsMutex.unlock();
         return NULL;
     }
 
@@ -134,10 +139,17 @@ void * getFileList(void * arg)
     SOCKET_T f_sock;
     f_sock = startTask(data.substr(pos + 1).c_str());
 
+    if( f_sock == -1 )
+    {
+        lsMutex.unlock();
+        cout << "ls接入失败" << endl;
+        return nullptr;
+    }
     // 打开文件夹
     dp = opendir(path.c_str());
     if( !dp )
     {
+        lsMutex.unlock();
         res = "{\"code\":-2,\"msg\":\"文件夹打开失败\"}";
         fb.build(0x0, res.length());
         send(f_sock, fb.f_data, 5, MSG_WAITALL);
@@ -185,9 +197,11 @@ void * getFileList(void * arg)
     res += "}";
     if( f_sock == -1 )
     {
+        lsMutex.unlock();
         closedir(dp);
         return NULL;
     }
+    lsMutex.unlock();
     fb.build(0x0, res.length());
     send(f_sock, fb.f_data, sizeof(fb.f_data), MSG_WAITALL);
     send(f_sock, res.c_str(), res.length(), MSG_WAITALL);

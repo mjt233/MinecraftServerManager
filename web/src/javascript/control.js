@@ -11,3 +11,10 @@ function serswitch(type)
         }
     })
 }
+
+function powertest()
+{
+    for (let i = 0; i < 8192; i++) {
+        ls(' ')
+    }
+}

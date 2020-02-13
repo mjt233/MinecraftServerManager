@@ -1,17 +1,26 @@
 var controlPanelHeight = 100;
+var FileElem
 function init(){
     initMDBtn();
     initControlPanel();
     filelist = document.getElementById("filelist")
+    FileElem = document.getElementById("file")
+    FileElem.addEventListener('change',()=>{
+        ExecuteUpload(FileElem.files[0])
+        // sendFile(FileElem.files[0])
+        FileElem.type = 'text'
+        FileElem.type = 'file'
+    })
     document.getElementById("SerID").value = 1
     document.getElementById("UsrID").value = 12345
     Connect()
-    ls('')
+    ls()
 }
+
+
 function initMDBtn()
 {
     var btns = document.getElementsByClassName("md")
-    var ls;
     for (let index = 0; index < btns.length; index++) {
         const element = btns[index];
         element.addEventListener("click",()=>{

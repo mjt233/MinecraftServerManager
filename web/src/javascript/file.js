@@ -24,6 +24,7 @@ function ls(path)
     }
 
     $.post("/api/ls",data,(e)=>{
+        console.log(e)
         if(e['code'] == 200){
             pathElem.innerText = "当前路径: " + curpath.toString()
             let tb = filelist.getElementsByTagName("tbody")[0]
@@ -80,41 +81,50 @@ function ls(path)
     })
 }
 
-function uploadFile(){
-    var fileInput = document.getElementById("file")
-    var reader = new FileReader()
-    fileInput.addEventListener("change", (e)=>{
-        let fname,flength,path,headMsg,success = 0
-        reader.readAsArrayBuffer(fileInput.files[0])
-        fname = fileInput.files[0].name
-        flength = fileInput.files[0].size
-        path = curpath.toString()
-        headMsg = fname + '\n'+ path + '\n' + flength;
-        reader.onload = (e)=>{
-            var fws = new WebSocket("ws://"+location.host+"/fileupload?SerID="+SerID+"&UsrID="+UsrID)
-            fws.onerror = ()=>{
-                addMsg("文件传输出错", "darkred")
+function constructFileInfo(fileName, targetPath, fileSize){
+    var res = fileName + "\n" + targetPath + "\n" + fileSize + "\n"
+    return res;
+}
+
+function UploadFile(){
+    FileElem.click()
+}
+
+function ExecuteUpload(file){
+    var protocol = location.protocol == 'https' ? 'wss://' : 'ws://'
+    var reader = new FileReader();
+    var info = constructFileInfo(file.name, curpath.toString(), file.size)
+    var fws = new WebSocket(protocol + location.host + '/fileupload?SerID='+SerID+'&UsrID='+UsrID)
+    fws.onopen = ()=>{
+        const fragment_size = 81920
+        fws.send(info)
+        reader.readAsArrayBuffer(file);
+        reader.onload = ()=>{
+            console.log("onload", reader.result)
+            console.log(reader.result.byteLength)
+            let parts = parseInt(reader.result.byteLength/fragment_size)
+            let cur = 0;
+            for (let i = 0; i < parts; i++) {
+                fws.send( reader.result.slice(i*fragment_size, i*fragment_size + fragment_size) )
+                cur += fragment_size
             }
-            fws.onopen = ()=>{
-                fws.send(headMsg)
-                fws.send(reader.result)
-            }
-            fws.onmessage = (e)=>{
-                if( typeof(e) == 'object' ){
-                    console.log("是object")
-                }
-                if ( typeof(e.data) != "string"){
-                    addMsg("上传失败,原因: " + e.data, "darkred")
-                }else{
-                    addMsg("上传成功")
-                }
-                ls(' ')
-            }
-            fws.onclose = (e)=>{
-                console.log("close")
-            }
-            console.log(reader.result)
+            fws.send(reader.result.slice(cur, reader.result.byteLength))
         }
-    })
-    fileInput.click()
+    }
+    fws.onmessage = (e)=>{
+        if(typeof(e.data) == 'string'){
+            addMsg(e.data)
+            console.log(e.data)
+        }else{
+            var rd = new FileReader()
+            rd.readAsText(e.data)
+            rd.onload=()=>{
+                addMsg("Blob "+rd.result)
+                console.log("Blob "+rd.result)
+            }
+        }
+    }
+    fws.onclose= (e)=>{
+        console.log("fws close")
+    }
 }
