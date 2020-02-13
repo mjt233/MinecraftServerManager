@@ -100,15 +100,15 @@ function ExecuteUpload(file){
         fws.send(info)
         reader.readAsArrayBuffer(file);
         reader.onload = ()=>{
-            console.log("onload", reader.result)
-            console.log(reader.result.byteLength)
             let parts = parseInt(reader.result.byteLength/fragment_size)
             let cur = 0;
             for (let i = 0; i < parts; i++) {
                 fws.send( reader.result.slice(i*fragment_size, i*fragment_size + fragment_size) )
                 cur += fragment_size
+                prog.setAttribute("value",cur/file.size)
             }
             fws.send(reader.result.slice(cur, reader.result.byteLength))
+            prog.setAttribute("value",0)
         }
     }
     fws.onmessage = (e)=>{

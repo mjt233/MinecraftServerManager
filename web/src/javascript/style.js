@@ -1,13 +1,14 @@
 var controlPanelHeight = 100;
 var FileElem
+var prog;
 function init(){
     initMDBtn();
     initControlPanel();
     filelist = document.getElementById("filelist")
     FileElem = document.getElementById("file")
+    prog = document.getElementById("prog")
     FileElem.addEventListener('change',()=>{
         ExecuteUpload(FileElem.files[0])
-        // sendFile(FileElem.files[0])
         FileElem.type = 'text'
         FileElem.type = 'file'
     })

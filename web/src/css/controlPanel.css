@@ -196,6 +196,12 @@ body{
     right: 0;
 }
 
+.control-panel-content progress{
+    position: absolute;
+    right: 4px;
+    bottom: 2px;
+}
+
 #panel-container>div>fieldset{
     position: relative;
     width: 100%;
