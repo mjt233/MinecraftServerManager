@@ -2,9 +2,10 @@
 * File name: respone.h
 * Description:  HTTP模块的请求体解析
 * Author: mjt233@qq.com
-* Version: 1.2
-* Date: 2019.2.6
+* Version: 1.5
+* Date: 2019.2.15
 * History: 
+*   2019.2.15   增加通过POST进行单个文件传输功能
 *   2019.2.6    增加POST简单解析
 *   2019.1.28   创建
 *********************************************************************************************************/
@@ -20,23 +21,24 @@
 class HTTPRequestInfo : public HTTPInfo{
     protected:
         // 分析GET参数
-        int AnalysisGETArgs();
+        int parseGETArgs();
     public:
         SOCKET_T socket_fd;
+        int close = 0;
         string url = "/";
         string type = "GET";
         string args;
         map<string,string> GET;
         map<string,string> POST;
         int range_first = -1,range_last = -1;
-
+    
 
         /* 对一段HTTP请求报文进行解析
          * 成功返回 HTTP_REQUEST_READ_SUCCESS
          * 失败返回 HTTP_REQUEST_ERROR
          */
-        int AnalysisRequest(char * request, size_t len);
-        int AnalysisPostBody(int sock_fd,  char * firstData, size_t firstDataLen);
+        int parseRequest(char * request, size_t len);
+        int parsePostArgs(char * data, size_t len);
 
         // 根据对象当前属性创建HTTP请求报文
         const char * getRequest();
@@ -55,12 +57,184 @@ class HTTPRequestInfo : public HTTPInfo{
         int getRange(int part);
 };
 
+class HTTPFileReader : public HTTPRequestInfo{
+    private:
+        char dataBuffer[20480];
+        size_t getLine(char * buf, size_t max_len);
+        int parseHeader();
+        FILE *fp;
+    public:
+        size_t  fileLength = 0, // 文件长度
+                surplus = 0;    // 剩余未读取长度
+        map<string,string> ph;  // 当前块的header属性
+        string boundary;
+        string filename;
+        string keyname;
+        int format_type = 0;    // 0:需要操作boundary 1:form-data
+        HTTPFileReader(SOCKET_T fd);
+        int init();
+        size_t read(char * buf, size_t max_len);
+};
 
-int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * data, size_t len)
+size_t HTTPFileReader::read(char * buf, size_t max_len)
 {
-    if( header["Content-Type"].find("multipart/form-data") != -1 ){
+    size_t size = max_len > surplus ? surplus : max_len;
+    if( size == 0)
+    {
+        if( close == 0 )
+        {
+            char t[128];
+            getLine(t,8192);
+            // fclose(fp);
+            close = 1;
+        }
         return 0;
+    }
+    int res = fread(buf, size, 1, fp);
+    surplus -= size;
+    if( res <= 0 )
+    {
+        return 0;
+    }
+    return size;
+}
+
+size_t HTTPFileReader::getLine(char * buf, size_t max_len)
+{
+    size_t l = sizeof(dataBuffer);
+    bzero(dataBuffer, l);
+    size_t size ;
+    fgets(buf, max_len, fp);
+    for (size_t i = l - 1; i > 0; i--)
+    {
+        if( dataBuffer[i] != 0)
+        {
+            return i;
+        }
+    }
+}
+
+
+/**
+ * 读取分块的header,并将结果在ph中覆盖更新
+ * @return 成功1 失败0
+*/
+int HTTPFileReader::parseHeader()
+{
+    ph.clear();
+    size_t record = 0;
+    keyname = "";
+    filename = "";
+    char buf[2048];
+    string t;
+    int flag = 0;
+    int pos;
+
+    // 干掉一行boundary和后面的\r\n
+    getLine(buf, sizeof(buf));
+    record += strlen(buf);
+    if( strncmp(buf, boundary.c_str(), boundary.length()) )  return 0;
+    do
+    {
+        fgets(buf, 2048, fp);
+        record += strlen(buf);
+        t = buf;
+        pos = t.find(':');
+        if( pos == -1 ) break;
+        ph[t.substr(0, pos)] = t.substr(pos + 2, t.length() - pos - 4);
+        flag = 1;
+    } while ( strncmp(buf,"\r\n",2) );
+    record += 2;
+    string cd = ph["Content-Disposition"];
+    pos = cd.find("; name=\"") + 8;
+    if(pos < 8) return 0;
+    if( ph.count("Content-Type") )
+    {
+        int a = cd.rfind("\"");
+        int b = cd.find("filename=\"") + 10;
+        if( a == -1 || b < 10 ) return 0;
+        filename = cd.substr(b , a -b);
+    }
+    keyname = cd.substr(pos, cd.find("\"", pos + 1) - pos );
+    surplus = fileLength = atoi(header["Content-Length"].c_str()) - record - 4 - boundary.length();
+    return flag;
+}
+
+/**
+ * 对该HTTP POST连接进行初始化解析(包括GET解析)
+ * @return 出现错误返回0,正常返回1
+*/
+int HTTPFileReader::init()
+{
+    char headerBuf[8192] ={0};
+    char buffer[2048];  // 读取HTTP Header的buffer
+    char buf[2];
+    size_t  len,        // 一行Request Header的字符数
+            total = 0;  // Request Header总字符数
+
+    // 设置读取超时
+    #ifdef linux
+    struct timeval tm = {3,0};
+    #endif // linux
+    #ifdef WIN32
+    int tm = 3000;
+    #endif // WIN32
+    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&tm, sizeof(tm));
+
+    if ( recv(socket_fd, buf, 2, MSG_WAITALL) != 2 || strncmp(buf,"T ", 2) )
+    {
+        return 0;
+    } 
+    fp = fdopen(socket_fd, "rb");
+    if( !fp  )
+    {
+        return 0;
+    }
+    do
+    {
+        fgets(buffer, 2047, fp);
+        len = strnlen(buffer, 2047);
+        total += len;
+        if( len >= 2047 || total > 8192 )
+        {
+            return 0;
+        }
+        strncat(headerBuf,buffer,2047);
+    } while ( strncmp(buffer,"\r\n",2) );
+    parseRequest(headerBuf,strlen(headerBuf));
+    int pos = header["Content-Type"].find("boundary=");
+    if( pos != -1 )
+    {
+        boundary = "--" + header["Content-Type"].substr(pos+9);
+        format_type = 1;
+        return parseHeader();
     }else{
+        format_type = 0;
+        int cl = atoi(header["Content-Length"].c_str());
+        if( cl > 8192 ) return 0;
+        char data[8192];
+        if (fread(data, cl, 1, fp) < 1) return 0;
+        parsePostArgs(data, cl);
+    }
+}
+HTTPFileReader::HTTPFileReader(SOCKET_T fd)
+{
+    socket_fd = fd;
+    type = "POST";
+}
+
+
+/**
+ * 解析POST请求体
+ * @param data POST请求体部分
+ * @param len data长度
+ * @param surplus 剩余需要读取的长度
+*/
+int HTTPRequestInfo::parsePostArgs(char * data, size_t len)
+{
+    string contenttype = header["Content-Type"];
+    if( contenttype.find("boundary=") == -1 )
+    {
         char *l, *p = data, *splitPos;
         int pos = 0,cnt = 0;
         size_t ll, lll;
@@ -81,8 +255,6 @@ int HTTPRequestInfo::AnalysisPostBody(int sock_fd,  char * data, size_t len)
         }
         return 1;
     }
-    
-    
     
 }
 
@@ -109,7 +281,7 @@ int HTTPRequestInfo::getRange(int part)
     return atoi(substr.c_str());
 }
 
-int HTTPRequestInfo::AnalysisRequest(char * request, size_t len)
+int HTTPRequestInfo::parseRequest(char * request, size_t len)
 {
     int tag = 0,
         count = 0,
@@ -147,7 +319,7 @@ int HTTPRequestInfo::AnalysisRequest(char * request, size_t len)
                             {
                                 args = url.substr( pos + 1 , url.length() - pos +1 );
                                 url = url.substr( 0, pos );
-                                AnalysisGETArgs();
+                                parseGETArgs();
                             }
 
                             break;
@@ -196,7 +368,7 @@ int HTTPRequestInfo::AnalysisRequest(char * request, size_t len)
     }
 }
 
-int HTTPRequestInfo::AnalysisGETArgs()
+int HTTPRequestInfo::parseGETArgs()
 {
     size_t len = args.length();
     char key[1024];

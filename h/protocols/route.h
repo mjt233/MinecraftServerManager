@@ -98,7 +98,7 @@ void * protocols_route(void * arg)
             close(sock_fd);
             break;
         case HTTP_POST:
-            http_post(IDInfo);
+            http_test(IDInfo);
             break;
         case SERID_EXIST:
             DEBUG_OUT("服务器接入请求被拒绝,服务器ID已存在");

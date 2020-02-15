@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>WebSocket传输文件测试</title>
+    <script src="lib/jquery.min.js"></script>
+    <script>
+    function send()
+    {
+        var fd = new FormData(document.getElementById("f"))
+        $.ajax({
+            url:"/",
+            type:"POST",
+            data:fd,
+            processData:false,
+            contentType:false,
+            success:(e)=>{
+                console.log(e)
+            },error:(e)=>{
+                console.log(e)
+            }
+        })
+    }
+    function send2()
+    {
+        var data = {a:"b"}
+        $.post("/",data,(e)=>{
+            console.log(e)
+        },"html")
+    }
+    </script>
+</head>
+<body>
+    <form id="f">
+        <!-- <input name="SerID" type="text" id="SerID" value="1">
+        <input name="UsrID" type="text" id="UsrID" value="12345"> -->
+        <input name="file" type="file" name="" id="file">
+        <button type="button" onclick="send()">测试</button>
+        <button type="button" onclick="send2()">测试2</button>
+    </form>
+</body>
+</html>

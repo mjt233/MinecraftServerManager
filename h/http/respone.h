@@ -25,6 +25,7 @@ class HTTPResponeInfo : public HTTPInfo{
             header["Cache-Control"] = "no-cache";
             header["Accept-Ranges"] = "bytes";
             header["Connection"] = "close";
+            header["Server"] = "Minecraft Server Manager Web Service";
         }
         // Return the number written, or -1
         int sendHeader(int fd);
