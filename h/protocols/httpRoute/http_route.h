@@ -10,7 +10,7 @@
 * History: none
 *********************************************************************************************************/
 
-void httpRoute(int socket_fd, HTTPRequestInfo &HTTPRequest)
+void httpRoute(int socket_fd, HTTPFileReader &HTTPRequest)
 {
     string filePath;
     int code = HTTPRequest.getRequestFilePath(filePath);
@@ -27,8 +27,6 @@ void httpRoute(int socket_fd, HTTPRequestInfo &HTTPRequest)
             if( HTTPRequest.url.substr(0,3) == "/ws" )
             {
                 terminalAccess(HTTPRequest, socket_fd);
-            }else if( HTTPRequest.url.substr(0,13) == "/fileupload" ){
-                wsFileUpload(HTTPRequest, socket_fd);
             }else if( HTTPRequest.url.substr(0,5) == "/api/" ){
                 webAPI(socket_fd, HTTPRequest);
             }else {

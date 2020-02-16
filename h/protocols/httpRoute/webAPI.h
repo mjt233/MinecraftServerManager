@@ -1,14 +1,14 @@
 void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
 void serCtl(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
 
-void webAPI(int socket_fd, HTTPRequestInfo &HQ)
+void webAPI(int socket_fd, HTTPFileReader &HQ)
 {
     string APIName = HQ.url.substr(5, HQ.url.length() - 5);
     HQ.socket_fd = socket_fd;
     HTTPResponeInfo HP;
     Server *ser;
-    int SerID = atoi( HQ.POST["SerID"].c_str() );
-    int UsrID = atoi( HQ.POST["UsrID"].c_str() );
+    int SerID = atoi( HQ.GET["SerID"].c_str() );
+    int UsrID = atoi( HQ.GET["UsrID"].c_str() );
     SerMutex.lock(__FILE__,__LINE__);
     if ( !checkID(SerID, UsrID) )
     {
@@ -35,6 +35,8 @@ void webAPI(int socket_fd, HTTPRequestInfo &HQ)
         serCtl(ser, HQ, mtx);
         mtx->unlock();
         return;
+    }else if( APIName == "fileupload" ){
+        fileUpload(HQ,HQ.socket_fd);
     }else{
         HP.sendErrPage(socket_fd, 404, "Not Found");
     }
@@ -88,12 +90,12 @@ void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
     SOCKET_T sock;
 
 
-    if( HQ.POST.count("path") == 0 )
+    if( HQ.GET.count("path") == 0 )
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, -3, "lost param", "缺少path");
         return;
     }
-    sock = ser->createTask(0x2, HQ.POST["path"].c_str(), 1, mtx);
+    sock = ser->createTask(0x2, HQ.GET["path"].c_str(), 1, mtx);
     if( sock == -1 )
     {
         HP.sendJsonMsg(HQ.socket_fd, 200, 502, "Bad Gateway", "目标服务器响应请求超时" );

@@ -62,7 +62,7 @@ class HTTPFileReader : public HTTPRequestInfo{
         char dataBuffer[20480];
         size_t getLine(char * buf, size_t max_len);
         int parseHeader();
-        FILE *fp;
+        FILE *fp = NULL;
     public:
         size_t  fileLength = 0, // 文件长度
                 surplus = 0;    // 剩余未读取长度
@@ -71,10 +71,38 @@ class HTTPFileReader : public HTTPRequestInfo{
         string filename;
         string keyname;
         int format_type = 0;    // 0:需要操作boundary 1:form-data
+        HTTPFileReader();
+        ~HTTPFileReader();
         HTTPFileReader(SOCKET_T fd);
         int init();
+        int setReadTimeOut(unsigned int second);
         size_t read(char * buf, size_t max_len);
 };
+
+HTTPFileReader::~HTTPFileReader()
+{
+    if( fp!= NULL)
+    {
+        fclose(fp);
+    }
+}
+
+int HTTPFileReader::setReadTimeOut(unsigned int second)
+{
+    // 设置读取超时
+    #ifdef linux
+    struct timeval tm = {second,0};
+    #endif // linux
+    #ifdef WIN32
+    int tm = second*1000;
+    #endif // WIN32
+    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&tm, sizeof(tm));
+}
+
+HTTPFileReader::HTTPFileReader()
+{
+    type = "GET";
+}
 
 size_t HTTPFileReader::read(char * buf, size_t max_len)
 {
@@ -133,7 +161,18 @@ int HTTPFileReader::parseHeader()
     // 干掉一行boundary和后面的\r\n
     getLine(buf, sizeof(buf));
     record += strlen(buf);
-    if( strncmp(buf, boundary.c_str(), boundary.length()) )  return 0;
+    if( strncmp(buf, boundary.c_str(), boundary.length()) )
+    {
+        return 0;
+    }
+
+    // 空的POST Body
+    if( !strncmp(buf, (boundary + "--\r\n").c_str(), boundary.length()+4 ) )
+    {
+        // 设为"已关闭"状态防止read方法阻塞
+        close = 1;
+        return 1;
+    }
     do
     {
         fgets(buf, 2048, fp);
@@ -172,15 +211,7 @@ int HTTPFileReader::init()
     size_t  len,        // 一行Request Header的字符数
             total = 0;  // Request Header总字符数
 
-    // 设置读取超时
-    #ifdef linux
-    struct timeval tm = {3,0};
-    #endif // linux
-    #ifdef WIN32
-    int tm = 3000;
-    #endif // WIN32
-    setsockopt(socket_fd, SOL_SOCKET, SO_RCVTIMEO, (void*)&tm, sizeof(tm));
-
+    setReadTimeOut(5);
     if ( recv(socket_fd, buf, 2, MSG_WAITALL) != 2 || strncmp(buf,"T ", 2) )
     {
         return 0;
@@ -211,10 +242,11 @@ int HTTPFileReader::init()
     }else{
         format_type = 0;
         int cl = atoi(header["Content-Length"].c_str());
-        if( cl > 8192 ) return 0;
+        if( cl > 8192 || cl <= 0) return 0;
         char data[8192];
         if (fread(data, cl, 1, fp) < 1) return 0;
         parsePostArgs(data, cl);
+        return 1;
     }
 }
 HTTPFileReader::HTTPFileReader(SOCKET_T fd)
@@ -280,7 +312,11 @@ int HTTPRequestInfo::getRange(int part)
     substr = range.substr( pos1 + 1, pos2 - pos1 -1 ).c_str();
     return atoi(substr.c_str());
 }
-
+/**
+ * 旧版本的HTTP GET解析
+ * @param request HTTP请求字符串
+ * @param len 请求字符串长度
+*/
 int HTTPRequestInfo::parseRequest(char * request, size_t len)
 {
     int tag = 0,

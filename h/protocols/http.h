@@ -30,7 +30,7 @@ void http_test(baseInfo &IDInfo)
 
 void http_GET(baseInfo &IDInfo)
 {
-    HTTPRequestInfo HTTPRequest;
+    HTTPFileReader HTTPRequest;
     HTTPResponeInfo HTTPRespone;
     char buffer[1024];
     size_t cnt;

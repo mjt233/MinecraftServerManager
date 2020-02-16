@@ -1,6 +1,7 @@
 var controlPanelHeight = 100;
 var FileElem
 var prog;
+var uploading = 0;
 function init(){
     initMDBtn();
     initControlPanel();
@@ -9,13 +10,11 @@ function init(){
     prog = document.getElementById("prog")
     FileElem.addEventListener('change',()=>{
         ExecuteUpload(FileElem.files[0])
-        FileElem.type = 'text'
-        FileElem.type = 'file'
     })
     document.getElementById("SerID").value = 1
     document.getElementById("UsrID").value = 12345
     Connect()
-    ls()
+    // ls()
 }
 
 

@@ -57,7 +57,6 @@
                         <button class="md" onclick="serswitch('suspend')">停止</button>
                         <button class="md" onclick="serswitch('reboot')">重启</button>
                         <button class="md" onclick="serswitch('force-shutdown')">强制停止</button>
-                        <button class="md" onclick="powertest()">压力测试</button>
                         <p>服务器状态:<span id="sstatus">未获取</span></p>
                     </fieldset>
                 </div>
@@ -80,7 +79,7 @@
                         </div>
                         <progress id="prog" max="100" value="0"></progress>
                         <button onclick="UploadFile()" class="upload">上传文件</button>
-                        <input multiple type="file" id="file" style="display: none;">
+                        <form id="fileform"><input name="file" multiple type="file" id="file" style="display: none;"></form>
                     </fieldset>
                 </div>
                 <div>

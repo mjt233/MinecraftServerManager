@@ -11,7 +11,7 @@ var SerIDElem = document.getElementById("SerID")
 var UsrIDElem = document.getElementById("UsrID")
 var StatusElem = document.getElementById("sstatus")                 // 服务器状态显示DOM(在控制面板的运行控制内)
 var pathElem = document.getElementById("path")                      // 当前路径显示DOM(在控制面板的文件管理内)
-
+var fileForm = document.getElementById("fileform");                 // 文件表单
 // 连接WebSocket并进行验证
 function Connect() {
 

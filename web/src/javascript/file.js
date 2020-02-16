@@ -4,7 +4,7 @@ curpath.toString = ()=>{        // 转为路径字符串
     curpath.forEach(element => {
         res +=element + '/'
     });
-    return res;
+    return "./"+res;
 }
 
 var filelist;
@@ -23,7 +23,10 @@ function ls(path)
         "path":curpath.toString()
     }
 
-    $.post("/api/ls",data,(e)=>{
+    var args =  "SerID="+SerID+"&"+
+                "UsrID="+UsrID+"&"+
+                "path="+curpath.toString()
+    $.get("/api/ls?"+args,(e)=>{
         console.log(e)
         if(e['code'] == 200){
             pathElem.innerText = "当前路径: " + curpath.toString()
@@ -91,40 +94,49 @@ function UploadFile(){
 }
 
 function ExecuteUpload(file){
-    var protocol = location.protocol == 'https' ? 'wss://' : 'ws://'
-    var reader = new FileReader();
-    var info = constructFileInfo(file.name, curpath.toString(), file.size)
-    var fws = new WebSocket(protocol + location.host + '/fileupload?SerID='+SerID+'&UsrID='+UsrID)
-    fws.onopen = ()=>{
-        const fragment_size = 81920
-        fws.send(info)
-        reader.readAsArrayBuffer(file);
-        reader.onload = ()=>{
-            let parts = parseInt(reader.result.byteLength/fragment_size)
-            let cur = 0;
-            for (let i = 0; i < parts; i++) {
-                fws.send( reader.result.slice(i*fragment_size, i*fragment_size + fragment_size) )
-                cur += fragment_size
-                prog.setAttribute("value",cur/file.size)
+    if(uploading == 1)
+    {
+        addMsg("当前有正在上传的任务,请等待完成","#FFCC99")
+        return;
+    }
+    uploading = 1;
+    var args =  "SerID="+SerID+"&"+
+                "UsrID="+UsrID+"&"+
+                "file="+file.name+"&"+
+                "path="+curpath.toString()+"&"+
+                "length="+file.size
+    // URL
+    var u = "/api/fileupload?"+args;
+    var fd = new FormData(fileForm)
+    FileElem.type = "text"
+    FileElem.type = "file"
+    $.ajax({
+        url:u,
+        data:fd,
+        type:"POST",
+        processData:false,
+        contentType:false,
+        xhr: ()=>{
+            Xhr = $.ajaxSettings.xhr();
+            if(Xhr.upload){
+                Xhr.upload.addEventListener("progress",(e)=>{
+                    prog.value = (e.loaded/e.total)*100
+                },false)
             }
-            fws.send(reader.result.slice(cur, reader.result.byteLength))
-            prog.setAttribute("value",0)
-        }
-    }
-    fws.onmessage = (e)=>{
-        if(typeof(e.data) == 'string'){
-            addMsg(e.data)
-            console.log(e.data)
-        }else{
-            var rd = new FileReader()
-            rd.readAsText(e.data)
-            rd.onload=()=>{
-                addMsg("Blob "+rd.result)
-                console.log("Blob "+rd.result)
+            return Xhr;
+        },
+        success:(e)=>{
+            uploading = 0;
+            prog.value = 0
+            if(e['code'] == 200)
+            {
+                addMsg("上传成功!");
             }
+        },error:(e)=>{
+            uploading = 0;
+            prog.value = 0
+            addMsg("上传失败","darkred");
+            console.log("ajax error",e)
         }
-    }
-    fws.onclose= (e)=>{
-        console.log("fws close")
-    }
+    })
 }

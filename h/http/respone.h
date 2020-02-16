@@ -64,9 +64,10 @@ const char * HTTPResponeInfo::getRespone()
 /**
  * 发送JSON格式响应并关闭连接
  * @param fd SOCKET描述符
- * @param httpCode HTTP响应状态码
+ * @param httpCode HTTP响应码
  * @param headerInfo HTTP响应状态消息
- * @param msg json数据消息
+ * @param statCode  JSON结果状态码
+ * @param msg JSON消息
 */
 int HTTPResponeInfo::sendJsonMsg(SOCKET_T fd, int httpCode, int statCode, const char *headerInfo, const char* msg)
 {

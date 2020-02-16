@@ -175,6 +175,10 @@ int SER_SOCKET;
 unsigned int cur_task_count = 0;    // 当前已创建的任务会话数
 unsigned int max_task_count = 100;  // 最大的任务会话数
 
+/**
+ * 任务数增加1
+ * @return 成功返回1,达到上限增加失败返回0
+*/
 int incTaskCount()
 {
     SrcMutex.lock();

@@ -174,6 +174,7 @@ int closeWebSocket(WebSocket *ws);
 
 /** 用于向服务器发出"创建任务"请求,
  *  @param otherInfo 附加任务信息
+ *  @param len 附加任务信息字符长度
  *  @param mtx 任务锁
  *  @return 成功返回任务socket通道,失败返回-1,任务拥堵-2
  */ 
