@@ -49,8 +49,9 @@ body,html{
 }
 
 
-/* .terminal-panel input:focus{
-} */
+#terminal::-webkit-scrollbar-thumb{
+    color: black;
+}
 
 .terminal p span.bold{
     font-weight: bold;

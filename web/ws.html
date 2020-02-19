@@ -12,13 +12,16 @@
     <link rel="stylesheet" href="src/css/msgboxPanel.css">
     <link rel="stylesheet" href="src/css/loginPanel.css">
     <link rel="stylesheet" href="src/css/controlPanel.css">
+    <link rel="stylesheet" href="src/css/fileEditer.css">
+    <link rel="stylesheet" href="lib/jquery-ui.min.css">
     <script src="lib/jquery.min.js"></script>
-    <script src="src/javascript/style.js"></script>
+    <script src="src/javascript/ws.js"></script>
     <script src="src/javascript/control.js"></script>
     <script src="src/javascript/file.js"></script>
+    <script src="lib/jquery-ui.min.js"></script>
     <title>WebSocket测试</title>
 </head>
-<body onload="init()">
+<body>
     <div id="msgbox-panel"></div>
     <div id="login-panel">
         <h3 class="title">服务器接入验证</h3>
@@ -113,7 +116,16 @@
         </form>
         <button type="submit" style="display: none;"></button>
     </div>
+    <div id="fileEditer" class="hid">
+        <p id="editing-file"></p>
+        <div class="fe-btn-group">
+            <button class="dot darkred" id="close-btn"></button>
+            <button class="dot darkgreen" id="maxsize-btn"></button>
+            <button class="dot darkcyan" id="min-btn"></button>
+        </div>
+        <textarea>texasdsad</textarea>
+    </div>
 </body>
 <script src="src/javascript/terminal.js"></script>
-<script src="src/javascript/ws.js"></script>
+<script src="src/javascript/style.js"></script>
 </html>

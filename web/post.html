@@ -11,9 +11,9 @@
     {
         var fd = new FormData(document.getElementById("f"))
         $.ajax({
-            url:"/",
-            type:"POST",
-            data:fd,
+            url:"/api/getfile?SerID=1&UsrID=12345&file=./Makefile",
+            type:"GET",
+            // data:fd,
             processData:false,
             contentType:false,
             success:(e)=>{
@@ -23,13 +23,6 @@
             }
         })
     }
-    function send2()
-    {
-        var data = {a:"b"}
-        $.post("/",data,(e)=>{
-            console.log(e)
-        },"html")
-    }
     </script>
 </head>
 <body>
@@ -38,7 +31,6 @@
         <input name="UsrID" type="text" id="UsrID" value="12345"> -->
         <input name="file" type="file" name="" id="file">
         <button type="button" onclick="send()">测试</button>
-        <button type="button" onclick="send2()">测试2</button>
     </form>
 </body>
 </html>

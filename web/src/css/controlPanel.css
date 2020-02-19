@@ -6,11 +6,12 @@ body{
     margin: 0;
 }
 
+
 /*  服务器控制面板  */
 #control-panel{
     color: white;
     position: fixed;
-    width: 60%;
+    width: 70%;
     height: var(--panel-height);
     /* height: 90%; */
     /* background-color: #336699; */
@@ -272,7 +273,7 @@ body{
 #filelist a:visited{text-decoration: none;}
 #filelist a:active{text-decoration: none;}
 
-@media screen and (max-width:1060px){
+@media screen and (max-width:1200px){
     #control-panel{
         width: 100%;
     }

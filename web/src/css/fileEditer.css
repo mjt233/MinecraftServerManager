@@ -1,0 +1,131 @@
+#fileEditer{
+    position: fixed;
+    left: 20%;
+    right: 0;
+    top: 32px;
+    width: 60%;
+    border-radius: 5px;
+    height: 88%;
+    z-index: 1;
+    background-color: rgb(112, 112, 112);
+    box-shadow: 0px 0px 10px rgb(224, 252, 250);
+    overflow: hidden;
+    cursor: move;
+}
+
+#editing-file{
+    position: absolute;
+    left: 90px;
+    right: 0;
+    margin: 1%;
+    color: white;
+    font-family: monospace;
+    font-weight: bold;
+}
+
+#fileEditer textarea{
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    width: 100%;
+    height: 96%;
+    color: #BBDEFB;
+    font-family: monospace;
+    background-color: rgb(39, 39, 39);
+    outline: 0;
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+
+#fileEditer.animation_close{
+    animation: fe-close 0.25s;
+    -webkit-animation: fe-close 0.25s;
+}
+#fileEditer.animation_show{
+    animation: fe-show 0.4s;
+    -webkit-animation: fe-show 0.4s;
+}
+
+#fileEditer.maxsize{
+    width: 100%;
+    padding: 0;
+    border:none;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+#fileEditer.hid{
+    display: none;
+}
+
+@keyframes fe-show{
+    from{
+        transform: rotateY(90deg)
+    }
+    to{
+        transform: rotateY(0)
+    }
+}
+@-webkit-keyframes fe-show{
+    from{
+        transform: rotateY(90deg)
+    }
+    to{
+        transform: rotateY(0)
+    }
+}
+
+@keyframes fe-close{
+    from{
+        transform: rotateX(0);
+    }
+    to{
+        transform: rotateX(90deg);
+    }
+}
+@-webkit-keyframes fe-close{
+    from{
+        transform: rotateX(0);
+    }
+    to{
+        transform: rotateX(90deg);
+    }
+}
+
+.fe-btn-group{
+    display: flex;
+    align-items: center;
+    height: 4%;
+}
+
+.dot{
+    margin: 0 5px;
+    float: right;
+    border:none;
+    width: 16px;
+    height: 16px;
+    text-align: center;
+    border-radius: 50%;
+    outline: 0;
+    transition: all 0.1s;
+    cursor: pointer;
+}
+
+.dot:hover{
+    box-shadow: 0 0 3px white;
+}
+
+
+.darkred{
+    background-color: darkred;
+}
+
+.darkgreen{
+    background-color: darkgreen;
+}
+.darkcyan{
+    background-color: rgb(15, 104, 146);
+}

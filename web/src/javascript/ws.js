@@ -1,17 +1,3 @@
-var input = document.getElementById("input")                        // 命令输入框
-var terminal = document.getElementById("terminal")                  // 控制台输出
-var STATUS = ["运行中","停止中","已挂起","启动中","已停止"]              // 服务器状态码对应表
-var ws = null;                                                      // WebSocket对象
-var connectStatus = 0;                                              // WebSocket连接状态 1:已连接 0:为连接
-var success = 0;                                                    // WebSocket验证状态 1:已验证并接入 0:未验证和接入成功
-var loginPanel = document.getElementById("login-panel")             // 登录输入框
-var controlPanel = document.getElementById("control-panel")         // 控制面板
-var SerID,UsrID;                                                    // 顾名思义
-var SerIDElem = document.getElementById("SerID")
-var UsrIDElem = document.getElementById("UsrID")
-var StatusElem = document.getElementById("sstatus")                 // 服务器状态显示DOM(在控制面板的运行控制内)
-var pathElem = document.getElementById("path")                      // 当前路径显示DOM(在控制面板的文件管理内)
-var fileForm = document.getElementById("fileform");                 // 文件表单
 // 连接WebSocket并进行验证
 function Connect() {
 

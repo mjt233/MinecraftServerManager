@@ -8,6 +8,38 @@ curpath.toString = ()=>{        // 转为路径字符串
 }
 
 var filelist;
+
+function getfile(e)
+{
+    var filename = e.getAttribute("name")
+    var size = e.getAttribute("size");
+    if(size>6291456){
+        addMsg("无法预览大于6MiB的文件","darkred")
+        return
+    }
+    var p = curpath.toString()+"/"+filename
+    var data = {
+        "SerID":SerID,
+        "UsrID":UsrID,
+        "file": p
+    }
+    addMsg("正在读取文件")
+    $.get("/api/getfile", data, (e)=>{
+        if( typeof(e) != 'object' ){
+            fileEditer.getElementsByTagName("textarea")[0].value = e
+            fileEditer.getElementsByTagName("p")[0].innerText = p
+            fileEditer.classList.add("animation_show")
+            fileEditer.classList.remove("hid")
+            setTimeout(() => {
+                fileEditer.classList.remove("animation_show")
+            }, 400);
+        }else{
+            addMsg(e['msg'],"darkred")
+        }
+    })
+}
+
+
 function ls(path)
 {
     if(path == '..'){
@@ -16,11 +48,6 @@ function ls(path)
         ;// 刷新
     }else if(path != undefined){
         curpath.push(path)
-    }
-    var data = {
-        "SerID":SerID,
-        "UsrID":UsrID,
-        "path":curpath.toString()
     }
 
     var args =  "SerID="+SerID+"&"+
@@ -43,26 +70,30 @@ function ls(path)
                 const element = e['data'][index];
                 let name = element['name']
                 let fontCode;
+                let ext
                 tr = document.createElement("tr")
 
-                switch (name) {
-                    case 'server.properties':   fontCode = '&#xe62d;';break;
-                    case 'world':               fontCode = '&#xe62e;';break;
-                    case 'confog':              fontCode = '&#xe61a;';break;
-                    case 'mods':                fontCode = '&#xe61e;';break;
-                    default:
-                        if( element['type'] == 'folder' ){
-                            fontCode = '&#xe604;'
-                        }else{
-                            fontCode = '&#xe623;'
-                        }
-                        break;
-                }
+
 
                 if( element['type'] =='folder' )
                 {
+                    switch (name) {
+                        case 'world':               fontCode = '&#xe62e;';break;
+                        case 'config':              fontCode = '&#xe61a;';break;
+                        case 'mods':                fontCode = '&#xe61e;';break;
+                        case 'libraries':           fontCode = '&#xe631;';break;
+                        default:                    fontCode = '&#xe604;';break;
+                    }
                     tr.innerHTML = '<td><a href=\"javascript:\" onclick=\"ls(\''+ name +'\')\"><span class="iconfont">' + fontCode + "</span>" + element['name'] + '</a></td><td>' + element['size'] + '</td>'
                 }else{
+                    ext = name.split(".").pop();
+                    switch (ext) {
+                        case 'properties':          fontCode = '&#xe62d;';break;
+                        case 'json':
+                        case 'cfg':                 fontCode = '&#xe7bd;';break;
+                        case 'jar':                 fontCode = '&#xe624;';break;
+                        default:                    fontCode = '&#xe623;';break;
+                    }
                     size = element['size']
                     if( size < 1024 ){
                         size += 'Byte'
@@ -73,7 +104,7 @@ function ls(path)
                     }else{
                         size = (size/1073741824).toFixed(1) + 'GiB'
                     }
-                    tr.innerHTML = '<td><a href=\"javascript:\"><span class="iconfont">' + fontCode + "</span>" + element['name'] + "</a></td><td>" + size + "</td>"
+                    tr.innerHTML = '<td><a onclick=\"getfile(this)\" name=\"'+ element['name'] +'\" size='+ element['size']+' href=\"javascript:\"><span class="iconfont">' + fontCode + "</span>" + element['name'] + "</a></td><td>" + size + "</td>"
                 }
                 tb.appendChild(tr)
             }
@@ -131,6 +162,7 @@ function ExecuteUpload(file){
             if(e['code'] == 200)
             {
                 addMsg("上传成功!");
+                ls()
             }
         },error:(e)=>{
             uploading = 0;
