@@ -32,7 +32,7 @@ void Server::server_read()
     while ( recv(this->socket, head, 5, MSG_WAITALL) == 5)
     {
         total = 0;count = 0;
-        f_builder.analyze(head);
+        f_builder.parse(head);
         if( f_builder.FIN != 1)
         {
             DEBUG_OUT("收到服务器的无效帧");

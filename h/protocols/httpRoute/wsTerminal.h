@@ -30,22 +30,27 @@ void terminalAccess(HTTPRequestInfo &HQ, int socket_fd)
         ws.die( (char *)"T无效的ID",12);
         return;
     }
-    SerMutex.lock(__FILE__,__LINE__);
-
+    // SerMutex.lock(__FILE__,__LINE__);
+    if(!SerMutex.try_lock(__FILE__,__LINE__))
+    {
+        SerMutex.unlock(__FILE__, __LINE__);
+        ws.die( (char *)"T管理服务器异常",22);
+        return;
+    }
     if (!checkID(SerID,UsrID))
     {
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
         ws.die((char *)"T认证失败,服务器ID与创建用户ID不匹配",51);
         return;
     }
     Server *ser = SerList[SerID];
     if( !ser->add(&ws) )
     {
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
         ws.die((char *)"T服务器内部错误", 22);
         return;
     }
-    SerMutex.unlock();
+    SerMutex.unlock(__FILE__,__LINE__);
     thread readTh(terminalRead, &ws, ser);
     readTh.join();
     if( !ws.isClose )

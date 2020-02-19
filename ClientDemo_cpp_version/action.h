@@ -1,4 +1,5 @@
 #include<sys/stat.h>
+#define FRAME_HEAD_SIZE 5
 #define MAX_FILE_TRANS_SIZE 81920
 mutex lsMutex;
 SOCKET_T getTaskAccessCmd(const char * taskID_ch);
@@ -39,6 +40,71 @@ SOCKET_T startTask(const char * taskID_ch)
     }
     return f_sock;
 }
+
+void * viewfile( void * arg )
+{
+    actionAttr *at = (actionAttr*)arg;
+    string str(at->data);
+    free(arg);
+    char fileName[1024] = {0};
+    char taskID[10] = {0};
+    int pos;
+    pos = str.find("\n");
+    if( pos == -1 )
+        return NULL;
+    strncpy(fileName, str.c_str(), pos);
+    strncpy(taskID, str.c_str() + pos + 1, str.length() - pos - 1);
+    SOCKET_T send_fd;
+    send_fd = startTask(taskID);
+    if( send_fd == -1 )
+    {
+        cout << "task接入失败" << endl;
+        return NULL;
+    }
+    frame_builder fb;
+    FILE *fp = fopen(fileName, "rb");
+    if( fp == NULL )
+    {
+        fb.opcode = 0x1;
+        fb.length = 0;
+        fb.build();
+        send(send_fd, fb.f_data, FRAME_HEAD_SIZE, MSG_WAITALL);
+        close(send_fd);
+        return NULL;
+    }
+    // 取文件大小
+    fseek(fp, 0, SEEK_END);
+    fb.length = ftell(fp);
+    fb.opcode = 0x0;
+    fseek(fp, 0, SEEK_SET);
+    if ( send(send_fd, fb.build(), FRAME_HEAD_SIZE, MSG_WAITALL) != FRAME_HEAD_SIZE)
+    {
+        cout << "发送文件信息失败" << endl;
+        close(send_fd);
+        fclose(fp);
+        return NULL;
+    }
+    char buffer[8192];
+    size_t cnt;                 //  记录一次读取的大小
+    size_t a = fb.length;       //  剩余需要读取的大小
+    while ( !feof(fp) && a)
+    {
+        cnt = fread(buffer, 1, a > 8192 ? 8192 : a, fp);
+        a -= cnt;
+        if ( send(send_fd, buffer, cnt, MSG_WAITALL) != cnt)
+        {
+            cout << "发送文件中断" << endl;
+            close(send_fd);
+            fclose(fp);
+            return NULL;
+        }
+    }
+    close(send_fd);
+    fclose(fp);
+    return NULL;
+}
+
+
 /** 接收服务器传来的文件
 */  
 void * acceptFile(void * arg)
@@ -238,3 +304,4 @@ void setServerStatus(unsigned char status)
     send(remote_socket, fb.f_data, sizeof(fb.f_data), MSG_WAITALL);
     SERSTATUS = status;
 }
+

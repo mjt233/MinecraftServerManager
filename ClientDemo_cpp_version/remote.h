@@ -64,7 +64,7 @@ void ReadRemoteData(char const *argv[])
     START :
     while ( recv( remote_socket, frame, 5, MSG_WAITALL ) == 5)
     {
-        fb.analyze(frame);
+        fb.parse(frame);
         if ( fb.FIN != 1 )
         {
             cout << "无效数据帧信息" << endl;
@@ -92,6 +92,9 @@ void ReadRemoteData(char const *argv[])
                 break;
             case 0x3:
                 CREATE_TASK_THREAD(serverControl)
+                break;
+            case 0x4:
+                CREATE_TASK_THREAD(viewfile)
                 break;
             default:
                 cout << "无效控制码" << endl;

@@ -11,7 +11,7 @@ void taskStart(baseInfo &IDInfo)
     if( SerList.count(IDInfo.SerID) == 0 )
     {
         cout << "服务器已退出" << endl;
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
         return;
     }
     Server *ser = SerList[IDInfo.SerID];
@@ -20,7 +20,7 @@ void taskStart(baseInfo &IDInfo)
     {
         cout << "不存在的taskID" << endl;
         ser->statMutex.unlock();
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
         return;
     }
     for (size_t i = 0; i < cnt; i++)
@@ -36,7 +36,7 @@ void taskStart(baseInfo &IDInfo)
         {
             cout << "发送失败" << endl;
             ser->statMutex.unlock();
-            SerMutex.unlock();
+            SerMutex.unlock(__FILE__,__LINE__);
             return;
         }
     }
@@ -48,7 +48,7 @@ void taskStart(baseInfo &IDInfo)
     ser->taskList[taskID] = IDInfo.socket;
     mtx = ser->taskMutex[taskID];
     ser->statMutex.unlock();
-    SerMutex.unlock();
+    SerMutex.unlock(__FILE__,__LINE__);
 
     // 阻塞 直到任务完成或关闭
     mtx->lock();

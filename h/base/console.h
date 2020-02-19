@@ -44,9 +44,10 @@ void console_command()
 
 void show_list()
 {
-    if ( !SerMutex.try_lock() )
+    if ( !SerMutex.try_lock(__FILE__,__LINE__) )
     {
         cout << "Lock SER Error " << endl;
+        SerMutex.toString();
         return;
     }
     cout << "=========Server List==========" << endl;
@@ -66,5 +67,5 @@ void show_list()
         i->second->cliMutex.unlock();
     }
     cout << "=========    END    ==========" << endl;
-    SerMutex.unlock();
+    SerMutex.unlock(__FILE__,__LINE__);
 }

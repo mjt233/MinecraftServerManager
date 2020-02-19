@@ -24,7 +24,8 @@ opcode操作码定义
 0x0: 服务器控制台纯文本传输
 0x1: 控制端请求发送文件
 */
-#define DEFAULT_CHAR_BUFFER_SIZE 1024               // 默认的buffer大小
+#define DEFAULT_CHAR_BUFFER_SIZE 2048               // 默认的buffer大小
+#define BIG_CHAR_BUFFER_SIZE 8192                   // 默认的buffer大小
 #define SERVER 0                                    // 服务器TAG
 #define CONTROLLER 1                                // 控制器TAG
 #define TASK 2                                      // 异步任务请求
@@ -41,8 +42,15 @@ opcode操作码定义
 #define SER_STATUS_LAUNCHING    4                   // 服务器启动中
 #define SER_STATUS_STOPED    5                      // 服务器启动中
 
+#define OPCODE_CONSOLE 0X0
+#define OPCODE_FILETRANS 0x1
+#define OPCODE_LS 0X2
+#define OPCODE_CTL 0x3
+#define OPCODE_VIEWFILE 0x4
+
+#define FRAME_HEAD_SIZE 5
 // #define DEBUG_OUT_N("LockSuccess");DEBUG_OUT_N(__FILE__);DEBUG_OUT(__LINE__);
-typedef unsigned char frame_head_data[5];
+typedef unsigned char frame_head_data[FRAME_HEAD_SIZE];
 class Client;
 class Controller;
 class Server;
@@ -90,8 +98,8 @@ void invert(char * buf, size_t len);
 class myMutex{
     public:
         mutex *mtx;
-        char file[2048];
-        int line;
+        char file[2048],ul_f[2048], tl_f[2048];
+        int line,ul_l, tl_l;
         myMutex(mutex *mtx){
             this->mtx = mtx;
         }
@@ -100,16 +108,30 @@ class myMutex{
             snprintf(file, 2048, "%s",fileName);
             line = Line;
         }
-        void unlock(){
-            return mtx->unlock();
+        void unlock(const char *fileName,int Line){
+            mtx->unlock();
+            snprintf(ul_f, 2048, "%s",fileName);
+            ul_l = Line;
         }
-        bool try_lock(){
-            return mtx->try_lock();
+        bool try_lock(const char *fileName,int Line){
+            bool res = mtx->try_lock();
+            if( res )
+            {
+                snprintf(tl_f, 2048, "success %s",fileName);
+            }else
+            {
+                snprintf(tl_f, 2048, "fail %s",fileName);
+            }
+            tl_l = Line;
+            return res;
         }
         string toString(){
             string res;
-            res = file;
-            res += "at line " + to_string(line);
+            res = "last lock:";
+            res += file;
+            res += " at line " + to_string(line) + "\nlast unlock:";
+            res += ul_f;
+            res += " at line " + to_string(ul_l) + "\nlast trylock:" + tl_f + " at line " + to_string(tl_l);
             return res;
         }
 };

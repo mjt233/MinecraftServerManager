@@ -96,7 +96,7 @@ Server::Server( int SerID, int UsrID, int socket ):Client::Client( SerID, UsrID,
     // 将自己添加到服务器列表
     SerMutex.lock(__FILE__,__LINE__);
     SerList.insert( make_pair(SerID, this ) );
-    SerMutex.unlock();
+    SerMutex.unlock(__FILE__,__LINE__);
 
     // 接受socket数据线程
     th1 = new thread(&Server::server_read,this);
@@ -285,7 +285,7 @@ Server::~Server()
 
     // 将该Server从服务器列表中移除
     SerList.erase(SerID);
-    SerMutex.unlock();
+    SerMutex.unlock(__FILE__,__LINE__);
 }
 
 
@@ -301,7 +301,7 @@ Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID
     if( ser->UsrID != UsrID )
     {
         fflush(stdout);
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
         write( socket, "FORBIDDEN", 10 );
         stop();
     }else
@@ -309,7 +309,7 @@ Controller::Controller( int SerID, int UsrID, int socket ):Client::Client( SerID
         write( socket, "OK", 2 );
         ser->add(this);
         th2 = new thread(&Controller::controller_read_socket, this);
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
     }
 }
 

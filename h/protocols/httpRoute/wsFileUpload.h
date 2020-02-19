@@ -19,17 +19,17 @@ void fileUpload(HTTPFileReader &reader, int socket_fd)
     if( !checkID(SerID,UsrID))
     {
         HP.sendJsonMsg(socket_fd, 200, -1, "OK", "ID验证失败");
-        SerMutex.unlock();
+        SerMutex.unlock(__FILE__,__LINE__);
         return;
     }
     Server *ser = SerList[SerID];
-    SerMutex.unlock();
+    SerMutex.unlock(__FILE__,__LINE__);
     char fileName[512] = {0},         //  文件名
          path[1024] = {0};            //  文件存放路径
-    size_t len = 0;                   //  文件长度
+    unsigned long len = 0;                   //  文件长度
     strncpy(fileName, reader.GET["file"].c_str(), 512);
     strncpy(path, reader.GET["path"].c_str(), 1024);
-    len = atoi(reader.GET["length"].c_str());
+    len = stoul(reader.GET["length"]);
     if( len <=0 || !strcmp(fileName,"") || !strcmp(path,"") )
     {
         HP.sendJsonMsg(socket_fd, 200, -3, "OK", "缺少参数");

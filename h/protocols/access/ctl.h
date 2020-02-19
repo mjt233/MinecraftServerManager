@@ -80,7 +80,7 @@ void Controller::controller_read_socket()
     {
         count = 0;
         total = 0;
-        f_builder.analyze(f_data);
+        f_builder.parse(f_data);
         if ( f_builder.FIN != 1 )
         {
             if (DEBUG_MODE)
