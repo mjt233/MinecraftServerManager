@@ -42,12 +42,11 @@ int main(int argc, char const *argv[])
     thread launchTh(launch, argv[5]);                    // 服务器线程
     thread readTh(ReadData);                    // 读取子进程的数据
     thread readRmTh(ReadRemoteData,argv);       // 读取服务器的数据
-    string input;
+    char input[4096];
     while ( 1 )
     {
-        cin >> input;
-        input+="\n";
-        if ( send(inputPipe.psocket, input.c_str(), input.length(), MSG_WAITALL) <= 0)
+        cin.getline(input, 4096);
+        if ( send(inputPipe.psocket, input, strlen(input), MSG_WAITALL) <= 0)
         {
             exit(EXIT_SUCCESS);
         }

@@ -94,7 +94,13 @@ void getfile(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
         return;
     }
     string filename = HQ.GET["file"];
-    HP.header["Content-Type"] = getFileExtension(filename);
+    if( HQ.GET.count("text") )
+    {
+        HP.header["Content-Type"] = getFileExtension("1.txt");
+    }else
+    {
+        HP.header["Content-Type"] = getFileExtension(filename);
+    }
     HP.header["Content-Length"] = to_string(fb.length);
     if( HP.sendHeader(HQ.socket_fd) < 0)
     {

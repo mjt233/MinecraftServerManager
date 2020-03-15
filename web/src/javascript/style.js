@@ -25,6 +25,14 @@ initControlPanel();
 filelist = document.getElementById("filelist")
 FileElem = document.getElementById("file")
 prog = document.getElementById("prog")
+filelist.oncontextmenu = ()=>{return false}
+filelist.onmousedown = (e)=>{
+    if(e.which == 3 && e.toElement.tagName == 'A'){
+        let elem = e.toElement
+        let name = elem.getAttribute("name")
+        console.log(name)
+    }
+}
 FileElem.addEventListener('change',()=>{
     ExecuteUpload(FileElem.files[0])
 })

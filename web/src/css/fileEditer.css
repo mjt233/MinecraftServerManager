@@ -13,9 +13,17 @@
     cursor: move;
 }
 
+#fileEditer .save{
+    outline: 0;
+    cursor: pointer;
+    background-color: rgb(194, 194, 194);
+    border: none;
+    border-radius: 5px;
+}
+
 #editing-file{
     position: absolute;
-    left: 90px;
+    left: 120px;
     right: 0;
     margin: 1%;
     color: white;
