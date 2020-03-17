@@ -95,8 +95,11 @@ function send() {
         return false;
     }
     var data = input.value + "\n";
-    input.value = ""
+    if( data == '\n' ) return false
+    history_cmd.push(input.value)
+    history_cur = history_cmd.length;
     ws.send(data)
+    input.value = ""
     return false;
 }
 

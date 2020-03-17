@@ -20,6 +20,8 @@ var controlPanelHeight = 100;
 var FileElem
 var prog;
 var uploading = 0;
+var history_cmd = []   //  历史命令
+var history_cur = 0;            //  当前历史命令位置
 initMDBtn();
 initControlPanel();
 filelist = document.getElementById("filelist")
@@ -43,6 +45,30 @@ close_btn.addEventListener("click", ()=>{
         fileEditer.classList.add("hid")
         fileEditer.classList.remove("animation_close")
     }, 240);
+})
+
+input.addEventListener("keydown",(e)=>{
+    console.log(history_cmd);
+    
+    var key = e.key
+    var len = history_cmd.length
+    if( key == "ArrowUp" ){
+        history_cur--;
+        if( history_cur < 0 ){
+            history_cur = len;
+            return
+        }
+    }else if( key == "ArrowDown"){
+        history_cur++;
+        if( history_cur >= len){
+            history_cur = len;
+            input.value = ''
+            return
+        }
+    }else{
+        return
+    }
+    input.value = history_cmd[history_cur]
 })
 
 maxsize_btn.addEventListener("click",beMax)

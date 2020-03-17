@@ -102,15 +102,7 @@ int HTTPResponeInfo::sendHeader(int fd)
 {
     int a;
     getRespone();
-    try
-    {
-        a = send( fd, HTTPMsg.c_str(), HTTPMsg.length() , MSG_WAITALL);
-    }
-    catch(...)
-    {
-        cout << "发送header失败" << endl;
-    }
-    
+    a = send( fd, HTTPMsg.c_str(), HTTPMsg.length() , MSG_WAITALL);
     return (a == HTTPMsg.length());
 }
 
