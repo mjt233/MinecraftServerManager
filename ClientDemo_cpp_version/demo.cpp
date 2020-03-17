@@ -45,10 +45,11 @@ int main(int argc, char const *argv[])
     char input[4096];
     while ( 1 )
     {
-        cin.getline(input, 4096);
+        cin.getline(input, 4094);
+	strcat(input,"\n");
         if ( send(inputPipe.psocket, input, strlen(input), MSG_WAITALL) <= 0)
         {
-            exit(EXIT_SUCCESS);
+            cout << "写入到控制台失败！" << endl;
         }
     }
     Exit(0);

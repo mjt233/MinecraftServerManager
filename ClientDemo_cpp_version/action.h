@@ -136,11 +136,11 @@ void * acceptFile(void * arg)
         return NULL;
     }
     fileLen = atoi(fl);
-    char cwd[1024];
+    char cwd[512];
     getcwd(cwd, 1024);
     char newFilePath[2048];
     char buffer[MAX_FILE_TRANS_SIZE] = {0};
-    snprintf(newFilePath, 2048, "%s/%s/%s",cwd,path,name);
+    snprintf(newFilePath, sizeof(newFilePath), "%s/%s/%s",cwd,path,name);
     size_t cnt,s = fileLen;
     FILE *fp = fopen(newFilePath, "wb");
     if( !fp )
