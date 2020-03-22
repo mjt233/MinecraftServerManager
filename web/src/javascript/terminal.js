@@ -31,10 +31,11 @@ function appendInfo(str)
         var res = str.match(/[0-9]+\.+[0-9]+|tps|[0-9]+%|(\.|\\|\/|\s|\:)\-?[0-9]+|WARING|WARN|ERROR|INFO|\[|\]|\:/i)
         var l,m,r;
         if( res != null ){
-            l = str.substr(0,res.index)
+            l = str.substr(0,res.index).replace(/\s/g,'&ensp;')
             m = res[0]
             r = str.substring(res.index + m.length,str.length)
-            this.append(l)
+            // this.append(l)
+            this.innerHTML += l;
             switch (m) {
                 case 'INFO':
                 case 'info':
@@ -62,28 +63,30 @@ function appendInfo(str)
                 default:
                     if( withNum == true ){
                         if(m[0] == ':'){
-                            this.append(':')
+                            // this.append(':')
+                            this.innerHTML += ':'
                             this.appendColStr(m.substr(1,m.length-1),"gray")
                         }else{
                             this.appendColStr(m,"gray")
                         }
                     }else{
-                        this.append(m)
+                        // this.append(m)
+                        this.innerHTML += m
                     }
                     break;
             }
             this.appendStr(r, withNum)
         }else{
-            this.append(str)
+            this.innerHTML += str.replace(/\s/g,'&ensp;')
         }
     }
     p.appendStr(l,false)
     var index = r.indexOf(": /")
     if( index != -1 ){
-        p.append(r.substr(0, index+2))
+        p.innerHTML += r.substr(0, index+2).replace(/\s/g,"&ensp;")
         p.appendColStr(r.substring(index+2,r.length),"#99CCFF")
     }else if( index = r.indexOf(" > ") != -1){
-        p.append(r.substr(0, index))
+        p.innerHTML += r.substr(0, index).replace(/\s/g,"&ensp;")
         p.appendColStr(r.substring(index,r.length),"lightblue")
     }else{
         p.appendStr(r,true)
