@@ -17,8 +17,9 @@ function appendInfo(str)
 
     // append colorful string
     p.appendColStr = function(str,color,cssClass){
+        str = str.replace(/\s/g,"&ensp;")
         var span = document.createElement("span")
-        span.innerText = str;
+        span.innerHTML = str;
         span.style.color = color
         if( cssClass!=undefined ){
             span.className = cssClass

@@ -52,6 +52,7 @@ function Connect() {
             {
                 // 取出字符T后面的内容
                 var text = reader.result.substr(1,reader.result.length-1)
+                // text = text.replace(/\s/g,"&nbsp;")
                 if( success == 0 )
                 {
                     // 若未确认验证的情况下,收到OK表示验证成功
