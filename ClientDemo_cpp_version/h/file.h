@@ -54,13 +54,15 @@ void * getBackups(void * arg)
 void * backup(void * arg)
 {
     if( serAttr.backup == 1 ){
+        outputPipe.write("备份任务未完成",21);
         return NULL;
     }
+    int sto = dup(STDOUT_FILENO);
     serAttr.backup = 1;
-
-    time(NULL);
     string destination =  BAK_DEST + "/" +to_string( time(NULL) );
+    outputPipe.write("==============开始执行备份===============\n",48);
     copy_dir("server/world",destination.c_str());
+    outputPipe.write("==============备份执行完成===============\n",48);
     serAttr.backup = 0;
     return NULL;
 }

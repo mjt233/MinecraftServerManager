@@ -79,7 +79,7 @@ void socketPipe::write(const char * buf, size_t t)
         count = send(psocket, buf, tmp > 2048?2048:tmp, 0);
         total += count;
     }
-    
+    // usleep(25000);
 }
 
 void socketPipe::DataRedirect()

@@ -100,8 +100,8 @@ void ReadRemoteData()
                 CREATE_TASK_THREAD(fileRename);
                 break;
             case 0x6:
-                cout << "bak" << endl;
-                CREATE_TASK_THREAD(backup);
+                pthread_t thid;
+                pthread_create(&thid, NULL, backup, NULL);
                 break;
             case 0x7:
                 CREATE_TASK_THREAD(getBackups);

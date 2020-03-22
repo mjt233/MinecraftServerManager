@@ -2,6 +2,14 @@ var curpath = []                // 用数组记录当前索引路径
 var editingFileName = ''        // 当前编辑的文件名
 var editingFilePath = ''        // 当前编辑的文件路径
 
+function backup(){
+    var args =  "SerID="+SerID+"&"+
+                "UsrID="+UsrID
+    $.get("/api/backup?"+args,(e)=>{
+        addMsg(e.msg)
+    })
+}
+
 function saveFile(){
     var args =  "SerID="+SerID+"&"+
                 "UsrID="+UsrID+"&"+

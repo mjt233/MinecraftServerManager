@@ -128,12 +128,15 @@ void copy_dir(string source, string target)
     string src,dest;
     FILE *out,*in;
     char buffer[8192];
+    char str[4096];
     size_t len;
     if( access(target.c_str(),0) < 0 )
     {
         if ( mkdir(target.c_str(), 0777) < 0)
         {
-            cout << "创建" << target << "失败" << endl;
+            sprintf(str,"创建%s失败\n",target.c_str());
+            cout << str;
+            outputPipe.write(str,strlen(str));
             return;
         }
     }
@@ -151,18 +154,22 @@ void copy_dir(string source, string target)
         }
         src = source + "/" + de->d_name;
         dest = target + "/" + de->d_name;
-        printf("%-60s -> %s\n",src.c_str(), dest.c_str());
+        sprintf(str,"%-60s -> %s\n",src.c_str(), dest.c_str());
         in = fopen(src.c_str(),"rb");
         out = fopen(dest.c_str(),"wb");
-
+        outputPipe.write(str,strlen(str));
         if(in == NULL)
         {
+            sprintf(str,"打开文件%s失败\n",src.c_str());
             cout << "打开文件" << src <<"失败" << endl;
+            outputPipe.write(str,strlen(str));
             continue;
         }
         if(out == NULL)
         {
+            sprintf(str,"打开文件%s失败\n",dest.c_str());
             cout << "打开文件" << dest <<"失败" << endl;
+            outputPipe.write(str,strlen(str));
             continue;
         }
         while ( (len = fread(buffer, 1, 8192, in)) )
