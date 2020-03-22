@@ -12,6 +12,7 @@
 #include<sys/shm.h>
 #include<sys/ipc.h>
 #include<sys/wait.h>
+#include<vector>
 using namespace std;
 #include"../h/base/socketTool.h"
 #include "socketPipe.h"
@@ -27,26 +28,22 @@ int main(int argc, char const *argv[])
 {
     signal(SIGINT, Exit);
     main_pid = getpid();
-    if ( argc != 6 )
-    {
-        cout << "[usage] ./demo [addr] [port] [SerID] [UsrID] \"[Server Start Command]\"" << endl;
-        return 1;
-    }
-    InitData(argv);
+    readConfig();
+    
     // 接入服务器
-    if ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4])))
+    if ( !AccessServer(serAddr.c_str(),serPort, SERID, USRID) )
     {
         Exit(0);
         return 1;
     }
-    thread launchTh(launch, argv[5]);                    // 服务器线程
+    thread launchTh(launch, launch_cmd.c_str());// 服务器线程
     thread readTh(ReadData);                    // 读取子进程的数据
-    thread readRmTh(ReadRemoteData,argv);       // 读取服务器的数据
+    thread readRmTh(ReadRemoteData);       // 读取服务器的数据
     char input[4096];
     while ( 1 )
     {
         cin.getline(input, 4094);
-	strcat(input,"\n");
+	    strcat(input,"\n");
         if ( send(inputPipe.psocket, input, strlen(input), MSG_WAITALL) <= 0)
         {
             cout << "写入到控制台失败！" << endl;
@@ -57,7 +54,9 @@ int main(int argc, char const *argv[])
 }
 
 
-
+/**
+ * 从服务器控制台读取数据
+*/
 void ReadData()
 {
     char buffer[1024] = {0};
@@ -89,7 +88,9 @@ void ReadData()
 }
 
 
-
+/**
+ * 启动服务器子进程
+*/
 void launch(const char * launch_cmd)
 {
     int first = 1;

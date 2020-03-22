@@ -1,7 +1,9 @@
 void ls(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
 void serCtl(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
 void getfile(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
-
+void fileRename(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
+void backup(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
+void getBackups(Server * ser, HTTPRequestInfo &HQ, mutex * mtx);
 void webAPI(int socket_fd, HTTPFileReader &HQ)
 {
     #ifdef linux
@@ -19,6 +21,8 @@ void webAPI(int socket_fd, HTTPFileReader &HQ)
     int SerID = atoi( HQ.GET["SerID"].c_str() );
     int UsrID = atoi( HQ.GET["UsrID"].c_str() );
     SerMutex.lock(__FILE__,__LINE__);
+
+    // 验证接入身份
     if ( !checkID(SerID, UsrID) )
     {
         SerMutex.unlock(__FILE__,__LINE__);
@@ -48,10 +52,94 @@ void webAPI(int socket_fd, HTTPFileReader &HQ)
         fileUpload(HQ,HQ.socket_fd);
     }else if(   APIName == "getfile"){
         getfile(ser, HQ, mtx);
+    }else if(   APIName == "rename"){
+        fileRename(ser, HQ, mtx);
+    }else if(   APIName == "backup"){
+        backup(ser, HQ, mtx);
+    }else if(   APIName == "getBackups"){
+        getBackups(ser, HQ, mtx);
     }else{
         HP.sendErrPage(socket_fd, 404, "Not Found");
     }
     mtx->unlock();
+}
+
+
+void getBackups(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
+{
+    HTTPResponeInfo HP;
+    frame_builder fb;
+    SOCKET_T recv_fd;
+    recv_fd = ser->createTask(OPCODE_GETBACKUPS, "", 0, mtx);
+    if( recv_fd == -1 )
+    {
+        HP.sendJsonMsg(HQ.socket_fd, 200, -2, "OK", "服务器超时响应");
+        return ;
+    }
+    char buffer[8192];
+    recv(recv_fd, fb.f_data, FRAME_HEAD_SIZE, MSG_WAITALL);
+    fb.parse(fb.f_data);
+    HP.header["Content-Length"] = to_string(fb.length);
+    HP.sendHeader(HQ.socket_fd);
+    int cnt = 0,total = 0;
+    while ( total < fb.length )
+    {
+        cnt = recv(recv_fd, buffer, 8192, 0);
+        if( cnt < 0 )
+        {
+            close(recv_fd);
+            close(HQ.socket_fd);
+            return;
+        }
+        total += cnt;
+        if ( send(HQ.socket_fd, buffer, cnt, MSG_WAITALL) < 0)
+        {
+            close(recv_fd);
+            close(HQ.socket_fd);
+            return;
+        }
+    }
+    redTaskCount();
+    
+}
+
+void backup(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
+{
+    HTTPResponeInfo HP;
+    ser->writeSocketData(OPCODE_BACKUP, NULL, 0);
+    HP.sendJsonMsg(HQ.socket_fd, 200, 200, "OK", "指令已发送");
+
+}
+
+void fileRename(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)
+{
+    HTTPResponeInfo HP;
+    if(HQ.GET.count("old") == 0 || HQ.GET.count("new") == 0)
+    {
+        HP.sendJsonMsg(HQ.socket_fd, 200, -3, "OK", "缺少参数:old 或 new");
+        return;
+    }
+    SOCKET_T recv_fd;
+    string info = HQ.GET["old"] + "\n" + HQ.GET["new"];
+    recv_fd = ser->createTask(OPCODE_RENAME, info.c_str(), info.length(), mtx);
+    int i;
+    frame_builder fb;
+    frame_head_data fd;
+    recv(recv_fd, fd, FRAME_HEAD_SIZE, MSG_WAITALL);
+    fb.parse(fd);
+    string res;
+    if( fb.opcode == 0 ){
+        res = "{\"code\":200}";
+    }else{
+        res = "{\"code\":-1}";
+    }
+    HP.header["Content-Length"] = to_string(res.length());
+    HP.sendHeader(HQ.socket_fd);
+    send(HQ.socket_fd, res.c_str(), res.length(), MSG_WAITALL);
+
+    redTaskCount();
+    close(recv_fd);
+    close(HQ.socket_fd);
 }
 
 void getfile(Server * ser, HTTPRequestInfo &HQ, mutex * mtx)

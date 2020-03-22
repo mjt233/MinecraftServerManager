@@ -47,6 +47,9 @@ opcode操作码定义
 #define OPCODE_LS 0X2
 #define OPCODE_CTL 0x3
 #define OPCODE_VIEWFILE 0x4
+#define OPCODE_RENAME 0x5
+#define OPCODE_BACKUP 0x6
+#define OPCODE_GETBACKUPS 0x7
 
 #define FRAME_HEAD_SIZE 5
 // #define DEBUG_OUT_N("LockSuccess");DEBUG_OUT_N(__FILE__);DEBUG_OUT(__LINE__);

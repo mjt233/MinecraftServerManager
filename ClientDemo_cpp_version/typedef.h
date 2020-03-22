@@ -18,45 +18,33 @@ typedef struct {
     int suspend = 0;       // 挂起标识
     int launch = 0;     // 指令启动标识
     int status = 0;     // 服务器状态
+    int backup = 0;     // 备份中标识
 }serAttr_t;      // 服务器属性结构体
 
 /******************************** 全局变量声明 **********************/
 
 pid_t   pid,                // 子进程ID
         main_pid;           // 主进程ID
-int shm_id;                 // 共享内存ID
-int SERID,USRID;            // SerID and UsrID
-string serAddr;             // 管理服务器地址
-unsigned short serPort;     // 管理服务器端口
+string serAddr = "";        // 管理服务器地址
+unsigned short serPort = 0; // 管理服务器端口
 serAttr_t serAttr;          // 服务器属性结构体
 unsigned char SERSTATUS;    // 服务器当前状态
+int SERID,USRID;            // SerID and UsrID
+string launch_cmd = "";
+string BAK_RES = "";
+string BAK_DEST = "";
 
 /************************** 函数声明 ****************************/
 
 void invert(char * buf, size_t len);    // 字符串倒置
 string s_getcwd();                      // 取运行路径
-void InitData(char const *argv[]);      // 初始化数据
 void closeServer(int sign);
 void Exit(int sign);
 void setStatus(int statusCode);         // 设置并更新服务器状态
 
 /************************** 函数定义 **************************/
-void InitData(char const *argv[])
-{
-    serAddr = argv[1];
-    serPort = atoi( argv[2] );
-    SERID = atoi( argv[3] );
-    USRID = atoi( argv[4] );
-    serAttr.loop = 1;
-    // shm_id = shmget((key_t)1145141919, sizeof(serAttr_t), 0666|IPC_CREAT);
-    // if( shm_id == -1 )
-    // {
-    //     cout << "共享内存创建错误" << endl;
-    //     exit(EXIT_FAILURE);
-    // }
-    // serAttr = (serAttr_t*)shmat(shm_id, 0, 0);
-    // serAttr->loop = 1;
-}
+
+
 string s_getcwd()
 {
     string res;

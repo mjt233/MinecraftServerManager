@@ -16,7 +16,7 @@ int Connected = 0;
 int AccessServer(const char * addr,unsigned short port,int SerID,int UsrID);
 
 // 从远程管理器读取数据
-void ReadRemoteData(char const *argv[]);
+void ReadRemoteData();
 
 
 
@@ -53,7 +53,7 @@ int AccessServer(const char * addr,unsigned short port,int SerID,int UsrID)
 }
 
 
-void ReadRemoteData(char const *argv[])
+void ReadRemoteData()
 {
     char buffer[2048];
     int count = 0,total = 0;
@@ -96,6 +96,16 @@ void ReadRemoteData(char const *argv[])
             case 0x4:
                 CREATE_TASK_THREAD(viewfile)
                 break;
+            case 0x5:
+                CREATE_TASK_THREAD(fileRename);
+                break;
+            case 0x6:
+                cout << "bak" << endl;
+                CREATE_TASK_THREAD(backup);
+                break;
+            case 0x7:
+                CREATE_TASK_THREAD(getBackups);
+                break;
             default:
                 cout << "无效控制码" << endl;
                 shutdown(remote_socket, SHUT_RDWR);
@@ -111,7 +121,7 @@ void ReadRemoteData(char const *argv[])
     {
         cout << "连接已断开..准备重连(第" << ++i << "次)" << endl;
         sleep(5);
-    } while ( !AccessServer(argv[1],atoi(argv[2]),atoi(argv[3]),atoi(argv[4]))  );
+    } while ( !AccessServer(serAddr.c_str(),serPort, SERID, USRID)  );
     Connected = 1;
     std::cout << "重连成功" << std::endl;
     cout << (int)SERSTATUS << endl;
