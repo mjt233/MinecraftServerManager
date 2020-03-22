@@ -62,8 +62,10 @@ void ReadData()
     char buffer[1024] = {0};
     int count;
     frame_builder fb;
-    while ( ( count = recv(outputPipe.psocket, buffer + 1, 1022, 0) ) > 0 )
+    FILE *fp = fdopen( outputPipe.psocket, "r");
+    while ( fgets(buffer+1, 1022, fp) )
     {
+        count = strlen(buffer + 1);
         SendMutex.lock();
         buffer[0] = 'T';
         buffer[count + 1] = 0;
@@ -82,9 +84,8 @@ void ReadData()
         }
         SendMutex.unlock();
         // 不加延迟会崩溃....好神奇
-        usleep(50000);
+        usleep(5000);
     }
-    
 }
 
 

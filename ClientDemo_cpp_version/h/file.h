@@ -186,17 +186,12 @@ void * acceptFile(void * arg)
     int pos[3] = {0,0,0};                                   //  3个换行符所在的位置
     int f_sock;                                             //  收发数据的socket
     char Accesscmd[64];                                     //  任务接入请求指令
-    for (size_t i = 0; i < 3; i++)
-    {
-        if( ( pos[i] = str.find('\n', i ? pos[i-1] + 1: 0) ) == -1 )
-        {
-            return NULL;
-        }
-    }
-    strncpy(name, str.substr(0,pos[0]).c_str(), 512);
-    strncpy(path, str.substr(pos[0] + 1,pos[1] - pos[0] - 1).c_str(), 1024);
-    strncpy(fl, str.substr(pos[1] + 1,pos[2] - pos[1] - 1).c_str(), 20);
-    strncpy(id, str.substr(pos[2] + 1,str.length() - pos[2] + 1).c_str(), 20);
+    vector<string> info;
+    info = str_split(str,"\n");
+    strncpy(name, info[0].c_str(), 512);
+    strncpy(path, info[1].c_str(), 1024);
+    strncpy(fl, info[2].c_str(), 20);
+    strncpy(id, info[3].c_str(), 20);
     if( ( f_sock = startTask(id) ) == -1 )
     {
         cout << "任务接入失败" << endl;
