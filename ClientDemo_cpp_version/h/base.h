@@ -2,6 +2,18 @@ void readConfig();
 vector<string> str_split(string str,string pattern);
 SOCKET_T startTask(const char * taskID_ch);
 
+char * toLow(char * str,size_t len)
+{
+    for (size_t i = 0; i < len; i++)
+    {
+        if( str[i] >='A' && str[i] <='Z' )
+        {
+            str[i] +='a' - 'A';
+        }
+    }
+    return str;
+}
+
 void readConfig()
 {
     FILE *fp = fopen("mcsm.conf","r");
@@ -140,6 +152,11 @@ void copy_dir(string source, string target)
             return;
         }
     }
+    if( dp == NULL )
+    {
+        cout << "打开文件夹" << source << "失败" << endl;
+        return;
+    }
     while ( (de = readdir(dp)) )
     {
         if( !strcmp(de->d_name,".") || !strcmp(de->d_name,"..") )
@@ -178,5 +195,6 @@ void copy_dir(string source, string target)
         }
         fclose(in);
         fclose(out);
+	closedir(dp);
     }
 }

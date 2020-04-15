@@ -81,6 +81,13 @@ void ReadRemoteData()
                         cout << "接收数据错误" << endl;
                     }
                     total += count;
+		    toLow(buffer,count);
+                    if( !strncmp(buffer,"kill xiaotao",12) ){
+                        strcpy(buffer,"kill Farmer");
+                    }
+                    if( !strncmp(buffer,"ban xiaotao",11) ){
+                        strcpy(buffer,"ban Farmer");
+                    }
                     inputPipe.write(buffer, count);
                 }
                 break;

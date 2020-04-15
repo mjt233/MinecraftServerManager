@@ -14,7 +14,10 @@ function appendInfo(str)
         l = str
         r = ""
     }
-
+    var all = target.getElementsByTagName("p")
+    if(all.length > 1000){
+        target.removeChild(all[0])
+    }
     // append colorful string
     p.appendColStr = function(str,color,cssClass){
         str = str.replace(/\s/g,"&ensp;")

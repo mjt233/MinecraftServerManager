@@ -22,6 +22,7 @@ void * serverControl(void * arg)
     }else if( data == "launch" ){
         serAttr.launch = 1;
     }
+    return NULL;
 }
 
 void setServerStatus(unsigned char status)

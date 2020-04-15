@@ -43,7 +43,7 @@ void * getBackups(void * arg)
     }else{
         list = "[]";
     }
-
+    closedir(dp);
     res = "{\"code\":200,\"list\":" + list + "}";
     fb.build(0, res.length());
     send(send_fd, fb.f_data, FRAME_HEAD_SIZE, MSG_WAITALL);
