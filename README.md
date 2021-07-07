@@ -1,5 +1,5 @@
 # Minecraft Server Manager
-#### 开发未完成
+#### 因架构太拉跨代码太烂，项目已停止开发和维护
 ### 目录
 * [简介](#explain)
 * [特点](#feature)
